@@ -4,19 +4,19 @@ TARGET = webserv
 #*SOURCE FILES *#
 FILES = main.cpp
 		
-SRC = $(addprefix src/, $(FILES))
+SRC = $(addprefix srcs/, $(FILES))
 
 #* OBJECT DIRECTORY *#
 OBJ_DIR = obj
 
 #* OBJECT FILES *#
-OBJS = $(SRC:src/%.cpp=$(OBJ_DIR)/%.o)
+OBJS = $(SRC:srcs/%.cpp=$(OBJ_DIR)/%.o)
 
 #* FLAGS *#
 FLAGS = -Wall -Wextra -Werror -std=c++98
 
 #* HEADER FILES *#
-SDL_INCLUDE = include/
+INCLUDE = include/
 
 #* DELETE *#
 DEL = rm -rf
@@ -24,10 +24,10 @@ DEL = rm -rf
 all: $(TARGET)
 
 $(OBJ_DIR)/%.o: srcs/%.cpp
-	g++ $(FLAGS) -c -I $(INCLUDE) $< -o $@
+	g++ $(FLAGS) -c $< -o $@
 
-$(TARGET): $(OBJS) $(INCLUDE)
-	g++ $(FLAGS) -I $(INCLUDE) -o $(TARGET)
+$(TARGET): $(OBJS)
+	g++ $(FLAGS) $(OBJS) -o $(TARGET)
 
 re: fclean all
 
