@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
+/*   mini_server.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/18 11:19:23 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/23 11:25:58 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/05/23 14:33:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <unistd.h> 
 #include <errno.h>
 #define SOCKET int
  
@@ -36,7 +36,7 @@ int main( void )
 	//creates a socket
 	socket_listen = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 	if ( socket_listen == -1 )
-		std::cerr << "socket faield\n";
+		std::cerr << "socket is invalid\n";
 	//binds the socket to ai_address
 	if ( bind( socket_listen, res->ai_addr, res->ai_addrlen ) )
 		std::cerr << "bind failed\n";
