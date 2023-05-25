@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/25 11:29:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/05/25 13:24:24 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,14 @@ struct ClientInfo
 class Client
 {
     public:
+        typedef std::map<SOCKET, struct ClientInfo *>::const_iterator iterator;
+        typedef std::pair<SOCKET, struct ClientInfo *> pair; 
         Client( void );
         ~Client( void );
-        struct ClientInfo   getClient( SOCKET socket ) const;
-        void    deleteClient( SOCKET socket );
+        struct ClientInfo   *getClient( SOCKET socket );
+        void    deleteClient( struct ClientInfo *cl );
         const char *getAddress( SOCKET socket );
+        fd_set      waitClient( SOCKET socket );
     private:
-        std::list<struct ClientInfo> clients;
+        std::map<SOCKET, struct ClientInfo *> clients;
 };

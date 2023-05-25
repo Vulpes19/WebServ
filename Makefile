@@ -23,11 +23,11 @@ DEL = rm -rf
 
 all: $(TARGET)
 
-$(OBJ_DIR)/%.o: srcs/%.cpp
-	g++ $(FLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: srcs/%.cpp $(INCLUDE)
+	g++ $(FLAGS) -I $(INCLUDE) -c $< -o $@
 
-$(TARGET): $(OBJS)
-	g++ $(FLAGS) $(OBJS) -o $(TARGET)
+$(TARGET): $(OBJS) $(INCLUDE)
+	g++ $(FLAGS) -I $(INCLUDE) $(OBJS) -o $(TARGET)
 
 re: fclean all
 
