@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/25 13:24:24 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/05/26 14:42:53 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,16 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
 #include <map>
+#include <sstream>
+#include <fstream>
 #define SOCKET int
 #define MAX_REQUEST_SIZE 2047
 
@@ -43,6 +47,12 @@ class Client
         void    deleteClient( struct ClientInfo *cl );
         const char *getAddress( SOCKET socket );
         fd_set      waitClient( SOCKET socket );
+        void        errorBadRequest( struct ClientInfo *cl );
+        void        errorNotFound( struct ClientInfo *cl );
+        void        serveResource( struct ClientInfo *cl, char *path );
+        const char  *getFileType( const char *path ) const;
+        size_t      getFileSize( const char *path );
     private:
         std::map<SOCKET, struct ClientInfo *> clients;
+        fd_set reads;
 };
