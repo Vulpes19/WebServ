@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Client.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/26 14:42:53 by codespace        ###   ########.fr       */
+/*   Updated: 2023/05/31 14:17:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <map>
 #include <sstream>
 #include <fstream>
+#include "Server.hpp"
 #define SOCKET int
 #define MAX_REQUEST_SIZE 2047
 
@@ -39,20 +40,21 @@ struct ClientInfo
 class Client
 {
     public:
-        typedef std::map<SOCKET, struct ClientInfo *>::const_iterator iterator;
+        typedef std::map<SOCKET, struct ClientInfo *>::iterator iterator;
         typedef std::pair<SOCKET, struct ClientInfo *> pair; 
         Client( void );
         ~Client( void );
-        struct ClientInfo   *getClient( SOCKET socket );
-        void    deleteClient( struct ClientInfo *cl );
-        const char *getAddress( SOCKET socket );
+        ClientInfo   *getClient( SOCKET socket, Server srv );
+        void    deleteClient( ClientInfo *cl );
+        const char      *getAddress( ClientInfo *ci );
         fd_set      waitClient( SOCKET socket );
-        void        errorBadRequest( struct ClientInfo *cl );
-        void        errorNotFound( struct ClientInfo *cl );
-        void        serveResource( struct ClientInfo *cl, char *path );
+        void        errorBadRequest( ClientInfo *cl );
+        void        errorNotFound( ClientInfo *cl );
+        void        serveResource( ClientInfo *cl, std::string path );
         const char  *getFileType( const char *path ) const;
         size_t      getFileSize( const char *path );
+        void        checkClients( fd_set reads );
     private:
-        std::map<SOCKET, struct ClientInfo *> clients;
+        std::map<SOCKET, ClientInfo *> clients;
         fd_set reads;
 };

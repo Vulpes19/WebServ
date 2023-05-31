@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/25 10:41:34 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/05/31 13:49:35 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Server::~Server( void )
 void  Server::createListenSocket( void )
 {
     listenSocket = socket( bindAddress->ai_family, bindAddress->ai_socktype, bindAddress->ai_protocol );
-    if ( listenSocket )
+    if ( listenSocket == -1 )
     {
         std::cerr << "socket() failed: " << strerror(errno) << std::endl;
     }
@@ -44,4 +44,9 @@ void  Server::createListenSocket( void )
     {
         std::cerr << "listen() failed: " << strerror(errno) << std::endl;
     }
+}
+
+SOCKET  Server::getListenSocket( void ) const
+{
+    return (listenSocket);
 }

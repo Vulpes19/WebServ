@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/26 14:48:23 by codespace        ###   ########.fr       */
+/*   Updated: 2023/05/31 15:13:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Client.hpp"
+#include "Client.hpp"
 
 Client::Client( void )
 {}
@@ -18,18 +18,20 @@ Client::Client( void )
 Client::~Client( void )
 {}
 
-struct ClientInfo   *Client::getClient( SOCKET socket )
+ClientInfo   *Client::getClient( SOCKET socket, Server srv )
 {
     iterator it = clients.find(socket);
     if ( it != clients.end() )
         return (it->second);
-    struct ClientInfo *newClient = new ClientInfo();
+    ClientInfo *newClient = new ClientInfo();
     newClient->addressLen = sizeof(newClient->address);
+    socket = accept( srv.getListenSocket(), (struct sockaddr *) &(newClient->address), &(newClient->addressLen) );
+    newClient->socket = socket;
     clients.insert(pair(socket, newClient));
     return (newClient);
 }
 
-void    Client::deleteClient( struct ClientInfo *cl )
+void    Client::deleteClient( ClientInfo *cl )
 {
     iterator it = clients.find(cl->socket);
     if ( it != clients.end() )
@@ -37,9 +39,11 @@ void    Client::deleteClient( struct ClientInfo *cl )
     std::cerr << "dropped client not found\n";
 }
 
-const char  *Client::getAddress( SOCKET socket )
+const char  *Client::getAddress( ClientInfo *ci )
 {
-    
+    static char address_buffer[100];
+    getnameinfo((struct sockaddr *) &ci->address, ci->addressLen, address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+    return (address_buffer);
 }
 
 fd_set  Client::waitClient( SOCKET socket )
@@ -62,7 +66,7 @@ fd_set  Client::waitClient( SOCKET socket )
     return (reads);
 }
 
-void    Client::errorBadRequest( struct ClientInfo *cl )
+void    Client::errorBadRequest( ClientInfo *cl )
 {
     const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
                             "Connection: close\r\n"
@@ -71,7 +75,7 @@ void    Client::errorBadRequest( struct ClientInfo *cl )
     deleteClient( cl );
 }
 
-void    Client::errorNotFound( struct ClientInfo *cl )
+void    Client::errorNotFound( ClientInfo *cl )
 {
     const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
                             "Connection: close\r\n"
@@ -82,7 +86,7 @@ void    Client::errorNotFound( struct ClientInfo *cl )
 size_t  Client::getFileSize( const char *path )
 {
     struct stat fileStat;
-    if ( stat(path.c_str(), &fileStat) == 0 )
+    if ( stat(path, &fileStat) == 0 )
     {
         std::cout << "file size is " << fileStat.st_size << std::endl;
         return (fileStat.st_size);
@@ -119,18 +123,19 @@ const char  *Client::getFileType( const char *path ) const
         return ("image/svg+xml");
     if ( strcmp(fileName, ".txt") == 0 )
         return ("text/plain");
+    return NULL;
 }
 
-void    Client::serveResource( struct ClientInfo *cl, char *path )
+void    Client::serveResource( ClientInfo *cl, std::string path )
 {
-    if ( strcmp(path, "/") == 0 )
+    if ( strcmp(path.c_str(), "/") == 0 )
         path = "/index.html";
-    if ( strlen(path) > 100 )
+    if ( path.length() > 100 )
     {
         errorBadRequest(cl);
         return ;
     }
-    if ( strstr(path, "..") )
+    if ( strstr(path.c_str(), "..") )
     {
         errorNotFound(cl);
         return ;
@@ -138,13 +143,14 @@ void    Client::serveResource( struct ClientInfo *cl, char *path )
     std::ostringstream oss;
     oss << "public" << path;
     std::string fullPath = oss.str();
+    std::cout << fullPath << std::endl;
     std::ifstream file(fullPath.c_str());
     if ( !file.is_open() )
     {
         errorNotFound(cl);
         return ;
     }
-    size_t fileSize = getFileSize(fullPath.c_str());
+    int fileSize = getFileSize(fullPath.c_str());
     if ( fileSize == -1 )
         return ;
     oss.clear();
@@ -157,9 +163,63 @@ void    Client::serveResource( struct ClientInfo *cl, char *path )
     oss << "Content-Length: " << fileSize << "\r\n";
     send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
     oss.clear();
-    oss << "Content-Type: " << getFileType(fullPath.c_str()) << "\r\n";
+    if ( getFileType(fullPath.c_str()) )
+        oss << "Content-Type: " << getFileType(fullPath.c_str()) << "\r\n";
     send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
     oss.clear();
     oss << "\r\n";
     send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
+}
+
+void    Client::checkClients( fd_set reads )
+{
+    int i = 0;
+    for ( iterator it = clients.begin(); it != clients.end(); ++it )
+    {
+        std::cout << i << std::endl;
+        i++;
+        std::cout << "client socket: " << it->second->socket << std::endl;
+        if ( FD_ISSET( it->first, &reads) )
+        {
+            std::cout << "hahaha\n";
+            if ( MAX_REQUEST_SIZE == it->second->bytesReceived )
+            {
+                errorBadRequest(it->second);
+                continue ;
+            }
+            int received = recv(it->first, it->second->request + it->second->bytesReceived, MAX_REQUEST_SIZE - it->second->bytesReceived, 0 );
+            if ( received < 1 )
+            {
+                printf(" unexpected disconnect from %s.\n", getAddress(it->second));
+                deleteClient(it->second);
+            }
+            else
+            {
+                std::cout << "helo\n";
+                it->second->bytesReceived += received;
+                it->second->request[it->second->bytesReceived] = 0;
+                char *tmp = strstr(it->second->request, "\r\n\r\n");
+                if ( tmp )
+                {
+                std::cout << "hello\n";
+                    if ( strncmp("GET /", it->second->request, 5) )
+                        errorBadRequest(it->second);
+                    else
+                    {
+                std::cout << "helllo\n";
+                        char *path = it->second->request + 4;
+                        char *end_path = strstr(path, " ");
+                        if ( !end_path )
+                            errorBadRequest(it->second);
+                        else
+                        {
+                std::cout << "hellllo\n";
+                            *end_path = 0;
+                            serveResource(it->second, path);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
