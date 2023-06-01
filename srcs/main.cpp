@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/31 15:11:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/01 12:39:24 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int main( void )
                 return (EXIT_FAILURE);
             }
             printf("New connection from: %s\n", cl.getAddress(client) );
-        }   
+        }
             cl.checkClients(reads);
     }
     close(srv.getListenSocket());

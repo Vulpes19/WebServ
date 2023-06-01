@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/31 14:17:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/01 12:22:10 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Client
         void        serveResource( ClientInfo *cl, std::string path );
         const char  *getFileType( const char *path ) const;
         size_t      getFileSize( const char *path );
-        void        checkClients( fd_set reads );
+        void        checkClients( fd_set &reads );
     private:
         std::map<SOCKET, ClientInfo *> clients;
         fd_set reads;

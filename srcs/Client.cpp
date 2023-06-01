@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/31 15:13:42 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/01 13:17:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,10 +33,12 @@ ClientInfo   *Client::getClient( SOCKET socket, Server srv )
 
 void    Client::deleteClient( ClientInfo *cl )
 {
+    close(cl->socket);
     iterator it = clients.find(cl->socket);
     if ( it != clients.end() )
         clients.erase(it);
-    std::cerr << "dropped client not found\n";
+    else
+        std::cerr << "dropped client not found\n";
 }
 
 const char  *Client::getAddress( ClientInfo *ci )
@@ -128,8 +130,12 @@ const char  *Client::getFileType( const char *path ) const
 
 void    Client::serveResource( ClientInfo *cl, std::string path )
 {
+    std::cout << "entering serveResources\n";
     if ( strcmp(path.c_str(), "/") == 0 )
+    {
+        std::cout << "path is /" << std::endl;
         path = "/index.html";
+    }
     if ( path.length() > 100 )
     {
         errorBadRequest(cl);
@@ -153,35 +159,38 @@ void    Client::serveResource( ClientInfo *cl, std::string path )
     int fileSize = getFileSize(fullPath.c_str());
     if ( fileSize == -1 )
         return ;
+      const char *ct = getFileType(fullPath.c_str());
+      oss.str("");
     oss.clear();
+#define BSIZE 1024
+    char buffer[BSIZE];
     oss << "HTTP/1.1 200 OK\r\n";
-    send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
-    oss.clear();
     oss << "Connection: close\r\n";
-    send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
-    oss.clear();
     oss << "Content-Length: " << fileSize << "\r\n";
-    send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
-    oss.clear();
-    if ( getFileType(fullPath.c_str()) )
-        oss << "Content-Type: " << getFileType(fullPath.c_str()) << "\r\n";
-    send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
-    oss.clear();
+    oss << "Content-Type: " << ct << "\r\n";
     oss << "\r\n";
-    send( cl->socket, oss.str().c_str(), strlen(oss.str().c_str()), 0);
+    if ( send( cl->socket, oss.str().c_str(), oss.str().size(), 0) == -1 )
+        std::cerr << "send() failed: " << strerror(errno) << std::endl;
+    while (!file.eof())
+    {
+        file.read(buffer, 1);
+        std::streamsize bytesRead = file.gcount();
+        if ( bytesRead > 0 )
+            send(cl->socket, buffer, bytesRead, 0);
+    }
+     file.close();
+    deleteClient(cl);
+    std::cout << "exiting serveResources\n";
 }
 
-void    Client::checkClients( fd_set reads )
+void    Client::checkClients( fd_set &reads )
 {
-    int i = 0;
+    std::cout << "entering checkClients\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        std::cout << i << std::endl;
-        i++;
-        std::cout << "client socket: " << it->second->socket << std::endl;
+        std::cout << "client socket: " << it->first << it->second->socket << std::endl;
         if ( FD_ISSET( it->first, &reads) )
         {
-            std::cout << "hahaha\n";
             if ( MAX_REQUEST_SIZE == it->second->bytesReceived )
             {
                 errorBadRequest(it->second);
@@ -192,28 +201,26 @@ void    Client::checkClients( fd_set reads )
             {
                 printf(" unexpected disconnect from %s.\n", getAddress(it->second));
                 deleteClient(it->second);
+                break ;
             }
             else
             {
-                std::cout << "helo\n";
                 it->second->bytesReceived += received;
                 it->second->request[it->second->bytesReceived] = 0;
                 char *tmp = strstr(it->second->request, "\r\n\r\n");
                 if ( tmp )
                 {
-                std::cout << "hello\n";
+                    *tmp = 0;
                     if ( strncmp("GET /", it->second->request, 5) )
                         errorBadRequest(it->second);
                     else
                     {
-                std::cout << "helllo\n";
                         char *path = it->second->request + 4;
                         char *end_path = strstr(path, " ");
                         if ( !end_path )
                             errorBadRequest(it->second);
                         else
                         {
-                std::cout << "hellllo\n";
                             *end_path = 0;
                             serveResource(it->second, path);
                         }
@@ -221,5 +228,8 @@ void    Client::checkClients( fd_set reads )
                 }
             }
         }
+        if ( clients.empty() )
+            break ;
     }
+    std::cout << "exiting checkClients\n";
 }
