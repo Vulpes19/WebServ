@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/01 13:17:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/02 14:32:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,9 @@ void    Client::checkClients( fd_set &reads )
             {
                 it->second->bytesReceived += received;
                 it->second->request[it->second->bytesReceived] = 0;
+                std::cout << " ***** request ***** " << std::endl << std::endl;
+                printf("%s\n", it->second->request);
+                std::cout << " ********* " << std::endl;
                 char *tmp = strstr(it->second->request, "\r\n\r\n");
                 if ( tmp )
                 {
