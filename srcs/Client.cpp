@@ -6,11 +6,12 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/02 14:32:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/03 14:19:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
+#include "Resources.hpp"
 
 Client::Client( void )
 {}
@@ -185,6 +186,7 @@ void    Client::serveResource( ClientInfo *cl, std::string path )
 
 void    Client::checkClients( fd_set &reads )
 {
+    Resources r;
     std::cout << "entering checkClients\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
@@ -207,17 +209,20 @@ void    Client::checkClients( fd_set &reads )
             {
                 it->second->bytesReceived += received;
                 it->second->request[it->second->bytesReceived] = 0;
-                std::cout << " ***** request ***** " << std::endl << std::endl;
-                printf("%s\n", it->second->request);
-                std::cout << " ********* " << std::endl;
+                std::string str(it->second->request);
+                std::cout << str << std::endl;
+                r.checkRequest(str);
+                // std::cout << " ***** request ***** " << std::endl << std::endl;
+                // printf("%s\n", it->second->request);
+                // std::cout << " ********* " << std::endl;
                 char *tmp = strstr(it->second->request, "\r\n\r\n");
                 if ( tmp )
                 {
                     *tmp = 0;
-                    if ( strncmp("GET /", it->second->request, 5) )
-                        errorBadRequest(it->second);
-                    else
-                    {
+                    // if ( strncmp("GET /", it->second->request, 5) )
+                    //     errorBadRequest(it->second);
+                    // else
+                    // {
                         char *path = it->second->request + 4;
                         char *end_path = strstr(path, " ");
                         if ( !end_path )
@@ -227,7 +232,7 @@ void    Client::checkClients( fd_set &reads )
                             *end_path = 0;
                             serveResource(it->second, path);
                         }
-                    }
+                    // }
                 }
             }
         }

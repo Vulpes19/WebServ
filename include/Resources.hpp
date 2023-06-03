@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/02 15:52:36 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/03 14:41:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <map>
 
 enum Error_code
 {
@@ -33,6 +34,7 @@ enum Error_code
 class Resources
 {
 	public:
+		typedef std::map< std::string, std::string >::iterator iterator;
 		Resources( void );
 		~Resources( void );
 		Resources( const Resources &src );
@@ -41,7 +43,7 @@ class Resources
 		void	setError( enum Error_code error );
 		void	setResponseHeader( void );
 	private:
-		std::string method;
+		std::map< std::string, std::string > header;
 		std::string responseHeader;
 		char *fileContentBuffer;
 		int fileSize;

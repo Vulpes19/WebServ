@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/02 16:57:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/03 14:46:09 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Resources &Resources::operator=( const Resources &rhs )
 {
     if ( this != &rhs )
     {
-        this->method = rhs.method;
+        this->header = rhs.header;
         this->responseHeader = rhs.responseHeader;
         this->fileContentBuffer = rhs.fileContentBuffer;
         this->fileSize = rhs.fileSize;
@@ -38,22 +38,36 @@ Resources &Resources::operator=( const Resources &rhs )
 
 void    Resources::checkRequest( std::string request )
 {
-    std::ostream oss;
-    std::string end;
-    std::string requestMethod, requestURL, requestHTTP, requestHost;
-    oss << request;
-    oss >> method >> requestURL >> requestHTTP >> end >> requestHost;
-    //to check the host header
-
-    //checking methods
-    if ( requestMethod == "GET" )
-        method = "GET";
-    else if ( requestMethod == "POST" )
-        method = "POST";
-    else if ( requestMethod == "DELETE" )
-        method = "DELETE";
-    else
-        error = METHOD_NOT_ALLOWED;
+    std::stringstream ss(request);
+    std::string line;
+    std::cout << " ********************************* \n";
+    while ( std::getline(ss, line) )
+    {
+        size_t colon = line.find(":");
+        if ( colon != std::string::npos )
+        {
+            std::string headerKey = line.substr(0, colon);
+            std::string headerValue = line.substr( colon + 2 );
+            header[headerKey] = headerValue;
+        }
+        else if ( line.find("HTTP") != std::string::npos )
+        {
+            std::stringstream ss2(line);
+            std::string str;
+            ss2 >> str;
+            if ( str == "GET" || str == "POST" || str == "DELETE" )
+                header["Method"] = str;
+            ss2 >> str;
+            header["URL"] = str;
+            ss2 >> str;
+            header["HTTP"] = str;
+        }
+    }
+    for ( iterator it = header.begin(); it != header.end(); ++it )
+    {
+        std::cout << it->first << " " << it->second << std::endl;
+    }
+    exit(1);
 }
 
 void    Resources::setError( enum Error_code error )

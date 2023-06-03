@@ -2,7 +2,7 @@
 TARGET = webserv
 
 #*SOURCE FILES *#
-FILES = main.cpp Client.cpp Server.cpp
+FILES = main.cpp Client.cpp Server.cpp Resources.cpp
 		
 SRC = $(addprefix srcs/, $(FILES))
 
