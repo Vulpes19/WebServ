@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/03 14:41:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/03 15:03:02 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,7 @@ class Resources
 		void	setResponseHeader( void );
 	private:
 		std::map< std::string, std::string > header;
-		std::string responseHeader;
-		char *fileContentBuffer;
+		const char *fileContentBuffer;
 		int fileSize;
 		enum Error_code error;
 };
