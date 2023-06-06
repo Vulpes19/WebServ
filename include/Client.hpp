@@ -6,13 +6,14 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/06 10:59:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/06 16:48:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <iostream>
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <netdb.h>
@@ -31,11 +32,15 @@
 
 struct ClientInfo
 {
+    ~ClientInfo( void );
+    void    reset( void );
     socklen_t addressLen;
     struct sockaddr_storage address;
     SOCKET socket;
     char    request[MAX_REQUEST_SIZE + 1];
     int     bytesReceived;
+    bool isReading;
+    bool isWriting;
 };
 
 class Client
@@ -50,11 +55,13 @@ class Client
         fd_set      waitClient( SOCKET socket );
         void        errorBadRequest( ClientInfo *cl );
         void        errorNotFound( ClientInfo *cl );
-        void        serveResource( ClientInfo *cl, std::string path );
+        // void        serveResource( ClientInfo *cl, std::string path );
         const char  *getFileType( const char *path ) const;
         size_t      getFileSize( const char *path );
-        void        checkClients( fd_set &reads );
+        void        checkClients( fd_set &readfds );
+        void        readyToWrite( SOCKET socket, fd_set &readfds );
     private:
         std::list<ClientInfo *> clients;
-        fd_set reads;
+        fd_set  writefds;
+        fd_set readfds;
 };

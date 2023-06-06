@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/23 14:10:31 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/05/23 14:52:44 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/06 14:51:28 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,15 +46,15 @@ int main( int ac, char **av )
     std::cout << "connected!\n";
     while (true)
     {
-        fd_set reads;
-        FD_ZERO(&reads);
-        FD_SET(socket_peer, &reads);
+        fd_set readfds;
+        FD_ZERO(&readfds);
+        FD_SET(socket_peer, &readfds);
         struct timeval timeout;
         timeout.tv_sec = 0;
         timeout.tv_usec = 100000;
-        if ( select(socket_peer + 1, &reads, 0, 0, &timeout) < 0 )
+        if ( select(socket_peer + 1, &readfds, 0, 0, &timeout) < 0 )
             std::cerr << "select failed\n";
-        if ( FD_ISSET( socket_peer, &reads) )
+        if ( FD_ISSET( socket_peer, &readfds) )
         {
             char read[4096];
             int bytes_received = recv(socket_peer, read, 4096, 0);

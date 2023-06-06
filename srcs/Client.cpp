@@ -6,12 +6,29 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/06 11:09:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/06 16:53:59 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "Resources.hpp"
+
+ClientInfo::~ClientInfo( void )
+{
+    std::cout << "****** hello *******\n";
+    close(socket);
+}
+
+void    ClientInfo::reset( void )
+{
+    memset(&address, 0, sizeof(address));
+    memset(request, 0, sizeof(request));
+    addressLen = 0;
+    socket = -1;
+    bytesReceived = 0;
+    isReading = false;
+    isWriting = false;
+}
 
 Client::Client( void )
 {}
@@ -27,6 +44,7 @@ ClientInfo   *Client::getClient( SOCKET socket, Server srv )
             return (*it);
     }
     ClientInfo *newClient = new ClientInfo();
+    newClient->reset();
     newClient->addressLen = sizeof(newClient->address);
     socket = accept( srv.getListenSocket(), (struct sockaddr *) &(newClient->address), &(newClient->addressLen) );
     if ( fcntl(socket, F_SETFL, O_NONBLOCK) < 0 )
@@ -63,22 +81,24 @@ const char  *Client::getAddress( ClientInfo *ci )
 
 fd_set  Client::waitClient( SOCKET socket )
 {
-    FD_ZERO(&reads);
-    FD_SET(socket, &reads);
+    FD_ZERO(&writefds);
+    FD_ZERO(&readfds);
+    FD_SET(socket, &readfds);
     SOCKET maxSocket = socket;
     iterator it;
     for ( it = clients.begin(); it != clients.end(); ++it )
     {
-        FD_SET((*it)->socket, &reads);
+        FD_SET((*it)->socket, &readfds);
+        (*it)->isReading = true;
         if ( (*it)->socket > maxSocket )
             maxSocket = (*it)->socket;
     }
-    if ( select( maxSocket + 1, &reads, 0, 0, 0) < 0 )
+    if ( select( maxSocket + 1, &readfds, 0, 0, 0) < 0 )
     {
         std::cerr << "select() failed: " << strerror(errno) << std::endl;
         exit(1);
     }
-    return (reads);
+    return (readfds);
 }
 
 void    Client::errorBadRequest( ClientInfo *cl )
@@ -141,71 +161,77 @@ const char  *Client::getFileType( const char *path ) const
     return NULL;
 }
 
-void    Client::serveResource( ClientInfo *cl, std::string path )
+// void    Client::serveResource( ClientInfo *cl, std::string path )
+// {
+//     std::cout << "entering serveResources\n";
+//     if ( strcmp(path.c_str(), "/") == 0 )
+//     {
+//         std::cout << "path is /" << std::endl;
+//         path = "/index.html";
+//     }
+//     if ( path.length() > 100 )
+//     {
+//         errorBadRequest(cl);
+//         return ;
+//     }
+//     if ( strstr(path.c_str(), "..") )
+//     {
+//         errorNotFound(cl);
+//         return ;
+//     }
+//     std::ostringstream oss;
+//     oss << "public" << path;
+//     std::string fullPath = oss.str();
+//     std::cout << fullPath << std::endl;
+//     std::ifstream file(fullPath.c_str());
+//     if ( !file.is_open() )
+//     {
+//         errorNotFound(cl);
+//         return ;
+//     }
+//     int fileSize = getFileSize(fullPath.c_str());
+//     if ( fileSize == -1 )
+//         return ;
+//       const char *ct = getFileType(fullPath.c_str());
+//       oss.str("");
+//     oss.clear();
+// #define BSIZE 1024
+//     char buffer[BSIZE];
+//     oss << "HTTP/1.1 200 OK\r\n";
+//     oss << "Connection: close\r\n";
+//     oss << "Content-Length: " << fileSize << "\r\n";
+//     oss << "Content-Type: " << ct << "\r\n";
+//     oss << "\r\n";
+//     if ( send( cl->socket, oss.str().c_str(), oss.str().size(), 0) == -1 )
+//         std::cerr << "send() failed: " << strerror(errno) << std::endl;
+//     while (!file.eof())
+//     {
+//         file.read(buffer, 1);
+//         std::streamsize bytesRead = file.gcount();
+//         if ( bytesRead > 0 )
+//             send(cl->socket, buffer, bytesRead, 0);
+//     }
+//      file.close();
+//     deleteClient(cl);
+//     std::cout << "exiting serveResources\n";
+// }
+
+void    Client::readyToWrite( SOCKET socket, fd_set &readfds )
 {
-    std::cout << "entering serveResources\n";
-    if ( strcmp(path.c_str(), "/") == 0 )
-    {
-        std::cout << "path is /" << std::endl;
-        path = "/index.html";
-    }
-    if ( path.length() > 100 )
-    {
-        errorBadRequest(cl);
-        return ;
-    }
-    if ( strstr(path.c_str(), "..") )
-    {
-        errorNotFound(cl);
-        return ;
-    }
-    std::ostringstream oss;
-    oss << "public" << path;
-    std::string fullPath = oss.str();
-    std::cout << fullPath << std::endl;
-    std::ifstream file(fullPath.c_str());
-    if ( !file.is_open() )
-    {
-        errorNotFound(cl);
-        return ;
-    }
-    int fileSize = getFileSize(fullPath.c_str());
-    if ( fileSize == -1 )
-        return ;
-      const char *ct = getFileType(fullPath.c_str());
-      oss.str("");
-    oss.clear();
-#define BSIZE 1024
-    char buffer[BSIZE];
-    oss << "HTTP/1.1 200 OK\r\n";
-    oss << "Connection: close\r\n";
-    oss << "Content-Length: " << fileSize << "\r\n";
-    oss << "Content-Type: " << ct << "\r\n";
-    oss << "\r\n";
-    if ( send( cl->socket, oss.str().c_str(), oss.str().size(), 0) == -1 )
-        std::cerr << "send() failed: " << strerror(errno) << std::endl;
-    while (!file.eof())
-    {
-        file.read(buffer, 1);
-        std::streamsize bytesRead = file.gcount();
-        if ( bytesRead > 0 )
-            send(cl->socket, buffer, bytesRead, 0);
-    }
-     file.close();
-    deleteClient(cl);
-    std::cout << "exiting serveResources\n";
+    FD_CLR(socket, &readfds);
+    FD_SET(socket, &writefds);
 }
 
-void    Client::checkClients( fd_set &reads )
+void    Client::checkClients( fd_set &readfds )
 {
     Resources r;
     std::cout << "entering checkClients\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         std::cout << "client socket: " << (*it)->socket << std::endl;
-        if ( FD_ISSET( (*it)->socket, &reads) )
+        if ( FD_ISSET( (*it)->socket, &readfds) )
         {
-            if ( MAX_REQUEST_SIZE == (*it)->bytesReceived )
+            if ( MAX_REQUEST_SIZE <= (*it)->bytesReceived )
             {
                 errorBadRequest(*it);
                 continue ;
@@ -217,18 +243,14 @@ void    Client::checkClients( fd_set &reads )
                 deleteClient(*it);
                 break ;
             }
-            else
+            else if ( (*it)->isReading == true )
             {
                 (*it)->bytesReceived += received;
                 (*it)->request[(*it)->bytesReceived] = 0;
                 std::string str((*it)->request);
-                std::cout << str << std::endl;
                 r.checkRequest(str);
-                // std::cout << " ***** request ***** " << std::endl << std::endl;
-                // printf("%s\n", it->second->request);
-                // std::cout << " ********* " << std::endl;
-                char *tmp = strstr((*it)->request, "\r\n\r\n");
-                if ( tmp )
+                char *end = strstr((*it)->request, "\r\n\r\n");
+                if ( end )
                 {
                     //RESPONSE
                     char *path = (*it)->request + 4;
@@ -237,8 +259,9 @@ void    Client::checkClients( fd_set &reads )
                         errorBadRequest(*it);
                     else
                     {
+                        readyToWrite((*it)->socket, readfds);
                         *end_path = 0;
-                        serveResource(*it, path);
+                        // serveResource(*it, path);
                     }
                 }
             }
@@ -246,5 +269,4 @@ void    Client::checkClients( fd_set &reads )
         if ( clients.empty() )
             break ;
     }
-    std::cout << "exiting checkClients\n";
 }
