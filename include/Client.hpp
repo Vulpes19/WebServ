@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/01 12:22:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/06 10:59:23 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,9 +21,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <cerrno>
-#include <map>
+#include <list>
 #include <sstream>
 #include <fstream>
+#include <fcntl.h>
 #include "Server.hpp"
 #define SOCKET int
 #define MAX_REQUEST_SIZE 2047
@@ -40,12 +41,11 @@ struct ClientInfo
 class Client
 {
     public:
-        typedef std::map<SOCKET, struct ClientInfo *>::iterator iterator;
-        typedef std::pair<SOCKET, struct ClientInfo *> pair; 
+        typedef std::list<struct ClientInfo *>::iterator iterator; 
         Client( void );
         ~Client( void );
         ClientInfo   *getClient( SOCKET socket, Server srv );
-        void    deleteClient( ClientInfo *cl );
+        void        deleteClient( ClientInfo *cl );
         const char      *getAddress( ClientInfo *ci );
         fd_set      waitClient( SOCKET socket );
         void        errorBadRequest( ClientInfo *cl );
@@ -55,6 +55,6 @@ class Client
         size_t      getFileSize( const char *path );
         void        checkClients( fd_set &reads );
     private:
-        std::map<SOCKET, ClientInfo *> clients;
+        std::list<ClientInfo *> clients;
         fd_set reads;
 };

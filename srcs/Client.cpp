@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/03 14:19:38 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/06 11:09:13 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,21 +21,33 @@ Client::~Client( void )
 
 ClientInfo   *Client::getClient( SOCKET socket, Server srv )
 {
-    iterator it = clients.find(socket);
-    if ( it != clients.end() )
-        return (it->second);
+    for ( iterator it = clients.begin(); it != clients.end(); ++it )
+    {
+        if ( (*it)->socket == socket )
+            return (*it);
+    }
     ClientInfo *newClient = new ClientInfo();
     newClient->addressLen = sizeof(newClient->address);
     socket = accept( srv.getListenSocket(), (struct sockaddr *) &(newClient->address), &(newClient->addressLen) );
+    if ( fcntl(socket, F_SETFL, O_NONBLOCK) < 0 )
+    {
+        std::cerr << "Failed to set socket to non-blocking mode\n";
+    }
     newClient->socket = socket;
-    clients.insert(pair(socket, newClient));
+    clients.push_back(newClient);
     return (newClient);
 }
 
 void    Client::deleteClient( ClientInfo *cl )
 {
     close(cl->socket);
-    iterator it = clients.find(cl->socket);
+    iterator it = clients.begin();
+    while ( it != clients.end() )
+    {
+        if ( (*it)->socket == cl->socket )
+            break ;
+        ++it;
+    }
     if ( it != clients.end() )
         clients.erase(it);
     else
@@ -57,9 +69,9 @@ fd_set  Client::waitClient( SOCKET socket )
     iterator it;
     for ( it = clients.begin(); it != clients.end(); ++it )
     {
-        FD_SET(it->first, &reads);
-        if ( it->first > maxSocket )
-            maxSocket = it->first;
+        FD_SET((*it)->socket, &reads);
+        if ( (*it)->socket > maxSocket )
+            maxSocket = (*it)->socket;
     }
     if ( select( maxSocket + 1, &reads, 0, 0, 0) < 0 )
     {
@@ -190,49 +202,44 @@ void    Client::checkClients( fd_set &reads )
     std::cout << "entering checkClients\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        std::cout << "client socket: " << it->first << it->second->socket << std::endl;
-        if ( FD_ISSET( it->first, &reads) )
+        std::cout << "client socket: " << (*it)->socket << std::endl;
+        if ( FD_ISSET( (*it)->socket, &reads) )
         {
-            if ( MAX_REQUEST_SIZE == it->second->bytesReceived )
+            if ( MAX_REQUEST_SIZE == (*it)->bytesReceived )
             {
-                errorBadRequest(it->second);
+                errorBadRequest(*it);
                 continue ;
             }
-            int received = recv(it->first, it->second->request + it->second->bytesReceived, MAX_REQUEST_SIZE - it->second->bytesReceived, 0 );
+            int received = recv((*it)->socket, (*it)->request + (*it)->bytesReceived, MAX_REQUEST_SIZE - (*it)->bytesReceived, 0 );
             if ( received < 1 )
             {
-                printf(" unexpected disconnect from %s.\n", getAddress(it->second));
-                deleteClient(it->second);
+                printf(" unexpected disconnect from %s.\n", getAddress(*it));
+                deleteClient(*it);
                 break ;
             }
             else
             {
-                it->second->bytesReceived += received;
-                it->second->request[it->second->bytesReceived] = 0;
-                std::string str(it->second->request);
+                (*it)->bytesReceived += received;
+                (*it)->request[(*it)->bytesReceived] = 0;
+                std::string str((*it)->request);
                 std::cout << str << std::endl;
                 r.checkRequest(str);
                 // std::cout << " ***** request ***** " << std::endl << std::endl;
                 // printf("%s\n", it->second->request);
                 // std::cout << " ********* " << std::endl;
-                char *tmp = strstr(it->second->request, "\r\n\r\n");
+                char *tmp = strstr((*it)->request, "\r\n\r\n");
                 if ( tmp )
                 {
-                    *tmp = 0;
-                    // if ( strncmp("GET /", it->second->request, 5) )
-                    //     errorBadRequest(it->second);
-                    // else
-                    // {
-                        char *path = it->second->request + 4;
-                        char *end_path = strstr(path, " ");
-                        if ( !end_path )
-                            errorBadRequest(it->second);
-                        else
-                        {
-                            *end_path = 0;
-                            serveResource(it->second, path);
-                        }
-                    // }
+                    //RESPONSE
+                    char *path = (*it)->request + 4;
+                    char *end_path = strstr(path, " ");
+                    if ( !end_path )
+                        errorBadRequest(*it);
+                    else
+                    {
+                        *end_path = 0;
+                        serveResource(*it, path);
+                    }
                 }
             }
         }

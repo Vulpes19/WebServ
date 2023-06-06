@@ -4,8 +4,9 @@ using namespace std;
 
 int main( void )
 {
-    std::string str = "Hello there Ayman";
+    string str = "Hello there Ayman";
 
-    if ( str.find("there") != str.npos )
-        std::cout << "found it\n";
+    cout << str.find("z") << endl;
+    cout << str.npos << endl;
+    cout << string::npos << endl;
 }
