@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/06 16:46:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/07 12:14:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void    Resources::checkRequest( std::string request )
 	// std::cout << "*********************\n";
 	// std::cout << requestBody << std::endl;
 	// std::cout << "*********************\n";
-	exit(1);
+	// exit(1);
 }
 
 void    Resources::setError( enum Error_code error )
