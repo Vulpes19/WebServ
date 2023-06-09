@@ -6,30 +6,12 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/08 14:29:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/09 12:15:10 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Client.hpp"
 #include "Resources.hpp"
-#define BSIZE 1024
-
-ClientInfo::~ClientInfo( void )
-{
-    std::cout << "****** hello *******\n";
-    close(socket);
-}
-
-void    ClientInfo::reset( void )
-{
-    memset(&address, 0, sizeof(address));
-    memset(request, 0, sizeof(request));
-    addressLen = 0;
-    socket = -1;
-    bytesReceived = 0;
-    isReading = false;
-    isWriting = false;
-}
 
 Client::Client( void )
 {
@@ -84,7 +66,7 @@ const char  *Client::getAddress( ClientInfo *ci )
     return (address_buffer);
 }
 
-void  Client::waitClient( SOCKET socket, fd_set &readfds )
+void  Client::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
@@ -93,11 +75,10 @@ void  Client::waitClient( SOCKET socket, fd_set &readfds )
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         FD_SET((*it)->socket, &readfds);
-        (*it)->isReading = true;
         if ( (*it)->socket > maxSocket )
             maxSocket = (*it)->socket;
     }
-    if ( select( maxSocket + 1, &readfds, &writefds, 0, &timeout) < 0 )
+    if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
     {
         std::cerr << "select() failed: " << strerror(errno) << std::endl;
         exit(1);
@@ -227,11 +208,11 @@ void    Client::readyToWrite( SOCKET socket, fd_set &readfds )
     FD_SET(socket, &writefds);
 }
 
-// void    Client::readyToRead( SOCKET socket, fd_set &readfds )
-// {
-//     FD_CLR(socket, &writefds);
-//     FD_SET(socket, &readfds);
-// }
+void    Client::readyToRead( SOCKET socket, fd_set &readfds )
+{
+    FD_CLR(socket, &writefds);
+    FD_SET(socket, &readfds);
+}
 
 void    Client::checkClients( fd_set &readfds )
 {
@@ -240,9 +221,19 @@ void    Client::checkClients( fd_set &readfds )
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         std::cout << "client socket: " << (*it)->socket << std::endl;
+        std::cout << "isReading: " << (*it)->isReading << std::endl;
+        std::cout << "isWriting: " << (*it)->isWriting << std::endl;
         if ( FD_ISSET( (*it)->socket, &readfds) )
         {
             //gotta add a condition for sending the response here
+            if ( (*it)->isWriting == true )
+            {
+                std::cout << "heloooo\n";
+                serveResource(*it, (*it)->path);
+                (*it)->isReading = true;
+                (*it)->isWriting = false;
+                (*it)->reset();
+            }
             if ( MAX_REQUEST_SIZE <= (*it)->bytesReceived )
             {
                 errorBadRequest(*it);
@@ -265,17 +256,19 @@ void    Client::checkClients( fd_set &readfds )
                 if ( end )
                 {
                     //RESPONSE
-                    char *path = (*it)->request + 4;
-                    char *end_path = strstr(path, " ");
+                    (*it)->path = (*it)->request + 4;
+                    char *end_path = strstr((*it)->path, " ");
                     if ( !end_path )
+                    {
+                        (*it)->path = NULL;
                         errorBadRequest(*it);
+                    }
                     else
                     {
-                        //make it ready to write and call select again
+                        std::cout << "Im here\n";
+                        (*it)->isWriting = true;
                         readyToWrite((*it)->socket, readfds);
                         *end_path = 0;
-                        //dont serve resources here
-                        serveResource(*it, path);
                     }
                 }
             }

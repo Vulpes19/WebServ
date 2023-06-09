@@ -1,27 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   States.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/05/25 10:21:33 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 12:05:44 by abaioumy         ###   ########.fr       */
+/*   Created: 2023/06/09 12:35:40 by abaioumy          #+#    #+#             */
+/*   Updated: 2023/06/09 12:36:24 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#include "States.hpp"
 
-#include "Libraries.hpp"
-
-class Server
+void    States::reset( ClientInfo *client )
 {
-    public:
-        Server( void );
-        ~Server( void );
-        void  createListenSocket( void );
-        SOCKET  getListenSocket( void ) const;
-    private:
-        struct addrinfo *bindAddress;
-        SOCKET listenSocket;
-};
+    memset(&address, 0, sizeof(address));
+	memset(request, 0, sizeof(request));
+	addressLen = 0;
+	socket = -1;
+	bytesReceived = 0;
+	isReading = false;
+	isWriting = false;
+    path = NULL;
+}
