@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 17:22:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/09 21:09:41 by codespace        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,60 +96,90 @@ bool    ClientInfo::handleReadRequest( void )
 		this->~ClientInfo();
 }
 
+void    ClientInfo::generateResponse( void )
+{
+    if ( !file.is_open() )
+    {
+        std::ostringstream oss;
+        oss << "public" << path;
+        std::string fullPath = oss.str();
+        std::cout << fullPath << std::endl;
+        file.open(fullPath.c_str());
+        if ( !file.is_open() )
+        {
+            std::cerr << "error\n";
+            exit(1);
+        }
+        int fileSize = getFileSize(fullPath.c_str());
+        if ( fileSize == -1 )
+            return ;
+        const char *ct = getFileType(fullPath.c_str());
+        oss.str("");
+        oss.clear();
+        oss << "HTTP/1.1 200 OK\r\n";
+        oss << "Connection: close\r\n";
+        oss << "Content-Length: " << fileSize << "\r\n";
+        oss << "Content-Type: " << ct << "\r\n";
+        oss << "\r\n";
+        response += oss.str();
+    }
+    char buffer[BSIZE];
+    file.read(buffer, BSIZE);
+    ssize_t bytesRead = file.gcount();
+    std::string tmp(buffer);
+    if ( bytesRead > 0 )
+    {
+        bytesSent += bytesRead;
+        response += tmp;
+    }
+    else
+    {
+        bytesSent = 0;
+        state = WRITE_RESPONSE;
+        file.close();
+    }
+}
+
 void    ClientInfo::handleProcessRequest( void )
 {
-	std::string requestString(request);
-	std::cout << "received request: \n" << requestString << std::endl;
-	path = "/jake.mp4";
-	if ( strcmp(path.c_str(), "/") == 0 )
+    std::string requestString(request);
+
+    std::cout << "received request: \n" << requestString << std::endl;
+    path = "/jake.mp4";
+    if ( strcmp(path, "/") == 0 )
     {
         std::cout << "path is /" << std::endl;
         path = "/jake.mp4";
     }
-    if ( path.length() > 100 )
-    {
-        errorBadRequest(cl);
-        return ;
-    }
-    if ( strstr(path.c_str(), "..") )
-    {
-        errorNotFound(cl);
-        return ;
-    }
-    std::ostringstream oss;
-    oss << "public" << path;
-    std::string fullPath = oss.str();
-    std::cout << fullPath << std::endl;
-    std::ifstream file(fullPath.c_str());
+    // if ( path.length() > 100 )
+    // {
+    //     errorBadRequest(cl);
+    //     return ;
+    // }
+    // if ( strstr(path.c_str(), "..") )
+    // {
+    //     errorNotFound(cl);
+    //     return ;
+    // }
     if ( !file.is_open() )
-    {
-        std::cerr << "error\n";
-        exit(1);
-    }
-    int fileSize = getFileSize(fullPath.c_str());
-    if ( fileSize == -1 )
-        return ;
-    const char *ct = getFileType(fullPath.c_str());
-    oss.str("");
-    oss.clear();
-    char buffer[BSIZE];
-    oss << "HTTP/1.1 200 OK\r\n";
-    oss << "Connection: close\r\n";
-    oss << "Content-Length: " << fileSize << "\r\n";
-    oss << "Content-Type: " << ct << "\r\n";
-    oss << "\r\n";
-    if ( send( cl->socket, oss.str().c_str(), oss.str().size(), 0) == -1 )
-        std::cerr << "send() failed: " << strerror(errno) << std::endl;
-	file.read(buffer, 10);
-	std::streamsize bytesRead = file.gcount();
-        if ( bytesRead > 0 )
-            send(cl->socket, buffer, bytesRead, 0);
-    }
-    file.close();
+        generateResponse();
 }
 
-void    ClientInfo::handleWriteRequest( void )
-{}
+void    ClientInfo::handleWriteResponse( void )
+{
+    if ( bytesSent < fileSize )
+    {
+        send( socket, response.data(), BSIZE, NULL );
+        bytesSent += BSIZE;
+    }
+    else
+    {
+        this->~ClientInfo();
+    }
+}
 
 void    ClientInfo::changeSet( fd_set &from, fd_set &to )
-{}
+{
+    FD_CLR( socket, &from );
+    FD_SET( socket, &to );
+}
