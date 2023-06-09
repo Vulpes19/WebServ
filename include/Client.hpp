@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 12:06:03 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/09 16:49:40 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ class Client
 		void        errorNotFound( ClientInfo *cl );
 		void        serveResource( ClientInfo *cl, std::string path );
 		const char  *getFileType( const char *path ) const;
-		size_t      getFileSize( const char *path );
 		void        checkClients( fd_set &readfds );
 		void        readyToWrite( SOCKET socket, fd_set &readfds );
 		void    	readyToRead( SOCKET socket, fd_set &readfds );

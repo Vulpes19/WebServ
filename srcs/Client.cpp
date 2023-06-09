@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 12:15:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/09 16:51:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,7 +144,7 @@ const char  *Client::getFileType( const char *path ) const
         return ("image/svg+xml");
     if ( strcmp(fileName, ".txt") == 0 )
         return ("text/plain");
-    return NULL;
+    return "text/plain";
 }
 
 void    Client::serveResource( ClientInfo *cl, std::string path )
@@ -179,8 +179,8 @@ void    Client::serveResource( ClientInfo *cl, std::string path )
     int fileSize = getFileSize(fullPath.c_str());
     if ( fileSize == -1 )
         return ;
-      const char *ct = getFileType(fullPath.c_str());
-      oss.str("");
+    const char *ct = getFileType(fullPath.c_str());
+    oss.str("");
     oss.clear();
     char buffer[BSIZE];
     oss << "HTTP/1.1 200 OK\r\n";
@@ -214,66 +214,93 @@ void    Client::readyToRead( SOCKET socket, fd_set &readfds )
     FD_SET(socket, &readfds);
 }
 
-void    Client::checkClients( fd_set &readfds )
+void    Client::multiplexing( fd_set &readfds, fd_set &writefds )
 {
-    Resources r;
-    std::cout << "entering checkClients\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        std::cout << "client socket: " << (*it)->socket << std::endl;
-        std::cout << "isReading: " << (*it)->isReading << std::endl;
-        std::cout << "isWriting: " << (*it)->isWriting << std::endl;
-        if ( FD_ISSET( (*it)->socket, &readfds) )
+        if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
-            //gotta add a condition for sending the response here
-            if ( (*it)->isWriting == true )
+            if ( (*it)->getState() == READ_REQUEST )
             {
-                std::cout << "heloooo\n";
-                serveResource(*it, (*it)->path);
-                (*it)->isReading = true;
-                (*it)->isWriting = false;
-                (*it)->reset();
-            }
-            if ( MAX_REQUEST_SIZE <= (*it)->bytesReceived )
-            {
-                errorBadRequest(*it);
+                (*it)->handleReadRequest();
+                (*it)->setState(PROCESS_REQUEST);
                 continue ;
             }
-            int received = recv((*it)->socket, (*it)->request + (*it)->bytesReceived, MAX_REQUEST_SIZE - (*it)->bytesReceived, 0 );
-            if ( received < 1 )
+            if ( (*it)->getState() == PROCESS_REQUEST )
             {
-                printf(" unexpected disconnect from %s.\n", getAddress(*it));
-                deleteClient(*it);
-                break ;
-            }
-            else if ( (*it)->isReading == true )
-            {
-                (*it)->bytesReceived += received;
-                (*it)->request[(*it)->bytesReceived] = 0;
-                std::string str((*it)->request);
-                r.checkRequest(str);
-                char *end = strstr((*it)->request, "\r\n\r\n");
-                if ( end )
-                {
-                    //RESPONSE
-                    (*it)->path = (*it)->request + 4;
-                    char *end_path = strstr((*it)->path, " ");
-                    if ( !end_path )
-                    {
-                        (*it)->path = NULL;
-                        errorBadRequest(*it);
-                    }
-                    else
-                    {
-                        std::cout << "Im here\n";
-                        (*it)->isWriting = true;
-                        readyToWrite((*it)->socket, readfds);
-                        *end_path = 0;
-                    }
-                }
+                (*it)->handleProcessRequest();
+                (*it)->setState(WRITE_RESPONSE);
+                continue ;
             }
         }
-        if ( clients.empty() )
-            break ;
+        if ( FD_ISSET( (*it)->getSocket(), &writefds) )
+        {
+            if ( (*it)->getState() == WRITE_RESPONSE )
+            {
+                (*it)->handleWriteResponse();
+                (*it)->setState(READ_REQUEST);
+                continue ;
+            }
+        }
     }
+    // Resources r;
+    // std::cout << "entering checkClients\n";
+    // for ( iterator it = clients.begin(); it != clients.end(); ++it )
+    // {
+    //     std::cout << "client socket: " << (*it)->socket << std::endl;
+    //     std::cout << "isReading: " << (*it)->isReading << std::endl;
+    //     std::cout << "isWriting: " << (*it)->isWriting << std::endl;
+    //     if ( FD_ISSET( (*it)->socket, &readfds) )
+    //     {
+    //         //gotta add a condition for sending the response here
+    //         if ( (*it)->isWriting == true )
+    //         {
+    //             std::cout << "heloooo\n";
+    //             serveResource(*it, (*it)->path);
+    //             (*it)->isReading = true;
+    //             (*it)->isWriting = false;
+    //             (*it)->reset();
+    //         }
+    //         if ( MAX_REQUEST_SIZE <= (*it)->bytesReceived )
+    //         {
+    //             errorBadRequest(*it);
+    //             continue ;
+    //         }
+    //         int received = recv((*it)->socket, (*it)->request + (*it)->bytesReceived, MAX_REQUEST_SIZE - (*it)->bytesReceived, 0 );
+    //         if ( received < 1 )
+    //         {
+    //             printf(" unexpected disconnect from %s.\n", getAddress(*it));
+    //             deleteClient(*it);
+    //             break ;
+    //         }
+    //         else if ( (*it)->isReading == true )
+    //         {
+    //             (*it)->bytesReceived += received;
+    //             (*it)->request[(*it)->bytesReceived] = 0;
+    //             std::string str((*it)->request);
+    //             r.checkRequest(str);
+    //             char *end = strstr((*it)->request, "\r\n\r\n");
+    //             if ( end )
+    //             {
+    //                 //RESPONSE
+    //                 (*it)->path = (*it)->request + 4;
+    //                 char *end_path = strstr((*it)->path, " ");
+    //                 if ( !end_path )
+    //                 {
+    //                     (*it)->path = NULL;
+    //                     errorBadRequest(*it);
+    //                 }
+    //                 else
+    //                 {
+    //                     std::cout << "Im here\n";
+    //                     (*it)->isWriting = true;
+    //                     readyToWrite((*it)->socket, readfds);
+    //                     *end_path = 0;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if ( clients.empty() )
+    //         break ;
+    // }
 }
