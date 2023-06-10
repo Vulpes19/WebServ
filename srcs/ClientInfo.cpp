@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientInfo.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: codespace <codespace@student.42.fr>        +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 21:09:41 by codespace        ###   ########.fr       */
+/*   Updated: 2023/06/10 16:18:06 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ ClientInfo::ClientInfo( void )
 	addressLen = 0;
 	socket = -1;
 	bytesReceived = 0;
-	path = NULL;
+	path = "";
 }
 
 ClientInfo::~ClientInfo( void )
@@ -34,18 +34,31 @@ void    ClientInfo::reset( void )
 	addressLen = 0;
 	socket = -1;
 	bytesReceived = 0;
-	path = NULL;
+	path = "";
 }
 
 bool	ClientInfo::isRequestReceived( void )
 {
 	std::string end("\r\n\r\n");
 
-	if ( bytesReceived < end.length() )
+	if ( bytesReceived < (int)end.length() )
 		return (false);
 	if ( strcmp( request + bytesReceived - end.length(), end.c_str()) == 0 )
 		return (true);
 	return (false);
+}
+
+size_t  ClientInfo::getFileSize( const char *path )
+{
+    struct stat fileStat;
+    if ( stat(path, &fileStat) == 0 )
+    {
+        std::cout << "file size is " << fileStat.st_size << std::endl;
+        return (fileStat.st_size);
+    }
+    else
+        std::cerr << "cant get file size\n";
+    return (-1);
 }
 
 const char  *ClientInfo::getFileType( const char *path ) const
@@ -80,26 +93,37 @@ const char  *ClientInfo::getFileType( const char *path ) const
     return "text/plain";
 }
 
-bool    ClientInfo::handleReadRequest( void )
+void    ClientInfo::handleReadRequest( void )
 {
 	ssize_t bytesRead = read( socket, request, 1000 );
 	if ( bytesRead > 0 )
 	{
+        std::cout << "reading the request...\n";
 		bytesReceived += bytesRead;
 		request[bytesRead] = '\0';
 		if ( isRequestReceived() )
-			state = PROCESS_REQUEST;
+        {
+            std::cout << "REQUEST IS RECEIVED\n";
+            // std::string tmp(request);
+            // std::cout << tmp << std::endl;
+			state = WRITE_RESPONSE;
+        }
 	}
 	else if ( bytesRead == 0 )
+    {
+        std::cout << "reset\n";
 		reset();
+    }
 	else
 		this->~ClientInfo();
 }
 
-void    ClientInfo::generateResponse( void )
+bool    ClientInfo::generateResponse( void )
 {
+    std::cout << "generating the response\n";
     if ( !file.is_open() )
     {
+        bytesSent = 0;
         std::ostringstream oss;
         oss << "public" << path;
         std::string fullPath = oss.str();
@@ -110,9 +134,10 @@ void    ClientInfo::generateResponse( void )
             std::cerr << "error\n";
             exit(1);
         }
-        int fileSize = getFileSize(fullPath.c_str());
+        fileSize = getFileSize(fullPath.c_str());
+        std::cout << " file size: " << fileSize << std::endl;
         if ( fileSize == -1 )
-            return ;
+            return false;
         const char *ct = getFileType(fullPath.c_str());
         oss.str("");
         oss.clear();
@@ -126,27 +151,43 @@ void    ClientInfo::generateResponse( void )
     char buffer[BSIZE];
     file.read(buffer, BSIZE);
     ssize_t bytesRead = file.gcount();
-    std::string tmp(buffer);
-    if ( bytesRead > 0 )
-    {
-        bytesSent += bytesRead;
-        response += tmp;
-    }
-    else
+    // std::string tmp(buffer);
+    std::cout << " bytes read: " << bytesRead << std::endl;
+    if ( bytesRead == (ssize_t)fileSize )
     {
         bytesSent = 0;
         state = WRITE_RESPONSE;
         file.close();
+        std::cout << "FILE IS READ\n";
+        return (true);
+    }
+    else if ( bytesRead > 0 )
+    {
+        std::cout << "reading the file...\n";
+        bytesSent += bytesRead;
+        std::cout << "read: " << bytesSent << " " << " file size: " << fileSize << std::endl;
+        // response += tmp;
+        send( socket, buffer, BSIZE, 0 );
+        bytesSent += BSIZE;
+        return (false);
+    }
+    else
+    {
+        bytesSent = 0;
+        state = READ_REQUEST;
+        file.close();
+        std::cout << "FILE IS READ\n";
+        return (true);
     }
 }
 
-void    ClientInfo::handleProcessRequest( void )
+bool    ClientInfo::handleWriteResponse( void )
 {
     std::string requestString(request);
 
-    std::cout << "received request: \n" << requestString << std::endl;
+    // std::cout << "received request: \n" << requestString << std::endl;
     path = "/jake.mp4";
-    if ( strcmp(path, "/") == 0 )
+    if ( strcmp(path.c_str(), "/") == 0 )
     {
         std::cout << "path is /" << std::endl;
         path = "/jake.mp4";
@@ -161,25 +202,39 @@ void    ClientInfo::handleProcessRequest( void )
     //     errorNotFound(cl);
     //     return ;
     // }
-    if ( !file.is_open() )
-        generateResponse();
+    if ( generateResponse() )
+        return (true);
+    else
+        return (false);
 }
 
-void    ClientInfo::handleWriteResponse( void )
-{
-    if ( bytesSent < fileSize )
-    {
-        send( socket, response.data(), BSIZE, NULL );
-        bytesSent += BSIZE;
-    }
-    else
-    {
-        this->~ClientInfo();
-    }
-}
+// bool    ClientInfo::handleWriteResponse( void )
+// {
+//     if ( bytesSent < (int)fileSize )
+//     {
+//     }
+//     else
+//     {
+//         state = READ_REQUEST;
+//         return (true);
+//         // this->~ClientInfo();
+//     }
+// }
 
 void    ClientInfo::changeSet( fd_set &from, fd_set &to )
 {
-    FD_CLR( socket, &from );
-    FD_SET( socket, &to );
+    if ( socket > 0 )
+    {
+        FD_CLR( socket, &from );
+        FD_SET( socket, &to );
+    }
+}
+
+void    ClientInfo::createClient( SOCKET listenSocket )
+{
+    addressLen = sizeof(address);
+    socket = accept( listenSocket, (struct sockaddr *) &address, &addressLen);
+    int flags = fcntl( socket, F_GETFL, 0  );
+    if ( flags == -1 )
+        std::cerr << "failed to get flags\n";
 }

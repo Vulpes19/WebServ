@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 15:11:41 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/10 14:39:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,18 +23,22 @@ int main( void )
     srv.createListenSocket();
     while ( true )
     {
-        cl.setsManager( srv.getListenSocket(), readfds );
+        FD_ZERO(&readfds);
+        FD_ZERO(&writefds);
+        FD_SET( srv.getListenSocket(), &readfds );
+        cl.setsManager( srv.getListenSocket(), readfds, writefds );
         if ( FD_ISSET( srv.getListenSocket(), &readfds ) )
         {
-            struct ClientInfo *client = cl.getClient(-1, srv);
-            if ( client->socket == -1 )
+            ClientInfo *client = cl.getClient(-1, srv);
+            std::cout << "socket connected: " << client->getSocket() << std::endl;
+            if ( client->getSocket() == -1 )
             {
                 std::cerr << "accept() failed: " << strerror(errno) << std::endl;
                 cl.deleteClient(client);
             }
-            printf("New connection from: %s\n", cl.getAddress(client) );
+            // printf("New connection from: %s\n", cl.getAddress(client) );
         }
-        cl.checkClients( readfds );
+        cl.multiplexing( readfds, writefds );
     }
     close(srv.getListenSocket());
 }
