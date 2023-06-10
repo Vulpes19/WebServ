@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/10 15:59:30 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/10 16:51:16 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ class ClientInfo
 	public:
 		ClientInfo( void );
 		~ClientInfo( void );
-		void	reset( void );
+		void    reset( void );
+		void	unsetSocket( fd_set &readfds, fd_set &writefds );
 		void    handleReadRequest( void );
 		bool    handleProcessRequest( void );
 		bool    handleWriteResponse( void );

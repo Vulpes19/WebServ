@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/10 16:18:06 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/10 17:20:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,15 @@ ClientInfo::~ClientInfo( void )
 	close(socket);
 }
 
+void    ClientInfo::unsetSocket( fd_set &readfds, fd_set &writefds )
+{
+    FD_CLR(socket, &readfds);
+    FD_CLR(socket, &writefds);
+}
+
 void    ClientInfo::reset( void )
 {
+    close(socket);
 	memset(&address, 0, sizeof(address));
 	memset(request, 0, sizeof(request));
 	addressLen = 0;
@@ -114,8 +121,8 @@ void    ClientInfo::handleReadRequest( void )
         std::cout << "reset\n";
 		reset();
     }
-	else
-		this->~ClientInfo();
+	// else
+	// 	this->~ClientInfo();
 }
 
 bool    ClientInfo::generateResponse( void )
@@ -151,12 +158,11 @@ bool    ClientInfo::generateResponse( void )
     char buffer[BSIZE];
     file.read(buffer, BSIZE);
     ssize_t bytesRead = file.gcount();
-    // std::string tmp(buffer);
     std::cout << " bytes read: " << bytesRead << std::endl;
     if ( bytesRead == (ssize_t)fileSize )
     {
         bytesSent = 0;
-        state = WRITE_RESPONSE;
+        state = READ_REQUEST;
         file.close();
         std::cout << "FILE IS READ\n";
         return (true);
@@ -185,41 +191,17 @@ bool    ClientInfo::handleWriteResponse( void )
 {
     std::string requestString(request);
 
-    // std::cout << "received request: \n" << requestString << std::endl;
     path = "/jake.mp4";
     if ( strcmp(path.c_str(), "/") == 0 )
     {
         std::cout << "path is /" << std::endl;
         path = "/jake.mp4";
     }
-    // if ( path.length() > 100 )
-    // {
-    //     errorBadRequest(cl);
-    //     return ;
-    // }
-    // if ( strstr(path.c_str(), "..") )
-    // {
-    //     errorNotFound(cl);
-    //     return ;
-    // }
     if ( generateResponse() )
         return (true);
     else
         return (false);
 }
-
-// bool    ClientInfo::handleWriteResponse( void )
-// {
-//     if ( bytesSent < (int)fileSize )
-//     {
-//     }
-//     else
-//     {
-//         state = READ_REQUEST;
-//         return (true);
-//         // this->~ClientInfo();
-//     }
-// }
 
 void    ClientInfo::changeSet( fd_set &from, fd_set &to )
 {
