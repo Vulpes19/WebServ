@@ -1,42 +1,42 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Client.cpp                                         :+:      :+:    :+:   */
+/*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/10 17:15:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 11:19:36 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Client.hpp"
+#include "Connection.hpp"
 #include "Resources.hpp"
 
-Client::Client( void )
+Connection::Connection( void )
 {
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 }
 
-Client::~Client( void )
+Connection::~Connection( void )
 {}
 
-ClientInfo   *Client::getClient( SOCKET socket, Server srv )
+ClientManager   *Connection::getClient( SOCKET socket, Server srv )
 {
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() == socket )
             return (*it);
     }
-    ClientInfo *newClient = new ClientInfo();
+    ClientManager *newClient = new ClientManager();
     newClient->reset();
     newClient->createClient( srv.getListenSocket() );
     clients.push_back(newClient);
     return (newClient);
 }
 
-void    Client::deleteClient( ClientInfo *cl )
+void    Connection::deleteClient( ClientManager *cl )
 {
     // close(cl->socket);
     iterator it = clients.begin();
@@ -52,7 +52,7 @@ void    Client::deleteClient( ClientInfo *cl )
         std::cerr << "dropped client not found\n";
 }
 
-void  Client::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
@@ -79,24 +79,24 @@ void  Client::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
     }
 }
 
-void    Client::errorBadRequest( ClientInfo *cl )
-{
-    const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-                            "Connection: close\r\n"
-                            "Content-Length: 11\r\n\r\nBad Request";
-    send( cl->getSocket(), errorMsg, strlen(errorMsg), 0 );
-    deleteClient( cl );
-}
+// void    Client::errorBadRequest( ClientManager *cl )
+// {
+//     const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
+//                             "Connection: close\r\n"
+//                             "Content-Length: 11\r\n\r\nBad Request";
+//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0 );
+//     deleteClient( cl );
+// }
 
-void    Client::errorNotFound( ClientInfo *cl )
-{
-    const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
-                            "Connection: close\r\n"
-                            "Content-Length: 9\r\n\r\nNot Found";
-    send( cl->getSocket(), errorMsg, strlen(errorMsg), 0);
-}
+// void    Client::errorNotFound( ClientManager *cl )
+// {
+//     const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
+//                             "Connection: close\r\n"
+//                             "Content-Length: 9\r\n\r\nNot Found";
+//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0);
+// }
 
-void    Client::multiplexing( fd_set &readfds, fd_set &writefds )
+void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     std::cout << "entering multiplexing\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
@@ -124,6 +124,6 @@ void    Client::multiplexing( fd_set &readfds, fd_set &writefds )
                 continue ;
             }
         }
-        std::cout << "exiting multiplexing\n";
     }
+    std::cout << "exiting multiplexing\n";
 }

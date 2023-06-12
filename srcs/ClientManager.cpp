@@ -1,39 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ClientInfo.cpp                                     :+:      :+:    :+:   */
+/*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/10 17:20:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 11:17:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ClientInfo.hpp"
+#include "ClientManager.hpp"
 
-ClientInfo::ClientInfo( void )
+ClientManager::ClientManager( void )
 {
 	memset(&address, 0, sizeof(address));
 	memset(request, 0, sizeof(request));
 	addressLen = 0;
 	socket = -1;
+
 	bytesReceived = 0;
 	path = "";
 }
 
-ClientInfo::~ClientInfo( void )
+ClientManager::~ClientManager( void )
 {
 	close(socket);
 }
 
-void    ClientInfo::unsetSocket( fd_set &readfds, fd_set &writefds )
+void    ClientManager::unsetSocket( fd_set &readfds, fd_set &writefds )
 {
     FD_CLR(socket, &readfds);
     FD_CLR(socket, &writefds);
 }
 
-void    ClientInfo::reset( void )
+void    ClientManager::reset( void )
 {
     close(socket);
 	memset(&address, 0, sizeof(address));
@@ -44,7 +45,7 @@ void    ClientInfo::reset( void )
 	path = "";
 }
 
-bool	ClientInfo::isRequestReceived( void )
+bool	ClientManager::isRequestReceived( void )
 {
 	std::string end("\r\n\r\n");
 
@@ -55,7 +56,7 @@ bool	ClientInfo::isRequestReceived( void )
 	return (false);
 }
 
-size_t  ClientInfo::getFileSize( const char *path )
+size_t  ClientManager::getFileSize( const char *path )
 {
     struct stat fileStat;
     if ( stat(path, &fileStat) == 0 )
@@ -68,7 +69,7 @@ size_t  ClientInfo::getFileSize( const char *path )
     return (-1);
 }
 
-const char  *ClientInfo::getFileType( const char *path ) const
+const char  *ClientManager::getFileType( const char *path ) const
 {
     const char *fileName = strrchr(path, '.');
     if ( strcmp(fileName, ".css") == 0 )
@@ -100,7 +101,7 @@ const char  *ClientInfo::getFileType( const char *path ) const
     return "text/plain";
 }
 
-void    ClientInfo::handleReadRequest( void )
+void    ClientManager::handleReadRequest( void )
 {
 	ssize_t bytesRead = read( socket, request, 1000 );
 	if ( bytesRead > 0 )
@@ -111,8 +112,6 @@ void    ClientInfo::handleReadRequest( void )
 		if ( isRequestReceived() )
         {
             std::cout << "REQUEST IS RECEIVED\n";
-            // std::string tmp(request);
-            // std::cout << tmp << std::endl;
 			state = WRITE_RESPONSE;
         }
 	}
@@ -121,11 +120,14 @@ void    ClientInfo::handleReadRequest( void )
         std::cout << "reset\n";
 		reset();
     }
-	// else
-	// 	this->~ClientInfo();
+    else
+    {
+        std::cerr << "Error reading request\n";
+        reset();
+    }
 }
 
-bool    ClientInfo::generateResponse( void )
+bool    ClientManager::generateResponse( void )
 {
     std::cout << "generating the response\n";
     if ( !file.is_open() )
@@ -138,7 +140,7 @@ bool    ClientInfo::generateResponse( void )
         file.open(fullPath.c_str());
         if ( !file.is_open() )
         {
-            std::cerr << "error\n";
+            std::cerr << "Error: file not found\n";
             exit(1);
         }
         fileSize = getFileSize(fullPath.c_str());
@@ -154,12 +156,13 @@ bool    ClientInfo::generateResponse( void )
         oss << "Content-Type: " << ct << "\r\n";
         oss << "\r\n";
         response += oss.str();
+        send( socket, response.data(), response.size(), 0 );
     }
     char buffer[BSIZE];
     file.read(buffer, BSIZE);
     ssize_t bytesRead = file.gcount();
     std::cout << " bytes read: " << bytesRead << std::endl;
-    if ( bytesRead == (ssize_t)fileSize )
+    if ( bytesSent == (ssize_t)fileSize )
     {
         bytesSent = 0;
         state = READ_REQUEST;
@@ -172,7 +175,6 @@ bool    ClientInfo::generateResponse( void )
         std::cout << "reading the file...\n";
         bytesSent += bytesRead;
         std::cout << "read: " << bytesSent << " " << " file size: " << fileSize << std::endl;
-        // response += tmp;
         send( socket, buffer, BSIZE, 0 );
         bytesSent += BSIZE;
         return (false);
@@ -187,7 +189,7 @@ bool    ClientInfo::generateResponse( void )
     }
 }
 
-bool    ClientInfo::handleWriteResponse( void )
+bool    ClientManager::handleWriteResponse( void )
 {
     std::string requestString(request);
 
@@ -203,7 +205,7 @@ bool    ClientInfo::handleWriteResponse( void )
         return (false);
 }
 
-void    ClientInfo::changeSet( fd_set &from, fd_set &to )
+void    ClientManager::changeSet( fd_set &from, fd_set &to )
 {
     if ( socket > 0 )
     {
@@ -212,11 +214,27 @@ void    ClientInfo::changeSet( fd_set &from, fd_set &to )
     }
 }
 
-void    ClientInfo::createClient( SOCKET listenSocket )
+void    ClientManager::createClient( SOCKET listenSocket )
 {
     addressLen = sizeof(address);
     socket = accept( listenSocket, (struct sockaddr *) &address, &addressLen);
     int flags = fcntl( socket, F_GETFL, 0  );
     if ( flags == -1 )
         std::cerr << "failed to get flags\n";
+}
+
+void    ClientManager::errorBadRequest( void )
+{
+    std::string errorMsg = "HTTP/1.1 400 Bad Request\r\n"
+                            "Connection: close\r\n"
+                            "Content-Length: 11\r\n\r\nBad Request";
+    send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ClientManager::errorNotFound( void )
+{
+    std::string errorMsg = "HTTP/1.1 404 Not Found\r\n"
+                            "Connection: close\r\n"
+                            "Content-Length: 9\r\n\r\nNot Found";
+    send( socket, errorMsg.data(), errorMsg.size(), 0);
 }
