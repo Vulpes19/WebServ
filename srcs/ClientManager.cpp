@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:29:43 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 15:16:10 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,36 +69,31 @@ size_t  ClientManager::getFileSize( const char *path )
     return (-1);
 }
 
-const char  *ClientManager::getFileType( const char *path ) const
+std::string  ClientManager::getFileType( const char *path ) const
 {
     const char *fileName = strrchr(path, '.');
-    if ( strcmp(fileName, ".css") == 0 )
-        return ("text/css");
-    if ( strcmp(fileName, ".mp4") == 0 )
-        return ("video/mp4");
-    if ( strcmp(fileName, ".csv") == 0 )
-        return ("text/csv");
-    if ( strcmp(fileName, ".gif") == 0 )
-        return ("image/gif");
-    if ( strcmp(fileName, ".htm") == 0 || strcmp(fileName, ".html") == 0 )
-        return ("text/html");
-    if ( strcmp(fileName, ".ico") == 0 )
-        return ("image/x-icon");
-    if ( strcmp(fileName, ".jpeg") == 0 || strcmp(fileName, ".jpg") == 0 )
-        return ("image/jpeg");
-    if ( strcmp(fileName, ".js") == 0 )
-        return ("application/javascript");
-    if ( strcmp(fileName, ".json") == 0 )
-        return ("application/json");
-    if ( strcmp(fileName, ".png") == 0 )
-        return ("image/png");
-    if ( strcmp(fileName, ".pdf") == 0 )
-        return ("application/pdf");
-    if ( strcmp(fileName, ".svg") == 0 )
-        return ("image/svg+xml");
-    if ( strcmp(fileName, ".txt") == 0 )
-        return ("text/plain");
-    return "text/plain";
+    static std::map< std::string, std::string > fileTypes;
+    fileTypes[".css"] = "text/css";
+    fileTypes[".mp4"] = "video/mp4";
+    fileTypes[".png"] = "image/png";
+    fileTypes[".zip"] = "application/zip";
+    fileTypes[".csv"] = "text/csv";
+    fileTypes[".gif"] = "image/gif";
+    fileTypes[".htm"] = "text/.html";
+    fileTypes[".html"] = "text/html";
+    fileTypes[".ico"] = "image/x-icon";
+    fileTypes[".jpeg"] = "image/jpeg";
+    fileTypes[".jpg"] = "image/jpeg";
+    fileTypes[".js"] = "application/javascript";
+    fileTypes[".json"] = "application/json}";
+    fileTypes[".pdf"] = "application/pdf";
+    fileTypes[".svg"] = "image/svg+xml";
+    fileTypes[".txt"] = "text/plain";
+    std::map< std::string, std::string >::iterator it = fileTypes.find(fileName);
+    if ( it != fileTypes.end() )
+        return ( it->second );
+    else
+        return "text/plain";
 }
 
 void    ClientManager::handleReadRequest( void )
@@ -112,6 +107,7 @@ void    ClientManager::handleReadRequest( void )
 		if ( isRequestReceived() )
         {
             std::string toSend(request);
+            std::cout << toSend << std::endl;
             resources.checkRequest(toSend);
             std::cout << "REQUEST IS RECEIVED\n";
 			state = WRITE_RESPONSE;
@@ -151,9 +147,7 @@ bool    ClientManager::generateResponse( void )
         }
         fileSize = getFileSize(fullPath.c_str());
         std::cout << " file size: " << fileSize << std::endl;
-        // if ( fileSize == -1 )
-        //     return false;
-        const char *ct = getFileType(fullPath.c_str());
+        std::string ct = getFileType(fullPath.c_str());
         oss.str("");
         oss.clear();
         oss << "HTTP/1.1 200 OK\r\n";
@@ -180,9 +174,9 @@ bool    ClientManager::generateResponse( void )
     {
         std::cout << "reading the file...\n";
         bytesSent += bytesRead;
-        std::cout << "read: " << bytesSent << " " << " file size: " << fileSize << std::endl;
+        // std::cout << "read: " << bytesSent << " " << " file size: " << fileSize << std::endl;
         send( socket, buffer, BSIZE, 0 );
-        bytesSent += BSIZE;
+        // bytesSent += BSIZE;
         return (false);
     }
     else

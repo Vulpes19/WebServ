@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:28:19 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 14:25:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@ class ClientManager
 		bool    	isRequestReceived( void );
 		void    	changeSet( fd_set &from, fd_set &to );
 		enum 		states getState( void ) const { return (state); };
-		void    	setState( enum states &newState ) { state = newState; };
+		void    	setState( enum states newState ) { state = newState; };
 		bool        generateResponse( void );
 		void		createClient( SOCKET listenSocket );
 		size_t      getFileSize( const char *path );
-		const char  *getFileType( const char *path ) const;
+		std::string	getFileType( const char *path ) const;
 		SOCKET      getSocket( void ) const { return (socket); };
 		void        errorBadRequest( void );
 		void        errorNotFound( void );

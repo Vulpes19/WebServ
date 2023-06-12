@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:04:22 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/09 16:22:45 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 14:10:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include <sstream>
 #include <fstream>
 #include <fcntl.h>
+#include <map>
 #define SOCKET int
 #define MAX_REQUEST_SIZE 4000
 #define BSIZE 1024

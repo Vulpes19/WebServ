@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:31:39 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:16:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 14:27:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 enum states
 {
     READ_REQUEST,
-    PROCESS_REQUEST,
+    NO_STATE,
     WRITE_RESPONSE
 };
 // class States
