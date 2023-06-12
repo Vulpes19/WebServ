@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/07 12:14:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 11:26:00 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,9 @@ void    Resources::setError( enum Error_code error )
 void    Resources::setResponseHeader( void )
 {
 	
+}
+
+std::string	&Resources::getRequest( std::string Key )
+{
+	return ( header[Key] );
 }

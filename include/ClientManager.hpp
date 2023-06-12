@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:17:06 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 11:28:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include "Libraries.hpp"
 #include "States.hpp"
+#include "Resources.hpp"
 
 class ClientManager
 {
@@ -48,4 +49,5 @@ class ClientManager
 		socklen_t	addressLen;
 		struct sockaddr_storage address;
 		enum states state;
+		Resources resources;
 };

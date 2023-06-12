@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:17:38 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/12 11:29:43 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,8 @@ void    ClientManager::handleReadRequest( void )
 		request[bytesRead] = '\0';
 		if ( isRequestReceived() )
         {
+            std::string toSend(request);
+            resources.checkRequest(toSend);
             std::cout << "REQUEST IS RECEIVED\n";
 			state = WRITE_RESPONSE;
         }
@@ -123,6 +125,7 @@ void    ClientManager::handleReadRequest( void )
     else
     {
         std::cerr << "Error reading request\n";
+        errorBadRequest();
         reset();
     }
 }
@@ -141,12 +144,15 @@ bool    ClientManager::generateResponse( void )
         if ( !file.is_open() )
         {
             std::cerr << "Error: file not found\n";
-            exit(1);
+            errorNotFound();
+            reset();
+            state = READ_REQUEST;
+            return (false);
         }
         fileSize = getFileSize(fullPath.c_str());
         std::cout << " file size: " << fileSize << std::endl;
-        if ( fileSize == -1 )
-            return false;
+        // if ( fileSize == -1 )
+        //     return false;
         const char *ct = getFileType(fullPath.c_str());
         oss.str("");
         oss.clear();
@@ -193,11 +199,11 @@ bool    ClientManager::handleWriteResponse( void )
 {
     std::string requestString(request);
 
-    path = "/jake.mp4";
+    path = resources.getRequest("URL");
     if ( strcmp(path.c_str(), "/") == 0 )
     {
-        std::cout << "path is /" << std::endl;
-        path = "/jake.mp4";
+        // std::cout << "path is /" << std::endl;
+        path = "/index.html";
     }
     if ( generateResponse() )
         return (true);
