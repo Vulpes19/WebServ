@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 15:16:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/13 10:25:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,18 +135,30 @@ bool    ClientManager::generateResponse( void )
         std::ostringstream oss;
         oss << "public" << path;
         std::string fullPath = oss.str();
-        std::cout << fullPath << std::endl;
-        file.open(fullPath.c_str());
-        if ( !file.is_open() )
+        if ( access(fullPath.c_str(), F_OK) == -1 )
         {
-            std::cerr << "Error: file not found\n";
             errorNotFound();
             reset();
             state = READ_REQUEST;
             return (false);
         }
+        if ( access( fullPath.c_str(), R_OK) == -1 )
+        {
+            errorForbidden();
+            reset();
+            state = READ_REQUEST;
+            return (false);
+        }
+        file.open(fullPath.c_str());
+        // if ( !file.is_open() )
+        // {
+        //     std::cerr << "Error: file not found\n";
+        //     errorNotFound();
+        //     reset();
+        //     state = READ_REQUEST;
+        //     return (false);
+        // }
         fileSize = getFileSize(fullPath.c_str());
-        std::cout << " file size: " << fileSize << std::endl;
         std::string ct = getFileType(fullPath.c_str());
         oss.str("");
         oss.clear();
@@ -155,13 +167,12 @@ bool    ClientManager::generateResponse( void )
         oss << "Content-Length: " << fileSize << "\r\n";
         oss << "Content-Type: " << ct << "\r\n";
         oss << "\r\n";
-        response += oss.str();
+        response = oss.str();
         send( socket, response.data(), response.size(), 0 );
     }
     char buffer[BSIZE];
     file.read(buffer, BSIZE);
     ssize_t bytesRead = file.gcount();
-    std::cout << " bytes read: " << bytesRead << std::endl;
     if ( bytesSent == (ssize_t)fileSize )
     {
         bytesSent = 0;
@@ -174,9 +185,7 @@ bool    ClientManager::generateResponse( void )
     {
         std::cout << "reading the file...\n";
         bytesSent += bytesRead;
-        // std::cout << "read: " << bytesSent << " " << " file size: " << fileSize << std::endl;
         send( socket, buffer, BSIZE, 0 );
-        // bytesSent += BSIZE;
         return (false);
     }
     else
@@ -195,10 +204,7 @@ bool    ClientManager::handleWriteResponse( void )
 
     path = resources.getRequest("URL");
     if ( strcmp(path.c_str(), "/") == 0 )
-    {
-        // std::cout << "path is /" << std::endl;
         path = "/index.html";
-    }
     if ( generateResponse() )
         return (true);
     else
@@ -223,18 +229,26 @@ void    ClientManager::createClient( SOCKET listenSocket )
         std::cerr << "failed to get flags\n";
 }
 
-void    ClientManager::errorBadRequest( void )
-{
-    std::string errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-                            "Connection: close\r\n"
-                            "Content-Length: 11\r\n\r\nBad Request";
-    send( socket, errorMsg.data(), errorMsg.size(), 0 );
-}
+// void    ClientManager::errorBadRequest( void )
+// {
+//     std::string errorMsg = "HTTP/1.1 400 Bad Request\r\n"
+//                             "Connection: close\r\n"
+//                             "Content-Length: 11\r\n\r\nBad Request";
+//     send( socket, errorMsg.data(), errorMsg.size(), 0 );
+// }
 
-void    ClientManager::errorNotFound( void )
-{
-    std::string errorMsg = "HTTP/1.1 404 Not Found\r\n"
-                            "Connection: close\r\n"
-                            "Content-Length: 9\r\n\r\nNot Found";
-    send( socket, errorMsg.data(), errorMsg.size(), 0);
-}
+// void    ClientManager::errorNotFound( void )
+// {
+//     std::string errorMsg = "HTTP/1.1 404 Not Found\r\n"
+//                             "Connection: close\r\n"
+//                             "Content-Length: 9\r\n\r\nNot Found";
+//     send( socket, errorMsg.data(), errorMsg.size(), 0 );
+// }
+
+// void    ClientManager::errorForbidden( void )
+// {
+//     std::string errorMsg = "HTTP/1.1 403 Forbidden\r\n";
+//     errorMsg += "Connection: close\r\n";
+//     errorMsg += "Content-Length: 0\r\n";
+//     send( socket, errorMsg.data(), errorMsg.size(), 0 );
+// }

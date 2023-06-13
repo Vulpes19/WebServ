@@ -2,7 +2,7 @@
 TARGET = webserv
 
 #*SOURCE FILES *#
-FILES = main.cpp Connection.cpp Server.cpp Resources.cpp ClientManager.cpp
+FILES = main.cpp Connection.cpp Server.cpp Resources.cpp ClientManager.cpp Response.cpp
 		
 SRC = $(addprefix srcs/, $(FILES))
 
@@ -13,7 +13,7 @@ OBJ_DIR = obj
 OBJS = $(SRC:srcs/%.cpp=$(OBJ_DIR)/%.o)
 
 #* FLAGS *#
-FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
+FLAGS = -Wall -Wextra -Werror -std=c++98 #-fsanitize=address -g3
 
 #* HEADER FILES *#
 INCLUDE = include/

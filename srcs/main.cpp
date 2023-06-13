@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 13:42:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/13 09:24:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,5 +36,6 @@ int main( void )
         }
         cl.multiplexing( readfds, writefds );
     }
+    system("leaks webserv");
     close(srv.getListenSocket());
 }
