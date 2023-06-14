@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/13 10:24:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 11:12:23 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "Resources.hpp"
 #include "Response.hpp"
 
+class Response;
 class ClientManager
 {
 	public:
@@ -24,6 +25,8 @@ class ClientManager
 		~ClientManager( void );
 		void    	reset( void );
 		void		unsetSocket( fd_set &readfds, fd_set &writefds );
+		void		startRead( void );
+		bool		startResponse( void );
 		// void    	handleReadRequest( void );
 		// bool    	handleProcessRequest( void );
 		// bool    	handleWriteResponse( void );
@@ -33,10 +36,10 @@ class ClientManager
 		void    	setState( enum states newState ) { state = newState; };
 		// bool        generateResponse( void );
 		void		createClient( SOCKET listenSocket );
-		size_t      getFileSize( const char *path );
-		std::string	getFileType( const char *path ) const;
+		// size_t      getFileSize( const char *path );
+		// std::string	getFileType( const char *path ) const;
 		SOCKET      getSocket( void ) const { return (socket); };
-		Response	&getResponse( void ) const { return (response); };
+		// Response	&getResponse( void ) { return (response); };
 		// void        errorBadRequest( void );
 		// void        errorNotFound( void );
 		// void    	errorForbidden( void );
@@ -53,5 +56,5 @@ class ClientManager
 		struct sockaddr_storage address;
 		enum states state;
 		Resources resources;
-		Response	response;
+		Response	*response;
 };

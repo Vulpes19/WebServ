@@ -1,18 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Response.cpp                                       :+:      :+:    :+:   */
+/*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/13 10:29:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 11:40:34 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include "Libraries.hpp"
+#include "ClientManager.hpp"
+#include "Resources.hpp"
+
+class ClientManager;
 
 struct ErrorResponse
 {
@@ -26,18 +30,21 @@ class Response
     public:
         Response( void );
         ~Response( void );
-        void        setSocket( SOCKET socket );
-        void    	handleReadRequest( void );
-		bool    	handleWriteResponse( void );
+        void        setSocket( SOCKET );
+        enum ResponseStates    	handleReadRequest( Resources & );
+		bool    	handleWriteResponse( Resources & );
 		bool    	isRequestReceived( void );
-		bool        generateResponse( void );
+		enum ResponseStates        generateResponse( void );
+		size_t      getFileSize( const char * ) const;
+		std::string	getFileType( const char * ) const;
+        void        reset( void );
     private:
         char    request[MAX_REQUEST_SIZE + 1];
-		std::string	path;
 		int		bytesReceived;
 		int		bytesSent;
-		int  fileSize;
-		std::ifstream file;
+		int     fileSize;
         SOCKET  socket;
+		std::ifstream   file;
+		std::string	    path;
         ErrorResponse   err;
 };

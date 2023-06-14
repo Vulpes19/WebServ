@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 14:33:06 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 11:38:15 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     std::cout << "entering multiplexing\n";
+    Resources r;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
@@ -109,7 +110,7 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         {
             if ( (*it)->getState() == READ_REQUEST )
             {
-                (*it)->handleReadRequest();
+                (*it)->startRead();
                 continue ;
             }
         }
@@ -117,10 +118,11 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         {
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
-                if ( (*it)->handleWriteResponse() )
+                if ( (*it)->startResponse() )
                 {
                     (*it)->unsetSocket(writefds, readfds);
                     (*it)->reset();
+                    (*it)->setState(READ_REQUEST);
                 }
                 continue ;
             }
