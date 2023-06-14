@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 11:38:15 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 13:25:00 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
 
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
-    std::cout << "entering multiplexing\n";
+    // std::cout << "entering multiplexing\n";
     Resources r;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
@@ -128,5 +128,5 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
             }
         }
     }
-    std::cout << "exiting multiplexing\n";
+    // std::cout << "exiting multiplexing\n";
 }

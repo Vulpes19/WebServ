@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 11:57:28 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 13:24:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,9 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		if ( isRequestReceived() )
 		{
 			std::string toSend(request);
+			std::cout << "***********\n";
 			std::cout << toSend << std::endl;
+			std::cout << "***********\n";
 			resources.checkRequest(toSend);
 			std::cout << "REQUEST IS RECEIVED\n";
 			// cl.setState(WRITE_RESPONSE);
@@ -95,7 +97,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 
 enum ResponseStates    Response::generateResponse( void )
 {
-	std::cout << "generating the response\n";
+	// std::cout << "generating the response\n";
 	if ( !file.is_open() )
 	{
 		std::string response;
@@ -149,7 +151,7 @@ enum ResponseStates    Response::generateResponse( void )
 	}
 	else if ( bytesRead > 0 )
 	{
-		std::cout << "reading the file...\n";
+		// std::cout << "reading the file...\n";
 		bytesSent += bytesRead;
 		send( socket, buffer, BSIZE, 0 );
 		return (READING);
