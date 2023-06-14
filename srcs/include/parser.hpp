@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 18:06:28 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/14 18:34:52 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,17 @@
 #include <algorithm>
 
 enum {
-    PORT,
-    NAME,
-    LOCATION,
-    ROOT,
-    INDEX,
-    ALIAS
+    SERVER,
+    LOCATION
+} ;
+
+class Parser {
+    private:
+        std::stringstream ss;
+        std::string directive;
+        std::string value;
+        std::string line;
+        std::ifstream   confFile;
 } ;
 
 class Location {
@@ -40,6 +45,9 @@ class Location {
         void    setValue(const std::string &val);
         void    setRoot(const std::string &rt);
         void    setIndex(const std::string &indx);
+        std::string getValue() const;
+        std::string getRoot() const;
+        std::string getIndex() const;
         Location&	operator=(const Location& location);
         ~Location();
 } ;
@@ -56,6 +64,9 @@ class Server {
         void    setPort(const std::string &p);
         void    setName(const std::string &name);
         void    setLocations(const Location &location);
+        std::string getPort() const;
+        std::string getName() const;
+        Location getLocations();
         ~Server();
 } ;
 
@@ -67,6 +78,7 @@ class Context {
         Context(Server &server);
         Context&    operator=(const Context& context);
         void    setServer(const Server& servr);
+        Server  getServer() const;
         ~Context();
 } ;
 #endif
