@@ -6,11 +6,12 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 18:43:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 19:44:19 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/parser.hpp"
+#include "include/configData.hpp"
 
 Location::Location() {};
 
@@ -194,39 +195,6 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        Context printCont;
-
-        printCont = nestedDirs.top();
-        nestedDirs.pop();
-        Server  printServ;
-        printServ = printCont.getServer();
-        std::cout << "server: " << std::endl;
-        std::cout << "port: " << printServ.getPort() << std::endl;
-        std::cout << "name: " << printServ.getName() << std::endl;
-        
-        Location    printLoc;
-        printLoc = printServ.getLocations();
-        std::cout << "location: " << std::endl;
-        std::cout << "value: " << printLoc.getValue() << std::endl;
-        std::cout << "root: " << printLoc.getRoot() << std::endl;
-        std::cout << "index: " << printLoc.getIndex() << std::endl;
-
-        printCont = nestedDirs.top();
-        nestedDirs.pop();
-        Server  printServ1;
-        printServ1 = printCont.getServer();
-        std::cout << "server: " << std::endl;
-        std::cout << "port: " << printServ1.getPort() << std::endl;
-        std::cout << "name: " << printServ1.getName() << std::endl;
-        
-        Location    printLoc1;
-        printLoc1 = printServ1.getLocations();
-        std::cout << "location: " << std::endl;
-        std::cout << "value: " << printLoc1.getValue() << std::endl;
-        std::cout << "root: " << printLoc1.getRoot() << std::endl;
-        std::cout << "index: " << printLoc1.getIndex() << std::endl;
-
     }
-    
     return 0;
 }
