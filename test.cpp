@@ -24,8 +24,8 @@ using namespace std;
 
 int main( void )
 {
-    std::ifstream file("./test_bruh");
-    std::cout << access("./test_bruh", F_OK) << std::endl;
-    if ( access("./test_bruh", R_OK) == -1 )
+    std::ifstream file("./public/");
+    std::cout << access("./obj/", F_OK) << std::endl;
+    if ( access("./public/", X_OK) == -1 )
         std::cerr << strerror(errno) << std::endl;
 }

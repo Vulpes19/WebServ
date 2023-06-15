@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/01 12:31:04 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 11:23:40 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void  Server::createListenSocket( void )
         std::cerr << "socket() failed: " << strerror(errno) << std::endl;
     }
     const int enable = 1;
-    if (setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+    if ( setsockopt(listenSocket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0 )
         perror("setsockopt(SO_REUSEADDR) failed");
     if ( bind( listenSocket, bindAddress->ai_addr, bindAddress->ai_addrlen) != 0 )
     {

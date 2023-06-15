@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 11:52:58 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 11:25:31 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -241,11 +241,17 @@ void    ClientManager::changeSet( fd_set &from, fd_set &to )
 
 void    ClientManager::createClient( SOCKET listenSocket )
 {
+    int optval;
     addressLen = sizeof(address);
     socket = accept( listenSocket, (struct sockaddr *) &address, &addressLen);
     int flags = fcntl( socket, F_GETFL, 0  );
     if ( flags == -1 )
         std::cerr << "failed to get flags\n";
+    if ( setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) < 0 )
+    {
+        std::cerr << "failed to disable SIGPIPE at the socket level\n";
+        exit(1);
+    }
 }
 
 // void    ClientManager::errorBadRequest( void )
