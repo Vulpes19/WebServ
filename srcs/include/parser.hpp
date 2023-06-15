@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 19:44:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 20:49:08 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <map>
-#include <stack>
+#include <vector>
 #include <sstream>
 #include <algorithm>
 #include "configData.hpp"
@@ -28,16 +28,19 @@ enum {
 
 class Parser {
     private:
-        std::stringstream ss;
         std::string directive;
         std::string value;
         std::string line;
-        std::ifstream   confFile;
+        std::vector<Context> parsedData;
     public:
+        Parser();
+        ~Parser();
         void    openFile(char *argv);
-        void    parseServer();
-        void    parseLocation();
-        std::stack<Context> parsedData();
+        void    readFile(std::ifstream&   confFile);
+        void    parseServer(std::ifstream&   confFile);
+        void    parseLocation(std::ifstream&   confFile, Server& server);
+        std::vector<Context> getParsedData();
+        void    printData();
 } ;
 
 #endif

@@ -6,12 +6,19 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 19:43:09 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 20:48:18 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIGDATA_HPP
 #define CONFIGDATA_HPP
+
+#include <iostream>
+#include <fstream>
+#include <map>
+#include <vector>
+#include <sstream>
+#include <algorithm>
 
 class Location {
     private:
@@ -35,7 +42,7 @@ class Server {
     private:
         std::string             port;
         std::string             server_name;
-        std::stack<Location>    locations;
+        std::vector<Location>    locations;
     public:
         Server();
         Server(std::string port, std::string server_name, Location &location);
@@ -45,7 +52,7 @@ class Server {
         void    setLocations(const Location &location);
         std::string getPort() const;
         std::string getName() const;
-        Location getLocations();
+        std::vector<Location> getLocations();
         ~Server();
 } ;
 

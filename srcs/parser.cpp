@@ -6,195 +6,112 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 19:44:19 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/15 21:01:28 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/parser.hpp"
 #include "include/configData.hpp"
 
-Location::Location() {};
+Parser::Parser() {};
 
-Location::Location(std::string value, std::string root, std::string index): value(value), root(root), index(index) {};
+Parser::~Parser() {};
 
-void    Location::setValue(const std::string& val) {
+void    Parser::openFile(char *argv) {
 
-    value = val;
-}
-
-void    Location::setRoot(const std::string& rt) {
-
-    root = rt;
-}
-
-void    Location::setIndex(const std::string& indx) {
-
-    index = indx;
-}
-
-std::string Location::getValue() const {
-
-    return (value);
-}
-
-std::string Location::getRoot() const {
-
-    return (root);
-}
-
-std::string Location::getIndex() const {
-
-    return(index);
-}
-
-Location&	Location::operator=(const Location& location) {
-
-	if (this != &location)
-	{
-		this->value = location.value;
-		this->root = location.root;
-		this->index = location.index;
-	}
-	return (*this);
-}
-
-Location::~Location() {};
-
-Server::Server() {};
-
-Server::Server(std::string port, std::string server_name, Location &location): port(port), server_name(server_name) {
-
-    locations.push(location);
+    if (!argv)
+        std::cout << "ERROR: File doesn't exist or could not be open!" << std::endl;
+    else
+    {
+        std::ifstream   confFile(argv);
+        readFile(confFile);
+    }
 };
 
-void    Server::setPort(const std::string& p) {
+void   Parser::readFile(std::ifstream& confFile) {
 
-    port = p;
-}
-
-void    Server::setName(const std::string& name) {
-
-    server_name = name;
-}
-
-void    Server::setLocations(const Location &location) {
-
-    locations.push(location);
-}
-
-std::string Server::getPort() const {
-
-    return (port);
-}
-
-std::string Server::getName() const {
-
-    return (server_name);
-}
-
-Location    Server::getLocations() {
-
-    Location    location;
-    if (!locations.empty())
-    {
-        location = locations.top();
-        locations.pop();
-    }
-    return (location);
-}
-
-Server&	Server::operator=(const Server& server) {
-
-	if (this != &server)
-	{
-		this->port = server.port;
-		this->server_name = server.server_name;
-		this->locations = server.locations;
-	}
-	return (*this);
-}
-
-Server::~Server() {};
-
-Context::Context() {};
-
-Context::Context(Server &server): server(server) {};
-
-
-Context&	Context::operator=(const Context& context) {
-
-	if (this != &context)
-		this->server = context.server;
-	return (*this);
-}
-
-void    Context::setServer(const Server& servr) {
-
-    server = servr;
-}
-
-Server  Context::getServer() const {
-
-    return (server);
-}
-
-Context::~Context() {};
-
-int main(int argc, char **argv) {
-
-    std::ifstream       confFile(argv[1]);
-    std::stack<Context> nestedDirs;
     if (confFile.is_open())
     {
-        std::string line;
         while (getline(confFile, line))
         {    
             std::stringstream ss(line);
-            std::string directive, value;
             ss >> directive >> value;
             if (directive == "server" && value[0] == '{')
-            {
-                Server  server;
-                Context context;
-                while (getline(confFile, line)) {
-                    if (line[0] == '#' || line.empty())
-                        continue ;
-                    std::stringstream ss(line);
-                    std::string directive, value;
-                    ss >> directive >> value;
-                    if (directive == "listen")
-                        server.setPort(value.erase(value.size() - 1));
-                    else if (directive == "server_name")
-                        server.setName(value.erase(value.size() - 1));
-                    else if (directive == "location") {
-                            
-                            Location    location;
-                            location.setValue(value.erase(value.size() - 1));
-                            while(getline(confFile, line)) {
-                                
-                                std::stringstream ss(line);
-                                std::string directive, value;
-                                ss >> directive >> value;
-                                if (directive == "root")
-                                    location.setRoot(value.erase(value.size() - 1));
-                                else if (directive == "index")
-                                    location.setIndex(value.erase(value.size() - 1));
-                                if (line[0] == '}') {
-                                    
-                                    server.setLocations(location);
-                                    break ;
-                                }
-                            }
-                    }                       
-                    if (line[0] == '}') {
-
-                        context.setServer(server);
-                        nestedDirs.push(context);
-                        break ;
-                    }
-                }
-            }
+                parseServer(confFile);
         }
     }
-    return 0;
+}
+
+void    Parser::parseServer(std::ifstream& confFile) {
+
+    Server  server;
+    Context context;
+    while (getline(confFile, line)) {
+        if (line[0] == '#' || line.empty())
+            continue ;
+        std::stringstream ss(line);
+        ss >> directive >> value;
+        if (directive == "listen")
+            server.setPort(value.erase(value.size() - 1));
+        else if (directive == "server_name")
+            server.setName(value.erase(value.size() - 1));
+        else if (directive == "location")
+            parseLocation(confFile, server);                
+        if (line[0] == '}') {
+
+            context.setServer(server);
+            parsedData.push_back(context);
+            break ;
+        }
+    }
+}
+
+void    Parser::parseLocation(std::ifstream& confFile, Server& server) {
+
+    Location    location;
+    location.setValue(value);
+    while(getline(confFile, line)) {
+        
+        std::stringstream ss(line);
+        ss >> directive >> value;
+        if (directive == "root")
+            location.setRoot(value.erase(value.size() - 1));
+        else if (directive == "index")
+            location.setIndex(value.erase(value.size() - 1));
+        if (line[0] == '}') {
+
+            server.setLocations(location);
+            break ;
+        }
+    }
+}
+
+void    Parser::printData() {
+
+    for (int i = 0; i < parsedData.size(); i++) {
+
+        Context context;
+        context = parsedData[i];
+
+        Server  server;
+        server = context.getServer();
+        
+        std::cout << std::endl;
+        std::cout << "Server: " << std::endl;
+        std::cout << "listen: " << server.getPort() << std::endl;
+        std::cout << "name: " << server.getName() << std::endl;
+
+        std::vector<Location>   locationVec = server.getLocations();
+        for (int i = 0; i < locationVec.size(); i++) {
+
+            Location    location;
+            location = locationVec[i];
+
+            std::cout << std::endl;
+            std::cout << "locations: " << std::endl;
+            std::cout << "value: " << location.getValue() << std::endl;
+            std::cout << "root: " << location.getRoot() << std::endl;
+            std::cout << "index: " << location.getIndex() << std::endl;
+        }
+    }
 }
