@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 11:24:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/16 12:08:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
                 (*it)->changeSet( readfds, writefds );
             if ( (*it)->getSocket() > maxSocket )
             {
-                std::cout << "added the socket\n";
+                // std::cout << "added the socket\n";
                 maxSocket = (*it)->getSocket();
             }
         }

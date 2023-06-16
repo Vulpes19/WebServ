@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 14:53:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/16 12:08:11 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void    Response::setSocket( SOCKET socket )
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
 	ssize_t bytesRead = read( socket, request, 1000 );
-	std::cout << "bytes read: " << bytesRead << std::endl;
+	// std::cout << "bytes read: " << bytesRead << std::endl;
 	if ( bytesRead > 0 )
 	{
 		std::cout << "reading the request... " << bytesReceived << "\n";
@@ -84,6 +84,14 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 }
 
+bool	Response::isDirectory( const char *path ) const
+{
+	struct stat fileInfo;
+
+	if ( stat(path, &fileInfo) == 0 )
+		return S_ISDIR(fileInfo.st_mode);
+	return (false);
+}
 
 enum ResponseStates    Response::getResponseDir( void )
 {
@@ -139,7 +147,7 @@ enum ResponseStates    Response::getResponseDir( void )
 
 enum ResponseStates    Response::getResponseFile( void )
 {
-	std::cout << "generating the response\n";
+	// std::cout << "generating the response\n";
 	if ( !file.is_open() )
 	{
 		std::string response;
@@ -192,6 +200,7 @@ enum ResponseStates    Response::getResponseFile( void )
 	{
 		bytesSent = 0;
 		file.close();
+		reset();
 		std::cout << "FILE IS READ\n";
 		return (RESET);
 	}
@@ -205,7 +214,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	path = resources.getRequest("URL");
 	if ( path.compare("/") == 0 )
 		path = "/index.html";
-	if ( path[path.length() - 1] == '/' )
+	if ( isDirectory(path.c_str()) )
 		ret = getResponseDir();
 	if ( resources.getRequest("Method") == "GET")
 		ret = getResponseFile();
@@ -215,7 +224,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 		return (true);
 }
 
-bool	Response::isRequestReceived( void )
+bool	Response::isRequestReceived( void ) const
 {
 	std::string end("\r\n\r\n");
 
@@ -231,7 +240,7 @@ size_t  Response::getFileSize( const char *path ) const
     struct stat fileStat;
     if ( stat(path, &fileStat) == 0 )
     {
-        std::cout << "file size is " << fileStat.st_size << std::endl;
+        // std::cout << "file size is " << fileStat.st_size << std::endl;
         return (fileStat.st_size);
     }
     else

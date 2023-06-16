@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 11:25:31 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:50:29 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ void    ClientManager::reset( void )
 void    ClientManager::startRead( void )
 {
     enum ResponseStates ret;
-    std::cout << "hello\n";
     response->setSocket(socket);
     ret = response->handleReadRequest(resources);
     if ( ret == READY_TO_WRITE )

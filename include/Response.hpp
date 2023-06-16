@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 14:11:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/16 11:43:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,12 @@ class Response
         void        setSocket( SOCKET );
         enum ResponseStates    	handleReadRequest( Resources & );
 		bool    	handleWriteResponse( Resources & );
-		bool    	isRequestReceived( void );
+		bool    	isRequestReceived( void ) const;
 		enum ResponseStates        getResponseFile( void );
 		enum ResponseStates        getResponseDir( void );
 		size_t      getFileSize( const char * ) const;
 		std::string	getFileType( const char * ) const;
+        bool        isDirectory( const char *path ) const;
         void        reset( void );
     private:
         char    request[MAX_REQUEST_SIZE + 1];
