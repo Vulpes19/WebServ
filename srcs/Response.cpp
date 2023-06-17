@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/16 12:08:11 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/17 14:08:28 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,17 @@
 
 void    ErrorResponse::errorBadRequest( SOCKET socket )
 {
-	std::string errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-							"Connection: close\r\n"
-							"Content-Length: 11\r\n\r\nBad Request";
+	std::string errorMsg = "HTTP/1.1 400 Bad Request\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg +=	"Content-Length: 11\r\n\r\nBad Request";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
 void    ErrorResponse::errorNotFound( SOCKET socket )
 {
-	std::string errorMsg = "HTTP/1.1 404 Not Found\r\n"
-							"Connection: close\r\n"
-							"Content-Length: 9\r\n\r\nNot Found";
+	std::string errorMsg = "HTTP/1.1 404 Not Found\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg +=	"Content-Length: 9\r\n\r\nNot Found";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -56,11 +56,11 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
-	ssize_t bytesRead = read( socket, request, 1000 );
+	ssize_t bytesRead = read( socket, request, BSIZE );
 	// std::cout << "bytes read: " << bytesRead << std::endl;
 	if ( bytesRead > 0 )
 	{
-		std::cout << "reading the request... " << bytesReceived << "\n";
+		std::cout << "from " << socket << " reading the request... " << bytesReceived << "\n";
 		bytesReceived += bytesRead;
 		request[bytesRead] = '\0';
 		if ( isRequestReceived() )
@@ -75,6 +75,16 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		}
 		return (READING);
 	}
+	// else if ( bytesRead == 0 )
+	// {
+	// 	std::string toSend(request);
+	// 	std::cout << "***********\n";
+	// 	std::cout << toSend << std::endl;
+	// 	std::cout << "***********\n";
+	// 	resources.checkRequest(toSend);
+	// 	std::cout << "REQUEST IS RECEIVED\n";
+	// 	return (READY_TO_WRITE);
+	// }
 	else
 	{
 		std::cerr << "Error reading request\n";
@@ -131,7 +141,7 @@ enum ResponseStates    Response::getResponseDir( void )
 		std::string htmlResponse = "</ul></body></html>";
 		bytesReceived = send(socket, htmlResponse.data(), htmlResponse.size(), 0);
 		bytesSent += bytesReceived;
-	exit(1);
+		exit(1);
 		return (RESET);
 	}
 	std::string name = entry->d_name;
@@ -206,6 +216,29 @@ enum ResponseStates    Response::getResponseFile( void )
 	}
 }
 
+enum ResponseStates	Response::postUploadFile( Resources &resources )
+{
+	std::string filePath(resources.getRequest("URL"));
+	std::string toWrite(resources.getRequestBody());
+
+	if ( !toUpload.is_open() )
+	{
+		toUpload.open(filePath, std::ios::binary);
+	}
+	toUpload << toWrite;
+	toUpload.close();
+	std::stringstream oss;
+	oss << "HTTP/1.1 201 Created\r\n";
+	oss << "Content-Type: " << resources.getRequest("Content-Type") << "\r\n";
+	oss << "Content-Length: " << getFileSize(filePath.c_str()) << "\r\n";
+	oss << "\r\n";
+	oss << toWrite << "\r\n";
+	send( socket, oss.str().data(), oss.str().size(), 0);
+	reset();
+	std::cout << "FILE IS UPLOADED\n";
+	return (RESET);
+}
+
 bool    Response::handleWriteResponse( Resources &resources )
 {
 	std::string requestString(request);
@@ -218,6 +251,11 @@ bool    Response::handleWriteResponse( Resources &resources )
 		ret = getResponseDir();
 	if ( resources.getRequest("Method") == "GET")
 		ret = getResponseFile();
+	if ( resources.getRequest("Method") == "POST" )
+	{
+		std::cout << "IM IN POST\n";
+		ret = postUploadFile(resources);
+	}
 	if ( ret == READING )
 		return (false);
 	else
@@ -230,19 +268,16 @@ bool	Response::isRequestReceived( void ) const
 
 	if ( bytesReceived < (int)end.length() )
 		return (false);
-	if ( strcmp( request + bytesReceived - end.length(), end.c_str()) == 0 )
+	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);
 }
 
-size_t  Response::getFileSize( const char *path ) const
+ssize_t  Response::getFileSize( const char *path ) const
 {
     struct stat fileStat;
     if ( stat(path, &fileStat) == 0 )
-    {
-        // std::cout << "file size is " << fileStat.st_size << std::endl;
         return (fileStat.st_size);
-    }
     else
         std::cerr << "cant get file size\n";
     return (-1);

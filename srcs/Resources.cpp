@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:26:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/17 11:34:04 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void    Resources::checkRequest( std::string request )
 			header["HTTP"] = str;
 		}
 	}
-	fileContentBuffer = requestBody.c_str();
+	fileContentBuffer = requestBody;
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
 	//     std::cout << it->first << " " << it->second << std::endl;
@@ -97,4 +97,9 @@ void    Resources::setResponseHeader( void )
 std::string	&Resources::getRequest( std::string Key )
 {
 	return ( header[Key] );
+}
+
+std::string	Resources::getRequestBody( void ) const
+{
+	return ( fileContentBuffer );
 }

@@ -22,10 +22,11 @@ using namespace std;
 //     file.close();
 // }
 
-int main( void )
-{
-    std::ifstream file("./public/");
-    std::cout << access("./obj/", F_OK) << std::endl;
-    if ( access("./public/", X_OK) == -1 )
-        std::cerr << strerror(errno) << std::endl;
-}
+// int main( void )
+// {
+//     std::ifstream file("./public/");
+//     std::cout << access("./obj/", F_OK) << std::endl;
+//     if ( access("./public/", X_OK) == -1 )
+//         std::cerr << strerror(errno) << std::endl;
+// }
+

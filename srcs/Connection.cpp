@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/16 12:08:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/17 14:09:39 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ Connection::Connection( void )
 }
 
 Connection::~Connection( void )
-{}
+{
+    clients.erase(clients.begin(), clients.end());
+}
 
 ClientManager   *Connection::getClient( SOCKET socket, Server srv )
 {
@@ -33,7 +35,7 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->reset();
     newClient->createClient( srv.getListenSocket() );
 
-    // newClient->setState( READ_REQUEST);
+    newClient->setState( READ_REQUEST);
     clients.push_back(newClient);
     return (newClient);
 }
@@ -59,6 +61,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
     FD_ZERO(&readfds);
     FD_SET(socket, &readfds);
     SOCKET maxSocket = socket;
+    // std::cout << "list size is: " << clients.size() << std::endl;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() > -1 )
@@ -80,43 +83,31 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
     }
 }
 
-// void    Client::errorBadRequest( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 11\r\n\r\nBad Request";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0 );
-//     deleteClient( cl );
-// }
-
-// void    Client::errorNotFound( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 9\r\n\r\nNot Found";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0);
-// }
-
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
-    // std::cout << "entering multiplexing\n";
+    std::cout << "entering multiplexing\n";
+    std::cout << "list size is: " << clients.size() << std::endl;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
+        // std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
+            // std::cout << "IM ALL SET IN READ\n";
             if ( (*it)->getState() == READ_REQUEST )
             {
+                // std::cout << "MY STATE IS READ REQUEST\n";
                 (*it)->startRead();
                 continue ;
             }
         }
         if ( FD_ISSET( (*it)->getSocket(), &writefds) )
         {
+            // std::cout << "IM ALL SET IN WRITE\n";
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
+                // std::cout << "MY STATE IS WRITE RESPONSE\n";
                 if ( (*it)->startResponse() )
                 {
                     (*it)->unsetSocket(writefds, readfds);
@@ -127,5 +118,5 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
             }
         }
     }
-    // std::cout << "exiting multiplexing\n";
+    std::cout << "exiting multiplexing\n";
 }
