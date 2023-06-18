@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 21:01:28 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/18 16:54:01 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,26 +26,27 @@ void    Parser::openFile(char *argv) {
         std::ifstream   confFile(argv);
         readFile(confFile);
     }
-};
+} ;
 
 void   Parser::readFile(std::ifstream& confFile) {
 
     if (confFile.is_open())
     {
         while (getline(confFile, line))
-        {    
+        {
             std::stringstream ss(line);
             ss >> directive >> value;
             if (directive == "server" && value[0] == '{')
                 parseServer(confFile);
         }
     }
-}
+} ;
 
 void    Parser::parseServer(std::ifstream& confFile) {
 
     Server  server;
     Context context;
+
     while (getline(confFile, line)) {
         if (line[0] == '#' || line.empty())
             continue ;
@@ -71,7 +72,7 @@ void    Parser::parseLocation(std::ifstream& confFile, Server& server) {
     Location    location;
     location.setValue(value);
     while(getline(confFile, line)) {
-        
+
         std::stringstream ss(line);
         ss >> directive >> value;
         if (directive == "root")
@@ -95,7 +96,7 @@ void    Parser::printData() {
 
         Server  server;
         server = context.getServer();
-        
+
         std::cout << std::endl;
         std::cout << "Server: " << std::endl;
         std::cout << "listen: " << server.getPort() << std::endl;
@@ -104,14 +105,14 @@ void    Parser::printData() {
         std::vector<Location>   locationVec = server.getLocations();
         for (int i = 0; i < locationVec.size(); i++) {
 
-            Location    location;
-            location = locationVec[i];
+            // Location    location;
+            // location = ;
 
             std::cout << std::endl;
             std::cout << "locations: " << std::endl;
-            std::cout << "value: " << location.getValue() << std::endl;
-            std::cout << "root: " << location.getRoot() << std::endl;
-            std::cout << "index: " << location.getIndex() << std::endl;
+            std::cout << "value: " << locationVec[i].getValue() << std::endl;
+            std::cout << "root: " << locationVec[i].getRoot() << std::endl;
+            std::cout << "index: " << locationVec[i].getIndex() << std::endl;
         }
     }
 }

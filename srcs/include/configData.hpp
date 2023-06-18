@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 20:48:18 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/17 17:06:20 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,5 @@ class Context {
         Server  getServer() const;
         ~Context();
 } ;
-
 
 #endif
