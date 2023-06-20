@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/17 14:09:39 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 11:50:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,10 +70,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
             if ( (*it)->getState() == WRITE_RESPONSE )
                 (*it)->changeSet( readfds, writefds );
             if ( (*it)->getSocket() > maxSocket )
-            {
-                // std::cout << "added the socket\n";
                 maxSocket = (*it)->getSocket();
-            }
         }
     }
     if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
@@ -86,10 +83,13 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     std::cout << "entering multiplexing\n";
-    std::cout << "list size is: " << clients.size() << std::endl;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        // std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
+        std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
+        if ( (*it)->getState() == READ_REQUEST )
+            std::cout << "READ REQUEST\n";
+        else if ( (*it)->getState() == WRITE_RESPONSE )
+            std::cout << "WRITE RESPONSE\n";
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )

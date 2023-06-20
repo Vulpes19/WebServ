@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/17 14:08:28 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 12:25:36 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,35 +56,31 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
+	std::cout << "***** entering read request func *****\n";
 	ssize_t bytesRead = read( socket, request, BSIZE );
-	// std::cout << "bytes read: " << bytesRead << std::endl;
 	if ( bytesRead > 0 )
 	{
-		std::cout << "from " << socket << " reading the request... " << bytesReceived << "\n";
 		bytesReceived += bytesRead;
 		request[bytesRead] = '\0';
-		if ( isRequestReceived() )
+		std::string toSend(request);
+		resources.checkRequest(toSend);
+		if ( isRequestReceived(resources) )
 		{
-			std::string toSend(request);
-			std::cout << "***********\n";
-			std::cout << toSend << std::endl;
-			std::cout << "***********\n";
-			resources.checkRequest(toSend);
 			std::cout << "REQUEST IS RECEIVED\n";
 			return (READY_TO_WRITE);
 		}
 		return (READING);
 	}
-	// else if ( bytesRead == 0 )
-	// {
-	// 	std::string toSend(request);
-	// 	std::cout << "***********\n";
-	// 	std::cout << toSend << std::endl;
-	// 	std::cout << "***********\n";
-	// 	resources.checkRequest(toSend);
-	// 	std::cout << "REQUEST IS RECEIVED\n";
-	// 	return (READY_TO_WRITE);
-	// }
+	else if ( bytesRead == 0 && isRequestReceived(resources) )
+	{
+		std::string toSend(request);
+		std::cout << "***********\n";
+		std::cout << toSend << std::endl;
+		std::cout << "***********\n";
+		resources.checkRequest(toSend);
+		std::cout << "REQUEST IS RECEIVED\n";
+		return (READY_TO_WRITE);
+	}
 	else
 	{
 		std::cerr << "Error reading request\n";
@@ -262,10 +258,23 @@ bool    Response::handleWriteResponse( Resources &resources )
 		return (true);
 }
 
-bool	Response::isRequestReceived( void ) const
+bool	Response::isRequestReceived( Resources &resources ) const
 {
 	std::string end("\r\n\r\n");
+	std::string requestStr(request);
+	std::string ret;
 
+	ret = resources.getRequest("Content-Length");
+	if ( ret != "NOT FOUND" )
+	{
+		size_t bodyStart = bytesReceived - std::stoi(ret);
+		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
+		// exit(1);
+		if ( (int)requestBodyStr.size() == std::stoi(ret) )
+			return (true);
+		else
+			return (false);
+	}
 	if ( bytesReceived < (int)end.length() )
 		return (false);
 	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )

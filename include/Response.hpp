@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/17 11:50:25 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 12:00:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ class ClientManager;
 
 struct ErrorResponse
 {
-	void        errorBadRequest( SOCKET socket );
-	void        errorNotFound( SOCKET socket );
-	void    	errorForbidden( SOCKET socket );
+	void        errorBadRequest( SOCKET );
+	void        errorNotFound( SOCKET );
+	void    	errorForbidden( SOCKET );
 };
 
 class Response
@@ -34,12 +34,12 @@ class Response
 		enum ResponseStates	handleReadRequest( Resources & );
 		enum ResponseStates	getResponseFile( void );
 		enum ResponseStates	getResponseDir( void );
-		enum ResponseStates	postUploadFile( Resources &resources );
+		enum ResponseStates	postUploadFile( Resources & );
 		bool		handleWriteResponse( Resources & );
-		bool		isRequestReceived( void ) const;
+		bool		isRequestReceived( Resources & ) const;
 		ssize_t     getFileSize( const char * ) const;
 		std::string	getFileType( const char * ) const;
-		bool		isDirectory( const char *path ) const;
+		bool		isDirectory( const char * ) const;
 		void		reset( void );
 	private:
 		char    request[MAX_REQUEST_SIZE + 1];
@@ -53,4 +53,5 @@ class Response
 		std::ofstream	toUpload;
 		std::string	    path;
 		struct  dirent *entry;
+		std::string test;
 };

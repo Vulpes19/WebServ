@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/17 11:34:04 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 12:17:49 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,12 @@ void    Resources::setResponseHeader( void )
 	
 }
 
-std::string	&Resources::getRequest( std::string Key )
+std::string	Resources::getRequest( std::string Key )
 {
-	return ( header[Key] );
+	if ( header.find(Key) != header.end() )
+		return ( header[Key] );
+	else
+		return ( "NOT FOUND" );
 }
 
 std::string	Resources::getRequestBody( void ) const
