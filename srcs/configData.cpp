@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 16:30:34 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 19:48:40 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,9 +119,9 @@ Server&	Server::operator=(const Server& server) {
 
 Server::~Server() {};
 
-Context::Context() {};
+Context::Context(): status(OK) {};
 
-Context::Context(Server &server): server(server) {};
+Context::Context(Server &server): server(server), status(OK) {};
 
 
 Context&	Context::operator=(const Context& context) {
@@ -139,6 +139,16 @@ void    Context::setServer(const Server& servr) {
 Server  Context::getServer() const {
 
     return (server);
+}
+
+void	Context::setStatus(int which) {
+
+	status = which;
+}
+
+int	 Context::getStatus() {
+
+	return(status);
 }
 
 Context::~Context() {};

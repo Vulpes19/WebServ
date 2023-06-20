@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:12 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/19 14:44:04 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 00:23:04 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 int main(int argc, char **argv) {
 
-    Parser  parser;
+	Parser  parser;
 
-    parser.openFile(argv[1]);
-    parser.printData();
-    return 0;
+	parser.openFile(argv[1]);
+	parser.printData();
+	return 0;
 }
