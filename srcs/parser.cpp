@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 15:52:51 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:26:21 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,10 +78,12 @@ void    Parser::parseLocation(std::ifstream& confFile, Server& server, std::stri
             server.setLocations(location);
             break ;
         }
-        if (line[0] != '}' && directive == "root")
+        if (directive == "root")
             location.setRoot(value.erase(value.size() - 1));
-        else if (line[0] != '}' && directive == "index")
+        else if (directive == "index")
             location.setIndex(value.erase(value.size() - 1));
+        else if (directive == "autoindex" && value == "on;")
+            location.setAutoIndex();
     }
 }
 

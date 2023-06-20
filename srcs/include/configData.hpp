@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/17 17:06:20 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:30:05 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,28 @@
 #include <sstream>
 #include <algorithm>
 
+enum {
+    OFF,
+    ON
+} ;
+
 class Location {
     private:
         std::string value;
         std::string root;
         std::string index;
+        int         autoindex;
     public:
         Location();
         Location(std::string value, std::string root, std::string index);
         void    setValue(const std::string &val);
         void    setRoot(const std::string &rt);
         void    setIndex(const std::string &indx);
+        void    setAutoIndex();
         std::string getValue() const;
         std::string getRoot() const;
         std::string getIndex() const;
+        int         getAutoIndex() const;
         Location&	operator=(const Location& location);
         ~Location();
 } ;

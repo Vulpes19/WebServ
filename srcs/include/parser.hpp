@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/19 14:35:39 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:10:34 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,6 @@
 #include <sstream>
 #include <algorithm>
 #include "configData.hpp"
-
-enum {
-    SERVER,
-    LOCATION
-} ;
 
 class Parser {
     private:

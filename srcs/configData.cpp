@@ -6,15 +6,15 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/19 14:50:22 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:30:34 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/configData.hpp"
 
-Location::Location() {};
+Location::Location(): autoindex(OFF) {};
 
-Location::Location(std::string value, std::string root, std::string index): value(value), root(root), index(index) {};
+Location::Location(std::string value, std::string root, std::string index): autoindex(OFF), value(value), root(root), index(index) {};
 
 void    Location::setValue(const std::string& val) {
 
@@ -31,6 +31,11 @@ void    Location::setIndex(const std::string& indx) {
     index = indx;
 }
 
+void	Location::setAutoIndex() {
+	
+	autoindex = ON;
+}
+
 std::string Location::getValue() const {
 
     return (value);
@@ -44,6 +49,11 @@ std::string Location::getRoot() const {
 std::string Location::getIndex() const {
 
     return(index);
+}
+
+int			Location::getAutoIndex() const {
+
+	return(autoindex);
 }
 
 Location&	Location::operator=(const Location& location) {
