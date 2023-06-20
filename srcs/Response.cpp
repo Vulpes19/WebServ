@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 12:32:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 15:39:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,14 @@ void    ErrorResponse::errorForbidden( SOCKET socket )
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
+void    ErrorResponse::errorInternal( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 500 Internal Server Error\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 0\r\n";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
 Response::Response( void )
 {
 	memset(request, 0, sizeof(request));
@@ -56,7 +64,6 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
-	std::cout << "***** entering read request func *****\n";
 	ssize_t bytesRead = read( socket, request, BSIZE );
 	if ( bytesRead > 0 )
 	{
@@ -66,20 +73,24 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		resources.checkRequest(toSend);
 		if ( isRequestReceived(resources) )
 		{
+			std::cout << "**********\n";
+			std::cout << toSend << std::endl;
+			std::cout << "**********\n";
 			std::cout << "REQUEST IS RECEIVED\n";
 			return (READY_TO_WRITE);
 		}
 		return (READING);
 	}
-	else if ( bytesRead == 0 && isRequestReceived(resources) )
+	else if ( bytesRead == 0 )
 	{
 		std::string toSend(request);
-		std::cout << "***********\n";
-		std::cout << toSend << std::endl;
-		std::cout << "***********\n";
 		resources.checkRequest(toSend);
-		std::cout << "REQUEST IS RECEIVED\n";
-		return (READY_TO_WRITE);
+		if ( isRequestReceived(resources) )
+		{
+			std::cout << "REQUEST IS RECEIVED\n";
+			return (READY_TO_WRITE);
+		}
+		return (READING);
 	}
 	else
 	{
@@ -230,9 +241,36 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	oss << "Content-Length: " << resources.getRequest("Content-Length") << "\r\n";
 	oss << "\r\n";
 	oss << toWrite << "\r\n";
-	send( socket, oss.str().data(), oss.str().size(), 0);
+	send( socket, oss.str().data(), oss.str().size(), 0 );
 	reset();
 	std::cout << "FILE IS UPLOADED\n";
+	return (RESET);
+}
+
+enum ResponseStates	Response::deleteFile( Resources &resources )
+{
+	std::string filePath(resources.getRequest("URL"));
+	std::ostringstream oss;
+
+	if ( access(filePath.substr(1, filePath.length()).c_str(), F_OK) == -1 )
+	{
+		err.errorNotFound(socket);
+		return (RESET);
+	}
+	if ( access(filePath.substr(1, filePath.length()).c_str(), W_OK) == -1 )
+	{
+		err.errorForbidden(socket);
+		return (RESET);
+	}
+	if ( remove(filePath.substr(1, filePath.length()).c_str()) == 0 )
+	{
+		std::cout << "IT'S DELETED\n";
+		oss << "HTTP/1.1 200 OK\r\n";
+		oss << "Content-Length: 0\r\n";
+		send( socket, oss.str().data(), oss.str().size(), 0 );
+	}
+	else
+		err.errorInternal(socket);
 	return (RESET);
 }
 
@@ -249,10 +287,13 @@ bool    Response::handleWriteResponse( Resources &resources )
 	if ( resources.getRequest("Method") == "GET")
 		ret = getResponseFile();
 	if ( resources.getRequest("Method") == "POST" )
-	{
-		std::cout << "IM IN POST\n";
 		ret = postUploadFile(resources);
+	if ( resources.getRequest("Method") == "DELETE" )
+	{
+		std::cout << "hello there\n";
+		ret = deleteFile(resources);
 	}
+	exit(1);
 	if ( ret == READING )
 		return (false);
 	else
@@ -270,7 +311,6 @@ bool	Response::isRequestReceived( Resources &resources ) const
 	{
 		size_t bodyStart = bytesReceived - std::stoi(ret);
 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
-		// exit(1);
 		if ( (int)requestBodyStr.size() == std::stoi(ret) )
 			return (true);
 		else
