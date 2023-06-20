@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/18 16:54:01 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 15:52:51 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void    Parser::parseServer(std::ifstream& confFile) {
         else if (directive == "server_name")
             server.setName(value.erase(value.size() - 1));
         else if (directive == "location")
-            parseLocation(confFile, server);                
+            parseLocation(confFile, server, value);                
         if (line[0] == '}') {
 
             context.setServer(server);
@@ -67,23 +67,21 @@ void    Parser::parseServer(std::ifstream& confFile) {
     }
 }
 
-void    Parser::parseLocation(std::ifstream& confFile, Server& server) {
+void    Parser::parseLocation(std::ifstream& confFile, Server& server, std::string& value) {
 
     Location    location;
     location.setValue(value);
     while(getline(confFile, line)) {
-
         std::stringstream ss(line);
         ss >> directive >> value;
-        if (directive == "root")
-            location.setRoot(value.erase(value.size() - 1));
-        else if (directive == "index")
-            location.setIndex(value.erase(value.size() - 1));
-        if (line[0] == '}') {
-
+        if (directive == "}") {
             server.setLocations(location);
             break ;
         }
+        if (line[0] != '}' && directive == "root")
+            location.setRoot(value.erase(value.size() - 1));
+        else if (line[0] != '}' && directive == "index")
+            location.setIndex(value.erase(value.size() - 1));
     }
 }
 
@@ -105,10 +103,6 @@ void    Parser::printData() {
         std::vector<Location>   locationVec = server.getLocations();
         for (int i = 0; i < locationVec.size(); i++) {
 
-            // Location    location;
-            // location = ;
-
-            std::cout << std::endl;
             std::cout << "locations: " << std::endl;
             std::cout << "value: " << locationVec[i].getValue() << std::endl;
             std::cout << "root: " << locationVec[i].getRoot() << std::endl;

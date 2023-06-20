@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 20:49:08 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/19 14:35:39 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ class Parser {
         void    openFile(char *argv);
         void    readFile(std::ifstream&   confFile);
         void    parseServer(std::ifstream&   confFile);
-        void    parseLocation(std::ifstream&   confFile, Server& server);
+        void    parseLocation(std::ifstream&   confFile, Server& server, std::string& value);
         std::vector<Context> getParsedData();
         void    printData();
 } ;
