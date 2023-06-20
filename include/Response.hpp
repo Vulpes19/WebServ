@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 12:00:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 12:29:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,4 @@ class Response
 		std::ofstream	toUpload;
 		std::string	    path;
 		struct  dirent *entry;
-		std::string test;
 };

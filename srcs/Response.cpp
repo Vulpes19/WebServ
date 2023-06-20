@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 12:25:36 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 12:32:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,14 +219,15 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 
 	if ( !toUpload.is_open() )
 	{
-		toUpload.open(filePath, std::ios::binary);
+		toUpload.open(filePath.substr(1, filePath.length()), std::ios::binary);
+		std::cout << "FILE IS OPENED\n";
 	}
 	toUpload << toWrite;
 	toUpload.close();
 	std::stringstream oss;
 	oss << "HTTP/1.1 201 Created\r\n";
 	oss << "Content-Type: " << resources.getRequest("Content-Type") << "\r\n";
-	oss << "Content-Length: " << getFileSize(filePath.c_str()) << "\r\n";
+	oss << "Content-Length: " << resources.getRequest("Content-Length") << "\r\n";
 	oss << "\r\n";
 	oss << toWrite << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0);
