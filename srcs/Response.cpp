@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 15:39:52 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 11:43:44 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,10 +116,8 @@ enum ResponseStates    Response::getResponseDir( void )
 	{
 		std::ostringstream oss;
 		std::string fullPath = "." + path;
-		std::cout << "*******" << path << "*******" << "\n";
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
-			std::cout << "NOT FOUND HEREEE\n";
 			err.errorNotFound(socket);
 			return (RESET);
 		}
@@ -167,7 +165,6 @@ enum ResponseStates    Response::getResponseFile( void )
 	// std::cout << "generating the response\n";
 	if ( !file.is_open() )
 	{
-		std::string response;
 		bytesSent = 0;
 		bytesReceived = 0;
 		std::ostringstream oss;
@@ -184,17 +181,15 @@ enum ResponseStates    Response::getResponseFile( void )
 			return (RESET);
 		}
 		file.open(fullPath.c_str());
-		fileSize = getFileSize(fullPath.c_str());
-		std::string ct = getFileType(fullPath.c_str());
-		oss.str("");
-		oss.clear();
-		oss << "HTTP/1.1 200 OK\r\n";
-		oss << "Connection: close\r\n";
-		oss << "Content-Length: " << fileSize << "\r\n";
-		oss << "Content-Type: " << ct << "\r\n";
-		oss << "\r\n";
-		response = oss.str();
-		send( socket, response.data(), response.size(), 0 );
+		sendResponseHeader( GET, "200 OK", fullPath, NULL );
+		// oss.str("");
+		// oss.clear();
+		// oss << "HTTP/1.1 200 OK\r\n";
+		// oss << "Connection: close\r\n";
+		// oss << "Content-Length: " << fileSize << "\r\n";
+		// oss << "Content-Type: " << ct << "\r\n";
+		// oss << "\r\n";
+		// response = oss.str();
 	}
 	char buffer[BSIZE];
 	file.read(buffer, BSIZE);
@@ -230,18 +225,14 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 
 	if ( !toUpload.is_open() )
 	{
-		toUpload.open(filePath.substr(1, filePath.length()), std::ios::binary);
+		toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
 		std::cout << "FILE IS OPENED\n";
 	}
 	toUpload << toWrite;
 	toUpload.close();
-	std::stringstream oss;
-	oss << "HTTP/1.1 201 Created\r\n";
-	oss << "Content-Type: " << resources.getRequest("Content-Type") << "\r\n";
-	oss << "Content-Length: " << resources.getRequest("Content-Length") << "\r\n";
-	oss << "\r\n";
-	oss << toWrite << "\r\n";
-	send( socket, oss.str().data(), oss.str().size(), 0 );
+	sendResponseHeader( POST, "201 Created", filePath.substr(1, filePath.length()), &resources );
+	toWrite += "\r\n";
+	send( socket, toWrite.data(), toWrite.size(), 0 );
 	reset();
 	std::cout << "FILE IS UPLOADED\n";
 	return (RESET);
@@ -252,22 +243,21 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 	std::string filePath(resources.getRequest("URL"));
 	std::ostringstream oss;
 
-	if ( access(filePath.substr(1, filePath.length()).c_str(), F_OK) == -1 )
+	filePath = filePath.substr(1, filePath.length());
+	if ( access(filePath.c_str(), F_OK) == -1 )
 	{
 		err.errorNotFound(socket);
 		return (RESET);
 	}
-	if ( access(filePath.substr(1, filePath.length()).c_str(), W_OK) == -1 )
+	if ( access(filePath.c_str(), W_OK) == -1 )
 	{
 		err.errorForbidden(socket);
 		return (RESET);
 	}
-	if ( remove(filePath.substr(1, filePath.length()).c_str()) == 0 )
+	if ( remove(filePath.c_str()) == 0 )
 	{
-		std::cout << "IT'S DELETED\n";
-		oss << "HTTP/1.1 200 OK\r\n";
-		oss << "Content-Length: 0\r\n";
-		send( socket, oss.str().data(), oss.str().size(), 0 );
+		sendResponseHeader( DELETE, "200 OK", "", &resources );
+		send( socket, "File deleted.", 12, 0 );
 	}
 	else
 		err.errorInternal(socket);
@@ -289,11 +279,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	if ( resources.getRequest("Method") == "POST" )
 		ret = postUploadFile(resources);
 	if ( resources.getRequest("Method") == "DELETE" )
-	{
-		std::cout << "hello there\n";
 		ret = deleteFile(resources);
-	}
-	exit(1);
 	if ( ret == READING )
 		return (false);
 	else
@@ -321,6 +307,35 @@ bool	Response::isRequestReceived( Resources &resources ) const
 	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);
+}
+
+void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
+{
+	std::ostringstream oss;
+	oss << "HTTP/1.1 " << statusCode << "\r\n";
+	oss << "Connection: close\r\n";
+	//cache-control
+	//server name
+	//date
+	//Connection
+	if ( method == GET )
+	{
+		oss << "Content-Type: " << getFileType(fileName.c_str()) << "\r\n";
+		oss << "Content-Length: " << getFileSize(fileName.c_str()) << "\r\n";
+	}
+	if ( method == POST )
+	{
+		//oss << location
+		oss << "Content-Type: " << resources->getRequest("Content-Type") << "\r\n";
+		oss << "Content-Length: " << resources->getRequest("Content-Length") << "\r\n";
+	}
+	if ( method == DELETE )
+	{
+		oss << "Content-Type: text/plain\r\n";
+		oss << "Content-Length: 12\r\n";
+	}
+	oss << "\r\n";
+	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
 ssize_t  Response::getFileSize( const char *path ) const
