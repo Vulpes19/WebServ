@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 11:43:44 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 16:10:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ void    ErrorResponse::errorNotFound( SOCKET socket )
 	std::string errorMsg = "HTTP/1.1 404 Not Found\r\n";
 	errorMsg += "Connection: close\r\n";
 	errorMsg +=	"Content-Length: 9\r\n\r\nNot Found";
+	std::cout << errorMsg << std::endl;
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -180,6 +181,7 @@ enum ResponseStates    Response::getResponseFile( void )
 			err.errorForbidden(socket);
 			return (RESET);
 		}
+		fileSize = getFileSize(fullPath.c_str());
 		file.open(fullPath.c_str());
 		sendResponseHeader( GET, "200 OK", fullPath, NULL );
 		// oss.str("");
@@ -194,6 +196,7 @@ enum ResponseStates    Response::getResponseFile( void )
 	char buffer[BSIZE];
 	file.read(buffer, BSIZE);
 	ssize_t bytesRead = file.gcount();
+	buffer[bytesRead] = '\0';
 	if ( bytesSent == -1 )
 	{
 		bytesSent = 0;
@@ -205,7 +208,14 @@ enum ResponseStates    Response::getResponseFile( void )
 	else if ( bytesRead > 0 )
 	{
 		bytesSent += bytesRead;
-		send( socket, buffer, BSIZE, 0 );
+		std::cout << "bytes read " << bytesRead << std::endl;
+		send( socket, buffer, bytesRead, 0 );
+		if ( bytesSent == fileSize )
+		{
+			std::cout << fileSize << std::endl;
+			// exit(1);
+			return (RESET);
+		}
 		return (READING);
 	}
 	else
@@ -258,6 +268,7 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 	{
 		sendResponseHeader( DELETE, "200 OK", "", &resources );
 		send( socket, "File deleted.", 12, 0 );
+		
 	}
 	else
 		err.errorInternal(socket);
@@ -313,15 +324,20 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 {
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
-	oss << "Connection: close\r\n";
+	// oss << "Connection: close\r\n";
 	//cache-control
 	//server name
 	//date
 	//Connection
+	(void)fileName;
 	if ( method == GET )
 	{
 		oss << "Content-Type: " << getFileType(fileName.c_str()) << "\r\n";
-		oss << "Content-Length: " << getFileSize(fileName.c_str()) << "\r\n";
+		oss << "Content-Length: "<< fileSize << "\r\n";
+		oss << "Date: Wed, 21 Jun 2023 14:46:43 GMT\r\n";
+		// oss << "Content-Type: text/plain"<< "\r\n";
+		// oss << "\r\nwa lhmar tfo";
+		// oss << "Content-Length: " << getFileSize(fileName.c_str()) << "\r\n";
 	}
 	if ( method == POST )
 	{
@@ -335,7 +351,9 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		oss << "Content-Length: 12\r\n";
 	}
 	oss << "\r\n";
+	std::cout << oss.str() << std::endl;
 	send( socket, oss.str().data(), oss.str().size(), 0 );
+	// exit(1);
 }
 
 ssize_t  Response::getFileSize( const char *path ) const
