@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 12:02:11 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 17:22:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class Resources
 		void		setResponseHeader( void );
 		std::string	getRequest( std::string Key );
 		std::string	getRequestBody( void ) const;
+		void		clear( void );
 	private:
 		std::map< std::string, std::string > header;
 		std::string	fileContentBuffer;

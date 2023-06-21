@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 15:47:34 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 17:21:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,4 +105,9 @@ std::string	Resources::getRequest( std::string Key )
 std::string	Resources::getRequestBody( void ) const
 {
 	return ( fileContentBuffer );
+}
+
+void	Resources::clear( void )
+{
+	header.clear();
 }

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 16:10:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 17:23:53 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -294,7 +294,10 @@ bool    Response::handleWriteResponse( Resources &resources )
 	if ( ret == READING )
 		return (false);
 	else
+	{
+		resources.clear();
 		return (true);
+	}
 }
 
 bool	Response::isRequestReceived( Resources &resources ) const
