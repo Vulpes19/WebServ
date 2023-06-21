@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 17:23:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 18:05:31 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -163,12 +163,11 @@ enum ResponseStates    Response::getResponseDir( void )
 
 enum ResponseStates    Response::getResponseFile( void )
 {
-	// std::cout << "generating the response\n";
 	if ( !file.is_open() )
 	{
+		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		std::ostringstream oss;
 		oss << "public" << path;
 		std::string fullPath = oss.str();
 		if ( access(fullPath.c_str(), F_OK) == -1 )
@@ -183,15 +182,12 @@ enum ResponseStates    Response::getResponseFile( void )
 		}
 		fileSize = getFileSize(fullPath.c_str());
 		file.open(fullPath.c_str());
+		if ( !file.is_open() )
+		{
+			err.errorInternal(socket);
+			return (RESET);
+		}
 		sendResponseHeader( GET, "200 OK", fullPath, NULL );
-		// oss.str("");
-		// oss.clear();
-		// oss << "HTTP/1.1 200 OK\r\n";
-		// oss << "Connection: close\r\n";
-		// oss << "Content-Length: " << fileSize << "\r\n";
-		// oss << "Content-Type: " << ct << "\r\n";
-		// oss << "\r\n";
-		// response = oss.str();
 	}
 	char buffer[BSIZE];
 	file.read(buffer, BSIZE);
@@ -199,23 +195,18 @@ enum ResponseStates    Response::getResponseFile( void )
 	buffer[bytesRead] = '\0';
 	if ( bytesSent == -1 )
 	{
+		err.errorInternal(socket);
 		bytesSent = 0;
 		file.close();
 		reset();
-		std::cout << "READ ERROR\n";
 		return (RESET);
 	}
 	else if ( bytesRead > 0 )
 	{
 		bytesSent += bytesRead;
-		std::cout << "bytes read " << bytesRead << std::endl;
 		send( socket, buffer, bytesRead, 0 );
 		if ( bytesSent == fileSize )
-		{
-			std::cout << fileSize << std::endl;
-			// exit(1);
 			return (RESET);
-		}
 		return (READING);
 	}
 	else
@@ -223,7 +214,6 @@ enum ResponseStates    Response::getResponseFile( void )
 		bytesSent = 0;
 		file.close();
 		reset();
-		std::cout << "FILE IS READ\n";
 		return (RESET);
 	}
 }
@@ -236,7 +226,11 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	if ( !toUpload.is_open() )
 	{
 		toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
-		std::cout << "FILE IS OPENED\n";
+		if ( !toUpload.is_open() )
+		{
+			err.errorInternal(socket);
+			return (RESET);
+		}
 	}
 	toUpload << toWrite;
 	toUpload.close();
@@ -244,7 +238,6 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	toWrite += "\r\n";
 	send( socket, toWrite.data(), toWrite.size(), 0 );
 	reset();
-	std::cout << "FILE IS UPLOADED\n";
 	return (RESET);
 }
 
@@ -281,12 +274,14 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 
 	path = resources.getRequest("URL");
-	if ( path.compare("/") == 0 )
-		path = "/index.html";
 	if ( isDirectory(path.c_str()) )
 		ret = getResponseDir();
 	if ( resources.getRequest("Method") == "GET")
+	{
+		if ( path.compare("/") == 0 )
+			path = "/index.html";
 		ret = getResponseFile();
+	}
 	if ( resources.getRequest("Method") == "POST" )
 		ret = postUploadFile(resources);
 	if ( resources.getRequest("Method") == "DELETE" )
@@ -327,20 +322,16 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 {
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
-	// oss << "Connection: close\r\n";
+	oss << "Connection: close\r\n";
+	oss << "Date: " << getCurrentTime() << "\r\n";
 	//cache-control
 	//server name
 	//date
 	//Connection
-	(void)fileName;
 	if ( method == GET )
 	{
 		oss << "Content-Type: " << getFileType(fileName.c_str()) << "\r\n";
 		oss << "Content-Length: "<< fileSize << "\r\n";
-		oss << "Date: Wed, 21 Jun 2023 14:46:43 GMT\r\n";
-		// oss << "Content-Type: text/plain"<< "\r\n";
-		// oss << "\r\nwa lhmar tfo";
-		// oss << "Content-Length: " << getFileSize(fileName.c_str()) << "\r\n";
 	}
 	if ( method == POST )
 	{
@@ -356,7 +347,6 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	oss << "\r\n";
 	std::cout << oss.str() << std::endl;
 	send( socket, oss.str().data(), oss.str().size(), 0 );
-	// exit(1);
 }
 
 ssize_t  Response::getFileSize( const char *path ) const
@@ -397,6 +387,14 @@ std::string  Response::getFileType( const char *path ) const
         return ( it->second );
     else
         return "text/plain";
+}
+
+std::string	Response::getCurrentTime( void ) const
+{
+    std::time_t now = std::time(NULL);
+    std::string dateTime = std::ctime(&now);
+    dateTime.erase(dateTime.length() - 1);
+    return (dateTime);
 }
 
 void	Response::reset( void )

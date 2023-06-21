@@ -30,3 +30,16 @@ using namespace std;
 //         std::cerr << strerror(errno) << std::endl;
 // }
 
+std::string getTime( void )
+{
+    std::time_t now = std::time(NULL);
+    std::string dateTime = std::ctime(&now);
+    dateTime.erase(dateTime.length() - 1);
+    return (dateTime);
+}
+
+int main( void )
+{
+    std::string toPrint = getTime();
+    std::cout << toPrint << endl;
+}

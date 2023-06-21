@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 11:09:29 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 18:00:56 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Response
 		ssize_t     getFileSize( const char * ) const;
 		std::string	getFileType( const char * ) const;
 		bool		isDirectory( const char * ) const;
+		std::string	getCurrentTime( void ) const;
 		void		reset( void );
 	private:
 		char    request[MAX_REQUEST_SIZE + 1];

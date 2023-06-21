@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 17:18:20 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 18:06:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,28 +85,20 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
-        if ( (*it)->getState() == READ_REQUEST )
-            std::cout << "READ REQUEST\n";
-        else if ( (*it)->getState() == WRITE_RESPONSE )
-            std::cout << "WRITE RESPONSE\n";
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
-            // std::cout << "IM ALL SET IN READ\n";
             if ( (*it)->getState() == READ_REQUEST )
             {
-                // std::cout << "MY STATE IS READ REQUEST\n";
                 (*it)->startRead();
                 continue ;
             }
         }
         if ( FD_ISSET( (*it)->getSocket(), &writefds) )
         {
-            // std::cout << "IM ALL SET IN WRITE\n";
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
-                // std::cout << "MY STATE IS WRITE RESPONSE\n";
                 if ( (*it)->startResponse() )
                 {
                     (*it)->unsetSocket(writefds, readfds);
