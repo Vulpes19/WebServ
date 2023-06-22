@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/22 02:41:58 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/22 03:49:03 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,27 +30,11 @@ void    Parser::openFile(char *argv) {
 
 bool    Parser::checkBracesError() {
 
-	std::cout << openingBraceCount << std::endl;
 	if (openingBraceCount == 0)
 		return false;
-	return true;
+	else
+		return true;
 }
-
-void   Parser::readFile(std::ifstream& confFile) {
-
-	if (confFile.is_open())
-	{
-		while (getline(confFile, line))
-		{
-			std::stringstream ss(line);
-			ss >> directive >> value;
-			if (directive == "server") {
-
-				parseServer(confFile);
-			}
-		}
-	}
-} ;
 
 void	Parser::setServerContent(Server &server, int which, std::string value) {
 
@@ -111,12 +95,33 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 	}
 }
 
+void   Parser::readFile(std::ifstream& confFile) {
+
+	if (confFile.is_open())
+	{
+		while (getline(confFile, line))
+		{
+			std::stringstream ss(line);
+			ss >> directive >> value;
+			if (directive == "server" && value == "{") {
+				
+				parseServer(confFile);
+			}
+			if (checkBracesError())
+				std::cout << "Error" << std::endl;
+		}
+	}
+} ;
+
 void	Parser::parseServer(std::ifstream& confFile) {
 
 	Server  server;
 	Context context;
 	std::string brace;
 
+	std::cout << value << std::endl;
+	if (value == "{")
+		openingBraceCount++;
 	while (getline(confFile, line) && status == OK) {
 
 		if (line[0] == '#' || line.empty())
@@ -131,9 +136,14 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			parseLocation(confFile, server, value);                
 		if (line[0] == '}') {
 
-			context.setServer(server);
-			parsedData.push_back(context);
-			break ;
+			openingBraceCount--;
+			if (openingBraceCount == 0) {
+				context.setServer(server);
+				parsedData.push_back(context);
+				break ;
+			}
+			else
+				std::cout << "error" << std::endl;
 		}
 	}
 }
