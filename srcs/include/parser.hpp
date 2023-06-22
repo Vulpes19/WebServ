@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 00:22:57 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/22 02:41:29 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,13 +21,23 @@
 #include <algorithm>
 #include "configData.hpp"
 
+
+enum {
+
+	PORT,
+	NAME,
+	ROOT,
+	INDEX,
+	AUTOINDEX
+} ;
+
 class Parser {
 	private:
 		std::string directive;
 		std::string value;
 		std::string line;
 		std::vector<Context> parsedData;
-		int openingBraceCount;
+		int 	openingBraceCount;
 		bool    closingBraceExpected;
 		int     status;
 	public:
@@ -42,6 +52,8 @@ class Parser {
 		bool    findSemicolon(std::string value);
 		void    printError(int which);
 		bool    checkBracesError();
+		void	setServerContent(Server &server, int which, std::string value);
+		void	setLocationContent(Location &location, int which, std::string value);
 } ;
 
 #endif

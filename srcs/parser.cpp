@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 00:23:41 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/22 02:41:58 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,26 +40,76 @@ void   Parser::readFile(std::ifstream& confFile) {
 
 	if (confFile.is_open())
 	{
-		while (getline(confFile, line) && status == OK)
+		while (getline(confFile, line))
 		{
 			std::stringstream ss(line);
 			ss >> directive >> value;
 			if (directive == "server") {
 
-				// std::cout << "hello" << std::endl;
-				// openingBraceCount++;
-				// closingBraceExpected = true;
 				parseServer(confFile);
 			}
 		}
-		// if (checkBracesError()) {
-
-		//     status = ERROR;
-		//     printError(CURLYBRACE);
-		// }
 	}
 } ;
 
+void	Parser::setServerContent(Server &server, int which, std::string value) {
+
+	switch (which) {
+
+		case PORT:
+			if (findSemicolon(value))
+				server.setPort(value.erase(value.size() - 1));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
+		case NAME:
+			if (findSemicolon(value))    
+				server.setName(value.erase(value.size() - 1));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
+	}
+}
+
+void	Parser::setLocationContent(Location& location, int which, std::string value) {
+
+	switch (which) {
+
+		case ROOT:
+			if (findSemicolon(value))
+				location.setRoot(value.erase(value.size() - 1));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
+		case INDEX:
+			if (findSemicolon(value))	
+				location.setIndex(value.erase(value.size() - 1));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
+		case AUTOINDEX:
+			if (findSemicolon(value))
+				location.setAutoIndex();
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
+	}
+}
 
 void	Parser::parseServer(std::ifstream& confFile) {
 
@@ -68,33 +118,19 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	std::string brace;
 
 	while (getline(confFile, line) && status == OK) {
+
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> brace;
 		if (directive == "listen")
-		{
-			if (findSemicolon(value))
-				server.setPort(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
-			}
-		}
+			setServerContent(server, PORT, value);
 		else if (directive == "server_name")
-		{
-			if (findSemicolon(value))    
-				server.setName(value.erase(value.size() - 1));
-			else
-				printError(SEMICOLON);
-		}
+			setServerContent(server, NAME, value);
 		else if (directive == "location")
 			parseLocation(confFile, server, value);                
-		if (line[0] == '}' && closingBraceExpected) {
+		if (line[0] == '}') {
 
-			// openingBraceCount--;
-			// closingBraceExpected = false;
 			context.setServer(server);
 			parsedData.push_back(context);
 			break ;
@@ -107,7 +143,8 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 	Location    location;
 
 	location.setValue(value);
-	while(getline(confFile, line)) {
+	while(getline(confFile, line) && status == OK) {
+
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}") {
@@ -115,11 +152,11 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 			break ;
 		}
 		if (directive == "root")
-			location.setRoot(value.erase(value.size() - 1));
+			setLocationContent(location, ROOT, value);
 		else if (directive == "index")
-			location.setIndex(value.erase(value.size() - 1));
-		else if (directive == "autoindex" && value == "on;")
-			location.setAutoIndex();
+			setLocationContent(location, INDEX, value);
+		else if (directive == "autoindex")
+			setLocationContent(location, AUTOINDEX, value);
 	}
 }
 
