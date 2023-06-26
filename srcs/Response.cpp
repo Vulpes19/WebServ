@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 18:05:31 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/26 18:53:32 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ Response::Response( void )
 	fileSize = 0;
 	socket = -1;
 	path = "";
+	indexResponse = "";
 }
 
 Response::~Response( void )
@@ -102,20 +103,21 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 }
 
-bool	Response::isDirectory( const char *path ) const
+bool	Response::isDirectory( std::string path ) const
 {
 	struct stat fileInfo;
 
-	if ( stat(path, &fileInfo) == 0 )
+	if ( stat(path.c_str() , &fileInfo) == 0 )
 		return S_ISDIR(fileInfo.st_mode);
 	return (false);
 }
 
 enum ResponseStates    Response::getResponseDir( void )
 {
+	std::cout << "ITS A DIR\n";
+	std::ostringstream oss;
 	if ( dir == NULL )
 	{
-		std::ostringstream oss;
 		std::string fullPath = "." + path;
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
@@ -130,35 +132,43 @@ enum ResponseStates    Response::getResponseDir( void )
 		dir = opendir(fullPath.c_str());
 		if ( dir == NULL )
 			std::cerr << "cant open dir\n";
-		oss << "HTTP/1.1 200 OK\r\n";
-		oss << "Connection: close\r\n";
-		oss << "Content-Length: " << fileSize << "\r\n";
-		oss << "Content-Type: " << "text/html" << "\r\n";
-		oss << "\r\n";
-		bytesReceived = send(socket, oss.str().data(), oss.str().size(), 0);
-		std::string htmlResponse = "<html><body><ul>";
-		bytesReceived += send(socket, htmlResponse.data(), htmlResponse.size(), 0);
-		bytesSent += bytesReceived;
+		// oss << "HTTP/1.1 200 OK\r\n";
+		// oss << "Connection: close\r\n";
+		// // oss << "Content-Length: " << fileSize << "\r\n";
+		// oss << "Content-Type: " << "text/html" << "\r\n";
+		// oss << "\r\n";
+		// bytesReceived = send(socket, oss.str().data(), oss.str().size(), 0);
+		indexResponse += "<html><body><ul>";
+		// bytesReceived += send(socket, htmlResponse.data(), htmlResponse.size(), 0);
+		// bytesSent += bytesReceived;
 		return (READING);
 	}
 	entry = readdir(dir);
 	if ( entry == NULL )
 	{
-		std::string htmlResponse = "</ul></body></html>";
-		bytesReceived = send(socket, htmlResponse.data(), htmlResponse.size(), 0);
-		bytesSent += bytesReceived;
-		exit(1);
+		indexResponse += "</ul></body></html>";
+		oss << "HTTP/1.1 200 OK\r\n";
+		oss << "Connection: close\r\n";
+		oss << "Content-Length: " << indexResponse.size() << "\r\n";
+		oss << "Content-Type: " << "text/html" << "\r\n";
+		oss << "\r\n";
+		// std::string htmlResponse = "</ul></body></html>";
+		send(socket, oss.str().data(), oss.str().size(), 0);
+		send(socket, indexResponse.data(), indexResponse.size(), 0);
 		return (RESET);
 	}
 	std::string name = entry->d_name;
 	if ( name != "." && name != ".." )
 	{
+		std::cout << "reading...\n";
 		std::string link = "<li><a href=\"" + name + "\">" + name + "</a></li>";
-		bytesReceived = send(socket, link.data(), link.size(), 0);
-		bytesSent += bytesReceived; 
-		return (READING);
+		// bytesReceived = send(socket, link.data(), link.size(), 0);
+		indexResponse += link;
+		// bytesSent += bytesReceived; 
+		// return (READING);
 	}
-	return (RESET);
+		return (READING);
+	// return (RESET);
 }
 
 enum ResponseStates    Response::getResponseFile( void )
@@ -274,13 +284,14 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 
 	path = resources.getRequest("URL");
-	if ( isDirectory(path.c_str()) )
-		ret = getResponseDir();
 	if ( resources.getRequest("Method") == "GET")
 	{
 		if ( path.compare("/") == 0 )
 			path = "/index.html";
-		ret = getResponseFile();
+		if ( isDirectory("." + path) )
+			ret = getResponseDir();
+		else
+			ret = getResponseFile();
 	}
 	if ( resources.getRequest("Method") == "POST" )
 		ret = postUploadFile(resources);
@@ -304,9 +315,9 @@ bool	Response::isRequestReceived( Resources &resources ) const
 	ret = resources.getRequest("Content-Length");
 	if ( ret != "NOT FOUND" )
 	{
-		size_t bodyStart = bytesReceived - std::stoi(ret);
+		size_t bodyStart = bytesReceived - atoi(ret.c_str());
 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
-		if ( (int)requestBodyStr.size() == std::stoi(ret) )
+		if ( (int)requestBodyStr.size() == atoi(ret.c_str()) )
 			return (true);
 		else
 			return (false);
@@ -404,5 +415,6 @@ void	Response::reset( void )
 	bytesSent = 0;
 	fileSize = 0;
 	socket = -1;
-	path = "";
+	path.clear();
+	indexResponse.clear();
 }
