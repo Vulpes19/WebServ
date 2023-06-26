@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/26 19:00:48 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/26 19:44:03 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void    ErrorResponse::errorForbidden( SOCKET socket )
 {
 	std::string errorMsg = "HTTP/1.1 403 Forbidden\r\n";
 	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 0\r\n";
+	errorMsg += "Content-Length: 9\r\nForbidden";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -41,7 +41,7 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 {
 	std::string errorMsg = "HTTP/1.1 500 Internal Server Error\r\n";
 	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 0\r\n";
+	errorMsg += "Content-Length: 14\r\nInternal error";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -131,16 +131,11 @@ enum ResponseStates    Response::getResponseDir( void )
 		}
 		dir = opendir(fullPath.c_str());
 		if ( dir == NULL )
-			std::cerr << "cant open dir\n";
-		// oss << "HTTP/1.1 200 OK\r\n";
-		// oss << "Connection: close\r\n";
-		// // oss << "Content-Length: " << fileSize << "\r\n";
-		// oss << "Content-Type: " << "text/html" << "\r\n";
-		// oss << "\r\n";
-		// bytesReceived = send(socket, oss.str().data(), oss.str().size(), 0);
+		{
+			err.errorInternal(socket);
+			return (RESET);
+		}
 		indexResponse += "<html><body><ul>";
-		// bytesReceived += send(socket, htmlResponse.data(), htmlResponse.size(), 0);
-		// bytesSent += bytesReceived;
 		return (READING);
 	}
 	entry = readdir(dir);
@@ -152,7 +147,6 @@ enum ResponseStates    Response::getResponseDir( void )
 		oss << "Content-Length: " << indexResponse.size() << "\r\n";
 		oss << "Content-Type: " << "text/html" << "\r\n";
 		oss << "\r\n";
-		// std::string htmlResponse = "</ul></body></html>";
 		send(socket, oss.str().data(), oss.str().size(), 0);
 		send(socket, indexResponse.data(), indexResponse.size(), 0);
 		return (RESET);
@@ -160,15 +154,15 @@ enum ResponseStates    Response::getResponseDir( void )
 	std::string name = entry->d_name;
 	if ( name != "." && name != ".." )
 	{
-		std::cout << "reading...\n";
-		std::string link = "<li><a href=\"" + name + "\">" + name + "</a></li>";
-		// bytesReceived = send(socket, link.data(), link.size(), 0);
-		indexResponse += link;
-		// bytesSent += bytesReceived; 
-		// return (READING);
+			std::string t = "test";
+		if ( help.isDirectory( "./" + name ) )
+		{
+			indexResponse += "<li><a href=\"" + path + "/" + name + "/\">" + name + "/</a></li>";
+		}
+		else
+			indexResponse += "<li><a href=\"" + path + "/" + name + "\">" + name + "</a></li>";
 	}
-		return (READING);
-	// return (RESET);
+	return (READING);
 }
 
 enum ResponseStates    Response::getResponseFile( void )
@@ -337,8 +331,6 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
 	//cache-control
 	//server name
-	//date
-	//Connection
 	if ( method == GET )
 	{
 		oss << "Content-Type: " << help.getFileType(fileName.c_str()) << "\r\n";
@@ -358,6 +350,17 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	oss << "\r\n";
 	std::cout << oss.str() << std::endl;
 	send( socket, oss.str().data(), oss.str().size(), 0 );
+}
+
+void	Response::reset( void )
+{
+	memset(request, 0, sizeof(request));
+	bytesReceived = 0;
+	bytesSent = 0;
+	fileSize = 0;
+	socket = -1;
+	path.clear();
+	indexResponse.clear();
 }
 
 ssize_t  ResponseHelper::getFileSize( const char *path ) const
@@ -406,15 +409,4 @@ std::string	ResponseHelper::getCurrentTime( void ) const
     std::string dateTime = std::ctime(&now);
     dateTime.erase(dateTime.length() - 1);
     return (dateTime);
-}
-
-void	Response::reset( void )
-{
-	memset(request, 0, sizeof(request));
-	bytesReceived = 0;
-	bytesSent = 0;
-	fileSize = 0;
-	socket = -1;
-	path.clear();
-	indexResponse.clear();
 }
