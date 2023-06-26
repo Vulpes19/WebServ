@@ -105,10 +105,9 @@ void   Parser::readFile(std::ifstream& confFile) {
 			ss >> directive >> value;
 			if (directive == "server" && value == "{") {
 				
+				openingBraceCount++;
 				parseServer(confFile);
 			}
-			if (checkBracesError())
-				std::cout << "Error" << std::endl;
 		}
 	}
 } ;
@@ -119,9 +118,6 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	Context context;
 	std::string brace;
 
-	std::cout << value << std::endl;
-	if (value == "{")
-		openingBraceCount++;
 	while (getline(confFile, line) && status == OK) {
 
 		if (line[0] == '#' || line.empty())
@@ -132,8 +128,10 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			setServerContent(server, PORT, value);
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
-		else if (directive == "location")
+		else if (directive == "location") {
+			openingBraceCount++;
 			parseLocation(confFile, server, value);                
+		}
 		if (line[0] == '}') {
 
 			openingBraceCount--;
@@ -143,7 +141,7 @@ void	Parser::parseServer(std::ifstream& confFile) {
 				break ;
 			}
 			else
-				std::cout << "error" << std::endl;
+				std::cout << "server brace error" << std::endl;
 		}
 	}
 }
@@ -158,6 +156,7 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}") {
+			openingBraceCount--;
 			server.setLocations(location);
 			break ;
 		}
