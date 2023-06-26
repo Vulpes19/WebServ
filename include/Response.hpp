@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/26 18:47:06 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/26 18:59:42 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,15 @@ struct ErrorResponse
 	void    	errorInternal( SOCKET );
 };
 
+struct ResponseHelper
+{
+	ssize_t     getFileSize( const char * ) const;
+	std::string	getFileType( const char * ) const;
+	bool		isDirectory( std::string ) const;
+	std::string	getCurrentTime( void ) const;
+};
+
+
 class Response
 {
 	public:
@@ -40,10 +49,6 @@ class Response
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
 		bool		isRequestReceived( Resources & ) const;
-		ssize_t     getFileSize( const char * ) const;
-		std::string	getFileType( const char * ) const;
-		bool		isDirectory( std::string ) const;
-		std::string	getCurrentTime( void ) const;
 		void		reset( void );
 	private:
 		char    request[MAX_REQUEST_SIZE + 1];
@@ -54,6 +59,7 @@ class Response
 		DIR     *dir;
 		std::string		indexResponse;
 		ErrorResponse   err;
+		ResponseHelper	help;
 		std::ifstream   file;
 		std::ofstream	toUpload;
 		std::string	    path;

@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/26 18:53:32 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/26 19:00:48 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 }
 
-bool	Response::isDirectory( std::string path ) const
+bool	ResponseHelper::isDirectory( std::string path ) const
 {
 	struct stat fileInfo;
 
@@ -190,7 +190,7 @@ enum ResponseStates    Response::getResponseFile( void )
 			err.errorForbidden(socket);
 			return (RESET);
 		}
-		fileSize = getFileSize(fullPath.c_str());
+		fileSize = help.getFileSize(fullPath.c_str());
 		file.open(fullPath.c_str());
 		if ( !file.is_open() )
 		{
@@ -288,7 +288,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	{
 		if ( path.compare("/") == 0 )
 			path = "/index.html";
-		if ( isDirectory("." + path) )
+		if ( help.isDirectory("." + path) )
 			ret = getResponseDir();
 		else
 			ret = getResponseFile();
@@ -334,14 +334,14 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	std::ostringstream oss;
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
 	oss << "Connection: close\r\n";
-	oss << "Date: " << getCurrentTime() << "\r\n";
+	oss << "Date: " << help.getCurrentTime() << "\r\n";
 	//cache-control
 	//server name
 	//date
 	//Connection
 	if ( method == GET )
 	{
-		oss << "Content-Type: " << getFileType(fileName.c_str()) << "\r\n";
+		oss << "Content-Type: " << help.getFileType(fileName.c_str()) << "\r\n";
 		oss << "Content-Length: "<< fileSize << "\r\n";
 	}
 	if ( method == POST )
@@ -360,7 +360,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
-ssize_t  Response::getFileSize( const char *path ) const
+ssize_t  ResponseHelper::getFileSize( const char *path ) const
 {
     struct stat fileStat;
     if ( stat(path, &fileStat) == 0 )
@@ -370,7 +370,7 @@ ssize_t  Response::getFileSize( const char *path ) const
     return (-1);
 }
 
-std::string  Response::getFileType( const char *path ) const
+std::string  ResponseHelper::getFileType( const char *path ) const
 {
     const char *fileName = strrchr(path, '.');
     static std::map< std::string, std::string > fileTypes;
@@ -400,7 +400,7 @@ std::string  Response::getFileType( const char *path ) const
         return "text/plain";
 }
 
-std::string	Response::getCurrentTime( void ) const
+std::string	ResponseHelper::getCurrentTime( void ) const
 {
     std::time_t now = std::time(NULL);
     std::string dateTime = std::ctime(&now);
