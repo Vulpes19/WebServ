@@ -47,7 +47,7 @@ using namespace std;
 
 int main( void )
 {
-    std::fstream file("example.txt");
+    std::fstream file("/example.txt");
     if ( !file.is_open() )
         cerr << "cant open\n";
     else

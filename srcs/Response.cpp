@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/28 17:44:36 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/28 18:11:16 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,11 +154,8 @@ enum ResponseStates    Response::getResponseDir( void )
 	std::string name = entry->d_name;
 	if ( name != "." && name != ".." )
 	{
-			std::string t = "test";
 		if ( help.isDirectory( "./" + name ) )
-		{
 			indexResponse += "<li><a href=\"" + path + "/" + name + "/\">" + name + "/</a></li>";
-		}
 		else
 			indexResponse += "<li><a href=\"" + path + "/" + name + "\">" + name + "</a></li>";
 	}
@@ -173,11 +170,15 @@ enum ResponseStates    Response::getResponseFile( void )
 		bytesSent = 0;
 		bytesReceived = 0;
 		// oss << "public" << path;
-		if ( std::count( path.begin(), path.end(), '/') > 1 )
+		// if ( std::count( path.begin(), path.end(), '/') > 1 )
 			oss << "." << path;
+		// else
+			// oss << path;
 		std::string fullPath = oss.str();
+		// std::cout << 
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
+			// exit(1);
 			err.errorNotFound(socket);
 			return (RESET);
 		}
@@ -242,7 +243,7 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	toUpload.close();
 	sendResponseHeader( POST, "201 Created", "", &resources );
 	// toWrite += "\r\n";
-	// send( socket, toWrite.data(), toWrite.size(), 0 );
+	send( socket, toWrite.data(), toWrite.size(), 0 );
 	reset();
 	return (RESET);
 }
@@ -349,6 +350,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		oss << "Content-Length: 12\r\n";
 	}
 	oss << "\r\n";
+	std::cout << oss.str();
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
