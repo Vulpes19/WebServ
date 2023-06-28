@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/26 19:03:14 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/28 17:22:56 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,9 @@ struct ErrorResponse
 struct ResponseHelper
 {
 	ssize_t     getFileSize( const char * ) const;
-	std::string	getFileType( const char * ) const;
-	std::string	getFileLocation( const char * ) const;
 	bool		isDirectory( std::string ) const;
-	std::string	getCurrentTime( void ) const;
+	const std::string	getFileType( const char * ) const;
+	const std::string	getCurrentTime( void ) const;
 };
 
 

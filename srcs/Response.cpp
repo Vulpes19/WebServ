@@ -6,7 +6,7 @@
 /*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/26 19:44:03 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/06/28 17:44:36 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,7 +172,9 @@ enum ResponseStates    Response::getResponseFile( void )
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		oss << "public" << path;
+		// oss << "public" << path;
+		if ( std::count( path.begin(), path.end(), '/') > 1 )
+			oss << "." << path;
 		std::string fullPath = oss.str();
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
@@ -238,9 +240,9 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	}
 	toUpload << toWrite;
 	toUpload.close();
-	sendResponseHeader( POST, "201 Created", filePath.substr(1, filePath.length()), &resources );
-	toWrite += "\r\n";
-	send( socket, toWrite.data(), toWrite.size(), 0 );
+	sendResponseHeader( POST, "201 Created", "", &resources );
+	// toWrite += "\r\n";
+	// send( socket, toWrite.data(), toWrite.size(), 0 );
 	reset();
 	return (RESET);
 }
@@ -265,7 +267,6 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 	{
 		sendResponseHeader( DELETE, "200 OK", "", &resources );
 		send( socket, "File deleted.", 12, 0 );
-		
 	}
 	else
 		err.errorInternal(socket);
@@ -338,7 +339,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	}
 	if ( method == POST )
 	{
-		//oss << location
+		// oss << "Location: " << fileName << "\r\n";
 		oss << "Content-Type: " << resources->getRequest("Content-Type") << "\r\n";
 		oss << "Content-Length: " << resources->getRequest("Content-Length") << "\r\n";
 	}
@@ -348,7 +349,6 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		oss << "Content-Length: 12\r\n";
 	}
 	oss << "\r\n";
-	std::cout << oss.str() << std::endl;
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
@@ -373,7 +373,7 @@ ssize_t  ResponseHelper::getFileSize( const char *path ) const
     return (-1);
 }
 
-std::string  ResponseHelper::getFileType( const char *path ) const
+const std::string  	ResponseHelper::getFileType( const char *path ) const
 {
     const char *fileName = strrchr(path, '.');
     static std::map< std::string, std::string > fileTypes;
@@ -403,7 +403,7 @@ std::string  ResponseHelper::getFileType( const char *path ) const
         return "text/plain";
 }
 
-std::string	ResponseHelper::getCurrentTime( void ) const
+const std::string	ResponseHelper::getCurrentTime( void ) const
 {
     std::time_t now = std::time(NULL);
     std::string dateTime = std::ctime(&now);

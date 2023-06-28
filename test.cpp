@@ -2,6 +2,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/stat.h>
 using namespace std;
 
 // int main( void )
@@ -30,16 +31,25 @@ using namespace std;
 //         std::cerr << strerror(errno) << std::endl;
 // }
 
-std::string getTime( void )
-{
-    std::time_t now = std::time(NULL);
-    std::string dateTime = std::ctime(&now);
-    dateTime.erase(dateTime.length() - 1);
-    return (dateTime);
-}
+// std::string getTime( void )
+// {
+//     std::time_t now = std::time(NULL);
+//     std::string dateTime = std::ctime(&now);
+//     dateTime.erase(dateTime.length() - 1);
+//     return (dateTime);
+// }
+
+// int main( void )
+// {
+//     std::string toPrint = getTime();
+//     std::cout << toPrint << endl;
+// }
 
 int main( void )
 {
-    std::string toPrint = getTime();
-    std::cout << toPrint << endl;
+    std::fstream file("example.txt");
+    if ( !file.is_open() )
+        cerr << "cant open\n";
+    else
+        cout << "opened\n";
 }
