@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Resources.hpp"
+#include "../include/Resources.hpp"
 
 Resources::Resources( void )
 {}
@@ -74,14 +74,14 @@ void    Resources::checkRequest( std::string request )
 		}
 	}
 	fileContentBuffer = requestBody.c_str();
-	// for ( iterator it = header.begin(); it != header.end(); ++it )
-	// {
-	//     std::cout << it->first << " " << it->second << std::endl;
-	// }
-	// std::cout << "*********************\n";
-	// std::cout << requestBody << std::endl;
-	// std::cout << "*********************\n";
-	// exit(1);
+	for ( iterator it = header.begin(); it != header.end(); ++it )
+	{
+	    std::cout << it->first << " " << it->second << std::endl;
+	}
+	std::cout << "*********************\n";
+	std::cout << requestBody << std::endl;
+	std::cout << "*********************\n";
+// 	exit(1);
 }
 
 void    Resources::setError( enum Error_code error )
