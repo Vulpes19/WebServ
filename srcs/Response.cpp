@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 10:47:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 14:09:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ void    ErrorResponse::errorNotFound( SOCKET socket )
 	std::string errorMsg = "HTTP/1.1 404 Not Found\r\n";
 	errorMsg += "Connection: close\r\n";
 	errorMsg +=	"Content-Length: 9\r\n\r\nNot Found";
-	std::cout << errorMsg << std::endl;
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -33,7 +32,7 @@ void    ErrorResponse::errorForbidden( SOCKET socket )
 {
 	std::string errorMsg = "HTTP/1.1 403 Forbidden\r\n";
 	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 9\r\nForbidden";
+	errorMsg += "Content-Length: 9\r\n\r\nForbidden";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -41,7 +40,7 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 {
 	std::string errorMsg = "HTTP/1.1 500 Internal Server Error\r\n";
 	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 14\r\nInternal error";
+	errorMsg += "Content-Length: 14\r\n\r\nInternal error";
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
@@ -104,7 +103,6 @@ bool	ResponseHelper::isDirectory( std::string path ) const
 
 enum ResponseStates    Response::getResponseDir( void )
 {
-	std::cout << "ITS A DIR\n";
 	std::ostringstream oss;
 	if ( dir == NULL )
 	{
@@ -234,23 +232,24 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 enum ResponseStates	Response::deleteFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
-	std::ostringstream oss;
 
-	filePath = filePath.substr(1, filePath.length());
+	filePath = filePath.substr(1);
 	if ( access(filePath.c_str(), F_OK) == -1 )
 	{
 		err.errorNotFound(socket);
+		reset();
 		return (RESET);
 	}
 	if ( access(filePath.c_str(), W_OK) == -1 )
 	{
 		err.errorForbidden(socket);
+		reset();
 		return (RESET);
 	}
 	if ( remove(filePath.c_str()) == 0 )
 	{
 		sendResponseHeader( DELETE, "200 OK", "", &resources );
-		send( socket, "File deleted.", 12, 0 );
+		send( socket, "File deleted.", 13, 0 );
 	}
 	else
 		err.errorInternal(socket);
@@ -273,9 +272,19 @@ bool    Response::handleWriteResponse( Resources &resources )
 			ret = getResponseFile();
 	}
 	if ( resources.getRequest("Method") == "POST" )
-		ret = postUploadFile(resources);
+	{
+		if ( help.isDirectory("." + path) )
+			err.errorForbidden(socket);
+		else
+			ret = postUploadFile(resources);
+	}
 	if ( resources.getRequest("Method") == "DELETE" )
-		ret = deleteFile(resources);
+	{
+		if ( help.isDirectory("." + path) )
+			err.errorForbidden(socket);
+		else
+			ret = deleteFile(resources);
+	}
 	if ( ret == READING )
 		return (false);
 	else
@@ -338,7 +347,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	if ( method == DELETE )
 	{
 		oss << "Content-Type: text/plain\r\n";
-		oss << "Content-Length: 12\r\n";
+		oss << "Content-Length: 13\r\n";
 	}
 	oss << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0 );

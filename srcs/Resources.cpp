@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 09:58:59 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 14:05:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ void    Resources::checkRequest( std::string request )
 			header["HTTP"] = str;
 		}
 	}
-	std::cout << "hello\n";
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
 	//     std::cout << it->first << " " << it->second << std::endl;
@@ -87,11 +86,6 @@ void    Resources::checkRequest( std::string request )
 void    Resources::setError( enum Error_code error )
 {
 	this->error = error;
-}
-
-void    Resources::setResponseHeader( void )
-{
-	
 }
 
 std::string	Resources::getRequest( std::string Key )
@@ -111,3 +105,12 @@ void	Resources::clear( void )
 {
 	header.clear();
 }
+
+// enum	ResponseStates	Resources::fillFile( const char *content )
+// {
+// 	std::string end("\r\n\r\n");
+// 	std::string tmp;
+	
+// 	if ( tmp.substr( tmp.length() - end.length() )  )
+// 	buffer << content;
+// }
