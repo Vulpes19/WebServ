@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/28 18:11:16 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/04 09:04:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,16 +169,10 @@ enum ResponseStates    Response::getResponseFile( void )
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		// oss << "public" << path;
-		// if ( std::count( path.begin(), path.end(), '/') > 1 )
-			oss << "." << path;
-		// else
-			// oss << path;
+		oss << "." << path;
 		std::string fullPath = oss.str();
-		// std::cout << 
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
-			// exit(1);
 			err.errorNotFound(socket);
 			return (RESET);
 		}
@@ -241,8 +235,8 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	}
 	toUpload << toWrite;
 	toUpload.close();
-	sendResponseHeader( POST, "201 Created", "", &resources );
-	// toWrite += "\r\n";
+	sendResponseHeader( POST, "201 Created", filePath, &resources );
+	toWrite += "\r\n";
 	send( socket, toWrite.data(), toWrite.size(), 0 );
 	reset();
 	return (RESET);
@@ -328,6 +322,7 @@ bool	Response::isRequestReceived( Resources &resources ) const
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
 	std::ostringstream oss;
+
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
 	oss << "Connection: close\r\n";
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
@@ -340,9 +335,15 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	}
 	if ( method == POST )
 	{
-		// oss << "Location: " << fileName << "\r\n";
-		oss << "Content-Type: " << resources->getRequest("Content-Type") << "\r\n";
-		oss << "Content-Length: " << resources->getRequest("Content-Length") << "\r\n";
+		std::string ret;
+		ret = help.getFileLocation(fileName.substr(1).c_str());
+		if ( !ret.empty() )
+			oss << "Location: " << ret << "\r\n";
+		ret = resources->getRequest("Content-Type");
+		if ( ret == "NOT FOUND" )
+			oss << "Content-Type: " << ret << "\n";
+		if ( ret == "NOT FOUND" )
+			oss << "Content-Length: " << resources->getRequest("Content-Length") << "\n";
 	}
 	if ( method == DELETE )
 	{
@@ -350,7 +351,6 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		oss << "Content-Length: 12\r\n";
 	}
 	oss << "\r\n";
-	std::cout << oss.str();
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
@@ -411,4 +411,15 @@ const std::string	ResponseHelper::getCurrentTime( void ) const
     std::string dateTime = std::ctime(&now);
     dateTime.erase(dateTime.length() - 1);
     return (dateTime);
+}
+
+const std::string	ResponseHelper::getFileLocation( const char *relativePath ) const
+{
+	char path[PATH_MAX];
+
+	char *absolutePath = realpath( relativePath, path );
+	if ( absolutePath != NULL)
+		return (absolutePath);
+	else
+		return ("");
 }

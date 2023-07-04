@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/28 17:22:56 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/04 08:40:37 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ struct ResponseHelper
 	bool		isDirectory( std::string ) const;
 	const std::string	getFileType( const char * ) const;
 	const std::string	getCurrentTime( void ) const;
+	const std::string	getFileLocation( const char * ) const;
 };
 
 

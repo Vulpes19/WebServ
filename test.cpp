@@ -47,9 +47,11 @@ using namespace std;
 
 int main( void )
 {
-    std::fstream file("/example.txt");
-    if ( !file.is_open() )
-        cerr << "cant open\n";
+    std::string s("public/jake.mp4");
+    char path[PATH_MAX];
+    char *ret = realpath(s.c_str(), path);
+    if ( ret != NULL )
+        std::cout << ret << std::endl;
     else
-        cout << "opened\n";
+        std::cerr << "nothing\n";
 }
