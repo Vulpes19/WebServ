@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/22 03:49:03 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 20:50:17 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,15 @@ void	Parser::setServerContent(Server &server, int which, std::string value) {
 				exit(1) ;
 			}
 			break ;
+		case SIZE:
+			if (findSemicolon(value))
+				server.setSize(stoi(value));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1);
+			}
+			break ;
 	}
 }
 
@@ -92,6 +101,15 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 				exit(1) ;
 			}
 			break ;
+		case UPLOAD:
+			if (findSemicolon(value))
+				location.setUpload(value.erase(value.size() - 1));
+			else {
+				printError(SEMICOLON);
+				status = ERROR;
+				exit(1) ;
+			}
+			break ;
 	}
 }
 
@@ -104,12 +122,14 @@ void   Parser::readFile(std::ifstream& confFile) {
 			std::stringstream ss(line);
 			ss >> directive >> value;
 			if (directive == "server" && value == "{") {
-				
+
 				openingBraceCount++;
 				parseServer(confFile);
 			}
 		}
 	}
+	else
+		std::cout << "Error: could not open the configuration file!" << std::endl;
 } ;
 
 void	Parser::parseServer(std::ifstream& confFile) {
@@ -128,6 +148,8 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			setServerContent(server, PORT, value);
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
+		else if (directive == "body_size")
+			setServerContent(server, SIZE, value);
 		else if (directive == "location") {
 			openingBraceCount++;
 			parseLocation(confFile, server, value);                
@@ -166,6 +188,8 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 			setLocationContent(location, INDEX, value);
 		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
+		else if (directive == "upload")
+			setLocationContent(location, UPLOAD, value);
 	}
 }
 
@@ -183,6 +207,7 @@ void	Parser::printData() {
 		std::cout << "Server: " << std::endl;
 		std::cout << "listen: " << server.getPort() << std::endl;
 		std::cout << "name: " << server.getName() << std::endl;
+		std::cout << "body size: " << server.getSize() << std::endl;
 
 		std::vector<Location>   locationVec = server.getLocations();
 		for (int i = 0; i < locationVec.size(); i++) {
@@ -191,6 +216,7 @@ void	Parser::printData() {
 			std::cout << "value: " << locationVec[i].getValue() << std::endl;
 			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
 			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
+			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
 			if (locationVec[i].getAutoIndex() == ON)
 				std::cout << "autoindex: on" << std::endl;
 		}

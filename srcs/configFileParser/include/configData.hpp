@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/22 02:30:23 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 20:41:38 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,14 +42,17 @@ class Location {
 		std::string value;
 		std::string root;
 		std::string index;
+		std::string	upload;
 		int         autoindex;
 	public:
 		Location();
-		Location(std::string value, std::string root, std::string index);
+		Location(std::string value, std::string root, std::string index, std::string upload);
 		void    setValue(const std::string &val);
 		void    setRoot(const std::string &rt);
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
+		void	setUpload(const std::string &upld);
+		std::string	getUpload() const;
 		std::string getValue() const;
 		std::string getRoot() const;
 		std::string getIndex() const;
@@ -62,15 +65,18 @@ class Server {
 	private:
 		std::string             port;
 		std::string             server_name;
+		int						body_size;
 		std::vector<Location>    locations;
 	public:
 		Server();
-		Server(std::string port, std::string server_name, Location &location);
+		Server(std::string port, std::string server_name, Location &location, int body_size);
 		Server&	operator=(const Server& server);
 		void    setPort(const std::string &p);
+		void	setSize(const int &bytes);
 		void    setName(const std::string &name);
 		void    setLocations(const Location &location);
 		std::string getPort() const;
+		int			getSize() const;
 		std::string getName() const;
 		std::vector<Location> getLocations();
 		~Server();

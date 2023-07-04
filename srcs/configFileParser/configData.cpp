@@ -6,19 +6,24 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/20 19:48:40 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 20:47:54 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/configData.hpp"
 
-Location::Location(): autoindex(OFF) {};
+Location::Location(): autoindex(OFF), upload("NONE"), value("NONE"), root("NONE"), index("NONE") {};
 
-Location::Location(std::string value, std::string root, std::string index): autoindex(OFF), value(value), root(root), index(index) {};
+Location::Location(std::string value, std::string root, std::string index, std::string upload): autoindex(OFF), value(value), root(root), index(index), upload(upload) {};
 
 void    Location::setValue(const std::string& val) {
 
     value = val;
+}
+
+void	Location::setUpload(const std::string &upld) {
+	
+	upload = upld;	
 }
 
 void    Location::setRoot(const std::string& rt) {
@@ -34,6 +39,11 @@ void    Location::setIndex(const std::string& indx) {
 void	Location::setAutoIndex() {
 	
 	autoindex = ON;
+}
+
+std::string Location::getUpload() const {
+
+	return (upload);
 }
 
 std::string Location::getValue() const {
@@ -69,9 +79,9 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-Server::Server() {};
+Server::Server(): body_size(1000), port("80"), server_name("DEFAULT") {};
 
-Server::Server(std::string port, std::string server_name, Location &location): port(port), server_name(server_name) {
+Server::Server(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
 
     locations.push_back(location);
 };
@@ -86,6 +96,11 @@ void    Server::setName(const std::string& name) {
     server_name = name;
 }
 
+void	Server::setSize(const int& bytes) {
+
+	body_size = bytes;
+}
+
 void    Server::setLocations(const Location &location) {
 
     locations.push_back(location);
@@ -94,6 +109,11 @@ void    Server::setLocations(const Location &location) {
 std::string Server::getPort() const {
 
     return (port);
+}
+
+int	Server::getSize() const {
+
+	return (body_size);
 }
 
 std::string Server::getName() const {
@@ -113,6 +133,7 @@ Server&	Server::operator=(const Server& server) {
 		this->port = server.port;
 		this->server_name = server.server_name;
 		this->locations = server.locations;
+		this->body_size = server.body_size;
 	}
 	return (*this);
 }
