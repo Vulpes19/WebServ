@@ -1,8 +1,6 @@
 {
     "files.associations": {
-<<<<<<< HEAD
         "map": "cpp"
-=======
         "iostream": "cpp",
         "__bit_reference": "cpp",
         "__config": "cpp",
@@ -69,7 +67,7 @@
         "deque": "cpp",
         "fstream": "cpp",
         "iomanip": "cpp",
-        "stack": "cpp"
->>>>>>> 7605baa527585389566f2b8bc3bb1441820d455c
+        "stack": "cpp",
+        "filesystem": "cpp"
     }
 }

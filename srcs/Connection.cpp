@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 11:24:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/21 18:06:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ Connection::Connection( void )
 }
 
 Connection::~Connection( void )
-{}
+{
+    clients.erase(clients.begin(), clients.end());
+}
 
 ClientManager   *Connection::getClient( SOCKET socket, Server srv )
 {
@@ -32,8 +34,7 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     ClientManager *newClient = new ClientManager();
     newClient->reset();
     newClient->createClient( srv.getListenSocket() );
-
-    // newClient->setState( READ_REQUEST);
+    newClient->setState( READ_REQUEST);
     clients.push_back(newClient);
     return (newClient);
 }
@@ -59,6 +60,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
     FD_ZERO(&readfds);
     FD_SET(socket, &readfds);
     SOCKET maxSocket = socket;
+    // std::cout << "list size is: " << clients.size() << std::endl;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() > -1 )
@@ -67,10 +69,7 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
             if ( (*it)->getState() == WRITE_RESPONSE )
                 (*it)->changeSet( readfds, writefds );
             if ( (*it)->getSocket() > maxSocket )
-            {
-                std::cout << "added the socket\n";
                 maxSocket = (*it)->getSocket();
-            }
         }
     }
     if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
@@ -80,26 +79,9 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
     }
 }
 
-// void    Client::errorBadRequest( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 11\r\n\r\nBad Request";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0 );
-//     deleteClient( cl );
-// }
-
-// void    Client::errorNotFound( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 9\r\n\r\nNot Found";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0);
-// }
-
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
-    // std::cout << "entering multiplexing\n";
+    std::cout << "entering multiplexing\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
@@ -127,5 +109,5 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
             }
         }
     }
-    // std::cout << "exiting multiplexing\n";
+    std::cout << "exiting multiplexing\n";
 }
