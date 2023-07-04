@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Resources.hpp"
+#include "../include/Resources.hpp"
 
 Resources::Resources( void )
 {}
