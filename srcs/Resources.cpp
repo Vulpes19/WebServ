@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 17:21:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 09:58:59 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,8 @@ void    Resources::checkRequest( std::string request )
 		}
 		else if ( requestBodyStart )
 		{
-			requestBody += line;
-			requestBody += "\n";
+			fileContentBuffer += line;
+			fileContentBuffer += "\n";
 		}
 		else if ( colon != std::string::npos )
 		{
@@ -73,7 +73,7 @@ void    Resources::checkRequest( std::string request )
 			header["HTTP"] = str;
 		}
 	}
-	fileContentBuffer = requestBody;
+	std::cout << "hello\n";
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
 	//     std::cout << it->first << " " << it->second << std::endl;

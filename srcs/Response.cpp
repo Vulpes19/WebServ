@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 09:04:42 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 10:47:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,21 +66,15 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
-	ssize_t bytesRead = read( socket, request, BSIZE );
-	if ( bytesRead > 0 )
+	ssize_t bytesRead = read( socket, request, MAX_REQUEST_SIZE );
+	if ( bytesRead > 0  )
 	{
 		bytesReceived += bytesRead;
 		request[bytesRead] = '\0';
 		std::string toSend(request);
 		resources.checkRequest(toSend);
 		if ( isRequestReceived(resources) )
-		{
-			std::cout << "**********\n";
-			std::cout << toSend << std::endl;
-			std::cout << "**********\n";
-			std::cout << "REQUEST IS RECEIVED\n";
 			return (READY_TO_WRITE);
-		}
 		return (READING);
 	}
 	else if ( bytesRead == 0 )
@@ -88,15 +82,11 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		std::string toSend(request);
 		resources.checkRequest(toSend);
 		if ( isRequestReceived(resources) )
-		{
-			std::cout << "REQUEST IS RECEIVED\n";
 			return (READY_TO_WRITE);
-		}
 		return (READING);
 	}
 	else
 	{
-		std::cerr << "Error reading request\n";
 		err.errorBadRequest(socket);
 		reset();
 		return (RESET);
@@ -190,7 +180,7 @@ enum ResponseStates    Response::getResponseFile( void )
 		}
 		sendResponseHeader( GET, "200 OK", fullPath, NULL );
 	}
-	char buffer[BSIZE];
+	char buffer[BSIZE + 1];
 	file.read(buffer, BSIZE);
 	ssize_t bytesRead = file.gcount();
 	buffer[bytesRead] = '\0';
@@ -236,8 +226,7 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	toUpload << toWrite;
 	toUpload.close();
 	sendResponseHeader( POST, "201 Created", filePath, &resources );
-	toWrite += "\r\n";
-	send( socket, toWrite.data(), toWrite.size(), 0 );
+	send( socket, "File created.", 13, 0 );
 	reset();
 	return (RESET);
 }
@@ -303,7 +292,9 @@ bool	Response::isRequestReceived( Resources &resources ) const
 	std::string ret;
 
 	ret = resources.getRequest("Content-Length");
-	if ( ret != "NOT FOUND" )
+	if ( ret == "NOT FOUND")
+		return (true);
+	else
 	{
 		size_t bodyStart = bytesReceived - atoi(ret.c_str());
 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
@@ -340,10 +331,9 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		if ( !ret.empty() )
 			oss << "Location: " << ret << "\r\n";
 		ret = resources->getRequest("Content-Type");
-		if ( ret == "NOT FOUND" )
+		if ( ret != "NOT FOUND" )
 			oss << "Content-Type: " << ret << "\n";
-		if ( ret == "NOT FOUND" )
-			oss << "Content-Length: " << resources->getRequest("Content-Length") << "\n";
+		oss << "Content-Length: " << "13" << "\r\n";
 	}
 	if ( method == DELETE )
 	{

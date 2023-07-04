@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/21 17:22:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/04 09:37:29 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ class Resources
 		void		clear( void );
 	private:
 		std::map< std::string, std::string > header;
+		enum Error_code error;
 		std::string	fileContentBuffer;
 		int			fileSize;
-		enum Error_code error;
 };

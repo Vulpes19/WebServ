@@ -13,7 +13,7 @@ OBJ_DIR = obj
 OBJS = $(SRC:srcs/%.cpp=$(OBJ_DIR)/%.o)
 
 #* FLAGS *#
-FLAGS = -Wall -Wextra -Werror #-std=c++98 #-fsanitize=address -g3
+FLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 #* HEADER FILES *#
 INCLUDE = include/

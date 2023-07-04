@@ -45,13 +45,20 @@ using namespace std;
 //     std::cout << toPrint << endl;
 // }
 
-int main( void )
-{
-    std::string s("public/jake.mp4");
-    char path[PATH_MAX];
-    char *ret = realpath(s.c_str(), path);
-    if ( ret != NULL )
-        std::cout << ret << std::endl;
-    else
-        std::cerr << "nothing\n";
+std::string generateLargeRequestBody(int sizeInBytes) {
+    std::string requestBody;
+    requestBody.reserve(sizeInBytes);
+    
+    for (int i = 0; i < sizeInBytes; i++) {
+        requestBody += 'A';  // You can modify the character or pattern as needed
+    }
+    
+    return requestBody;
+}
+
+int main() {
+    int requestSizeLimit = 4000;  // Modify this to match your server's request size limit
+    std::ofstream file;
+    file.open("testSizeFile");
+    
 }
