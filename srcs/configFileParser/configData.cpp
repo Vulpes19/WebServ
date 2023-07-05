@@ -6,11 +6,37 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 20:47:54 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:29:01 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "include/configData.hpp"
+
+ErrorPage::ErrorPage() {} ;
+
+ErrorPage::ErrorPage(int status_code, std::string path): status_code(status_code), path(path) {} ;
+
+void	ErrorPage::setStatusCode(const int code) {
+
+	status_code = code;
+}
+
+void	ErrorPage::setPath(const std::string file) {
+
+	path = file;
+} 
+
+int		ErrorPage::getStatusCode() const {
+
+	return (status_code);
+}
+
+std::string	ErrorPage::getPath() const {
+
+	return (path);
+}
+
+ErrorPage::~ErrorPage() {} ;
 
 Location::Location(): autoindex(OFF), upload("NONE"), value("NONE"), root("NONE"), index("NONE") {};
 
@@ -106,6 +132,11 @@ void    Server::setLocations(const Location &location) {
     locations.push_back(location);
 }
 
+void	Server::setErrorPages(const ErrorPage& error_page) {
+
+	errorPages.push_back(error_page);
+};
+
 std::string Server::getPort() const {
 
     return (port);
@@ -126,6 +157,11 @@ std::vector<Location>   Server::getLocations() {
     return (locations);
 }
 
+std::vector<ErrorPage>	Server::getErrorPages() {
+
+	return (errorPages);
+}
+
 Server&	Server::operator=(const Server& server) {
 
 	if (this != &server)
@@ -133,6 +169,7 @@ Server&	Server::operator=(const Server& server) {
 		this->port = server.port;
 		this->server_name = server.server_name;
 		this->locations = server.locations;
+		this->errorPages = server.errorPages;
 		this->body_size = server.body_size;
 	}
 	return (*this);

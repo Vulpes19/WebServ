@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 20:41:38 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:27:12 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,21 @@ enum {
 
 	ERROR,
 	OK
+} ;
+
+class ErrorPage {
+	private:
+		int			status_code;
+		std::string	path;
+	public:
+		ErrorPage();
+		ErrorPage(int status_code, std::string path);
+		void		setStatusCode(const int code);
+		void		setPath(const std::string file);
+		int			getStatusCode() const;
+		std::string	getPath() const;
+		~ErrorPage();
+
 } ;
 
 class Location {
@@ -67,6 +82,7 @@ class Server {
 		std::string             server_name;
 		int						body_size;
 		std::vector<Location>    locations;
+		std::vector<ErrorPage>	errorPages;
 	public:
 		Server();
 		Server(std::string port, std::string server_name, Location &location, int body_size);
@@ -75,10 +91,12 @@ class Server {
 		void	setSize(const int &bytes);
 		void    setName(const std::string &name);
 		void    setLocations(const Location &location);
+		void	setErrorPages(const ErrorPage &error_page);
 		std::string getPort() const;
 		int			getSize() const;
 		std::string getName() const;
 		std::vector<Location> getLocations();
+		std::vector<ErrorPage>	getErrorPages();
 		~Server();
 } ;
 

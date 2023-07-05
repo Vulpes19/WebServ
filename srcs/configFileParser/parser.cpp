@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 20:50:17 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 18:33:09 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ void    Parser::openFile(char *argv) {
 bool    Parser::checkBracesError() {
 
 	if (openingBraceCount == 0)
-		return false;
-	else
 		return true;
+	
+	return false;
 }
 
 void	Parser::setServerContent(Server &server, int which, std::string value) {
@@ -65,6 +65,19 @@ void	Parser::setServerContent(Server &server, int which, std::string value) {
 				printError(SEMICOLON);
 				status = ERROR;
 				exit(1);
+			}
+			break ;
+		case ERRORPAGE:
+			std::stringstream ss(value);
+			std::string directive, status_code, path;
+			ss >> directive >> status_code >> path;
+			
+			if (findSemicolon(path)) {
+				ErrorPage	error_page;
+				
+				error_page.setStatusCode(stoi(status_code));
+				error_page.setPath(path.erase(path.size() - 1));
+				server.setErrorPages(error_page);
 			}
 			break ;
 	}
@@ -123,6 +136,7 @@ void   Parser::readFile(std::ifstream& confFile) {
 			ss >> directive >> value;
 			if (directive == "server" && value == "{") {
 
+				closingBraceExpected = true;
 				openingBraceCount++;
 				parseServer(confFile);
 			}
@@ -138,26 +152,27 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	Context context;
 	std::string brace;
 
-	while (getline(confFile, line) && status == OK) {
+	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
-		ss >> directive >> value >> brace;
+		ss >> directive >> value;
 		if (directive == "listen")
 			setServerContent(server, PORT, value);
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
 		else if (directive == "body_size")
 			setServerContent(server, SIZE, value);
+		else if (directive == "error_page")
+			setServerContent(server, ERRORPAGE, line);
 		else if (directive == "location") {
-			openingBraceCount++;
 			parseLocation(confFile, server, value);                
 		}
-		if (line[0] == '}') {
+		else if (line[0] == '}') {
 
 			openingBraceCount--;
-			if (openingBraceCount == 0) {
+			if (checkBracesError()) {
 				context.setServer(server);
 				parsedData.push_back(context);
 				break ;
@@ -178,7 +193,8 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}") {
-			openingBraceCount--;
+			// openingBraceCount--;
+			// closingBraceExpected = false;
 			server.setLocations(location);
 			break ;
 		}
@@ -190,6 +206,8 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 			setLocationContent(location, AUTOINDEX, value);
 		else if (directive == "upload")
 			setLocationContent(location, UPLOAD, value);
+		// if (checkBracesError() == false)
+		// 	std::cout << "server brace error" << std::endl;
 	}
 }
 
@@ -208,7 +226,14 @@ void	Parser::printData() {
 		std::cout << "listen: " << server.getPort() << std::endl;
 		std::cout << "name: " << server.getName() << std::endl;
 		std::cout << "body size: " << server.getSize() << std::endl;
-
+		
+		std::vector<ErrorPage>	epVec = server.getErrorPages();
+		for (int i = 0; i < epVec.size(); i++) {
+			
+			std::cout << "error_pages: " << std::endl;
+			std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
+			std::cout << "path: " << epVec[i].getPath() << std::endl;
+		}
 		std::vector<Location>   locationVec = server.getLocations();
 		for (int i = 0; i < locationVec.size(); i++) {
 
