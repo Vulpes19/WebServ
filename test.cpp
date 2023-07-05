@@ -45,20 +45,12 @@ using namespace std;
 //     std::cout << toPrint << endl;
 // }
 
-std::string generateLargeRequestBody(int sizeInBytes) {
-    std::string requestBody;
-    requestBody.reserve(sizeInBytes);
-    
-    for (int i = 0; i < sizeInBytes; i++) {
-        requestBody += 'A';  // You can modify the character or pattern as needed
-    }
-    
-    return requestBody;
-}
+#include "testheader.hpp"
 
-int main() {
-    int requestSizeLimit = 4000;  // Modify this to match your server's request size limit
-    std::ofstream file;
-    file.open("testSizeFile");
-    
+int main( int ac, char **av )
+{
+    Parser parser;
+
+    parser.openFile(av[1]);
+    parser.printData();
 }

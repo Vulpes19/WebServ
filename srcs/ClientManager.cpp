@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 08:12:55 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 14:51:43 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,4 +82,9 @@ void    ClientManager::createClient( SOCKET listenSocket )
         std::cerr << "failed to disable SIGPIPE at the socket level\n";
         exit(1);
     }
+}
+
+void    ClientManager::setLocations( std::vector<Location> loc )
+{
+    response->setLocations(loc);
 }

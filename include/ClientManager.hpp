@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/16 14:50:30 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 14:49:55 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class ClientManager
 		void    	setState( enum states newState ) { state = newState; };
 		void		createClient( SOCKET listenSocket );
 		SOCKET      getSocket( void ) const { return (socket); };
+		void		setLocations( std::vector<Location> );
 	private:
 		SOCKET		socket;
 		Resources	resources;

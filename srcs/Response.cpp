@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 14:09:30 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 14:52:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -351,6 +351,11 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	}
 	oss << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0 );
+}
+
+void    Response::setLocations( std::vector<Location> loc )
+{
+    this->loc = loc;
 }
 
 void	Response::reset( void )
