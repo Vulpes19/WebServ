@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 15:45:26 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 21:30:05 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,8 @@ void    Resources::checkRequest( std::string request )
 	std::stringstream	ss(request);
 	std::string			line;
 	std::string			requestBody;
+	size_t				requiredLength = -1;
+	size_t				actualLength = 0;
 	bool				requestBodyStart = false;
 	std::cout << " ********************************* \n";
 	while ( std::getline(ss, line) )
@@ -54,12 +56,16 @@ void    Resources::checkRequest( std::string request )
 		{
 			fileContentBuffer += line;
 			fileContentBuffer += "\n";
+			actualLength += fileContentBuffer.size();
+
 		}
 		else if ( colon != std::string::npos )
 		{
 			std::string headerKey = line.substr(0, colon);
 			std::string headerValue = line.substr( colon + 2 );
 			header[headerKey] = headerValue;
+			if (headerKey == "Content-Length")
+				requiredLength = std::stoi(headerValue);
 		}
 		else if ( line.find("HTTP") != std::string::npos )
 		{
@@ -72,6 +78,11 @@ void    Resources::checkRequest( std::string request )
 			ss2 >> str;
 			header["HTTP"] = str;
 		}
+	}
+	if (requiredLength < actualLength)
+	{
+		setError(BAD_REQUEST);
+		std::cout << "error" << std::endl;
 	}
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
