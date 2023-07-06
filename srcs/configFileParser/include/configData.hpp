@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:27:12 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 14:18:51 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,8 @@ enum {
 enum {
 	SEMICOLON,
 	CURLYBRACE,
-	UNKNOWN
+	UNKNOWN,
+	EMPTY
 } ;
 
 enum {

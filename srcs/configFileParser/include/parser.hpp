@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:02:48 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 14:20:41 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ enum {
 	AUTOINDEX,
 	SIZE,
 	UPLOAD,
-	ERRORPAGE
+	ERROR_PAGE
 } ;
 
 class Parser {

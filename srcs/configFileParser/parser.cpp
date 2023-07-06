@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:33:09 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 14:40:20 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,44 +41,53 @@ void	Parser::setServerContent(Server &server, int which, std::string value) {
 	switch (which) {
 
 		case PORT:
-			if (findSemicolon(value))
-				server.setPort(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					server.setPort(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 		case NAME:
-			if (findSemicolon(value))    
-				server.setName(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))    
+					server.setName(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 		case SIZE:
-			if (findSemicolon(value))
-				server.setSize(stoi(value));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1);
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					server.setSize(stoi(value));
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
-		case ERRORPAGE:
+		case ERROR_PAGE:
 			std::stringstream ss(value);
 			std::string directive, status_code, path;
-			ss >> directive >> status_code >> path;
 			
-			if (findSemicolon(path)) {
-				ErrorPage	error_page;
-				
-				error_page.setStatusCode(stoi(status_code));
-				error_page.setPath(path.erase(path.size() - 1));
-				server.setErrorPages(error_page);
+			ss >> directive >> status_code >> path;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(path)) {
+					ErrorPage	error_page;
+					
+					error_page.setStatusCode(stoi(status_code));
+					error_page.setPath(path.erase(path.size() - 1));
+					server.setErrorPages(error_page);
+				}
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 	}
 }
@@ -88,40 +97,44 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 	switch (which) {
 
 		case ROOT:
-			if (findSemicolon(value))
-				location.setRoot(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
-			}
+			if (value.size() - 1 > 0) {	
+				if (findSemicolon(value))
+					location.setRoot(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}	
+			else
+				printError(EMPTY);
 			break ;
 		case INDEX:
-			if (findSemicolon(value))	
-				location.setIndex(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))	
+					location.setIndex(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 		case AUTOINDEX:
-			if (findSemicolon(value))
-				location.setAutoIndex();
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setAutoIndex();
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 		case UPLOAD:
-			if (findSemicolon(value))
-				location.setUpload(value.erase(value.size() - 1));
-			else {
-				printError(SEMICOLON);
-				status = ERROR;
-				exit(1) ;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setUpload(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
 			}
+			else
+				printError(EMPTY);
 			break ;
 	}
 }
@@ -165,7 +178,7 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		else if (directive == "body_size")
 			setServerContent(server, SIZE, value);
 		else if (directive == "error_page")
-			setServerContent(server, ERRORPAGE, line);
+			setServerContent(server, ERROR_PAGE, line);
 		else if (directive == "location") {
 			parseLocation(confFile, server, value);                
 		}
@@ -180,6 +193,8 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			else
 				std::cout << "server brace error" << std::endl;
 		}
+		else
+			printError(UNKNOWN);
 	}
 }
 
@@ -193,8 +208,6 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}") {
-			// openingBraceCount--;
-			// closingBraceExpected = false;
 			server.setLocations(location);
 			break ;
 		}
@@ -206,8 +219,6 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 			setLocationContent(location, AUTOINDEX, value);
 		else if (directive == "upload")
 			setLocationContent(location, UPLOAD, value);
-		// if (checkBracesError() == false)
-		// 	std::cout << "server brace error" << std::endl;
 	}
 }
 
@@ -259,14 +270,21 @@ bool    Parser::findSemicolon(std::string value) {
 
 void    Parser::printError(int which) {
 
+	status = ERROR;
 	switch(which) {
 
 		case SEMICOLON:
 			std::cout << "Error: could not find semicolon" << std::endl;
-			std::cout << "line: " << directive << " " << value << "<-" << std::endl;
 			break ;
 		case CURLYBRACE:
 			std::cout << "Error: could not find curly brace" << std::endl;
 			break ;
+		case UNKNOWN:
+			std::cout << "Error: " << directive << " <- Unknown expression." << std::endl;
+			break ;
+		case EMPTY:
+			std::cout << "Error: " << directive << " <- Directive can't have empty value!" << std::endl;
+			break ;
 	}
+	exit(1);
 }
