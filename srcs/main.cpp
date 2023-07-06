@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:16:07 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 11:01:16 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,6 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		ServerSettings settings;
 		Server server;
 		settings = contexts[i].getServer();
-		std::cout << settings.getName() << std::endl;
-		std::cout << settings.getPort() << std::endl;
 		server.setName(settings.getName());
 		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
@@ -55,7 +53,6 @@ int main( int ac, char **av )
 				if ( FD_ISSET( servers[i].getListenSocket(), &readfds ) )
 				{
 					ClientManager *client = cl.getClient(-1, servers[i]);
-					std::cout << "socket connected: " << client->getSocket() << std::endl;
 					if ( client->getSocket() == -1 )
 					{
 						std::cerr << "accept() failed: " << strerror(errno) << std::endl;

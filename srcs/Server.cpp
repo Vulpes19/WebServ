@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:23:05 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 10:59:36 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ void  Server::createListenSocket( void )
     }
     if ( bind( listenSocket, bindAddress->ai_addr, bindAddress->ai_addrlen) != 0 )
     {
-        std::cout << name << " " << port << std::endl;
         std::string msg(strerror(errno));
         throw excp("bind() failed: " + msg);     
     }

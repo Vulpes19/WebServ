@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <dirent.h>
 using namespace std;
 
 // int main( void )
@@ -45,12 +46,21 @@ using namespace std;
 //     std::cout << toPrint << endl;
 // }
 
-#include "testheader.hpp"
+// #include "testheader.hpp"
 
-int main( int ac, char **av )
+// int main( int ac, char **av )
+// {
+//     Parser parser;
+
+//     parser.openFile(av[1]);
+//     parser.printData();
+// }
+
+int main( void )
 {
-    Parser parser;
-
-    parser.openFile(av[1]);
-    parser.printData();
+    DIR *dir = opendir("./tests");
+    struct dirent *entry;
+    while ( (entry = readdir(dir)) != NULL )
+        std::cout << entry->d_name << std::endl;
+    return (0);
 }

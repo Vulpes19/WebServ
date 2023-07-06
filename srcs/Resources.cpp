@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 14:05:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 11:02:17 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ void    Resources::checkRequest( std::string request )
 	std::string			line;
 	std::string			requestBody;
 	bool				requestBodyStart = false;
-	std::cout << " ********************************* \n";
 	while ( std::getline(ss, line) )
 	{
 		size_t colon = line.find(":");

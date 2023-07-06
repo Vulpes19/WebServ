@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 14:52:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 12:04:57 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 Response::Response( void )
 {
 	memset(request, 0, sizeof(request));
+	// struct dirent *entry = new struct dirent;
+	// memset(entry, 0, sizeof(struct dirent));
 	bytesReceived = 0;
 	bytesSent = 0;
 	fileSize = 0;
@@ -104,50 +106,51 @@ bool	ResponseHelper::isDirectory( std::string path ) const
 enum ResponseStates    Response::getResponseDir( void )
 {
 	std::ostringstream oss;
-	if ( dir == NULL )
+	std::string fullPath = "." + path;
+	if ( access(fullPath.c_str(), F_OK) == -1 )
 	{
-		std::string fullPath = "." + path;
-		if ( access(fullPath.c_str(), F_OK) == -1 )
-		{
-			err.errorNotFound(socket);
-			return (RESET);
-		}
-		if ( access(fullPath.c_str(), R_OK | X_OK) == -1 )
-		{
-			err.errorForbidden(socket);
-			return (RESET);
-		}
-		dir = opendir(fullPath.c_str());
-		if ( dir == NULL )
-		{
-			err.errorInternal(socket);
-			return (RESET);
-		}
-		indexResponse += "<html><body><ul>";
-		return (READING);
-	}
-	entry = readdir(dir);
-	if ( entry == NULL )
-	{
-		indexResponse += "</ul></body></html>";
-		oss << "HTTP/1.1 200 OK\r\n";
-		oss << "Connection: close\r\n";
-		oss << "Content-Length: " << indexResponse.size() << "\r\n";
-		oss << "Content-Type: " << "text/html" << "\r\n";
-		oss << "\r\n";
-		send(socket, oss.str().data(), oss.str().size(), 0);
-		send(socket, indexResponse.data(), indexResponse.size(), 0);
+		err.errorNotFound(socket);
+		reset();
 		return (RESET);
 	}
-	std::string name = entry->d_name;
-	if ( name != "." && name != ".." )
+	if ( access(fullPath.c_str(), R_OK | X_OK) == -1 )
 	{
-		if ( help.isDirectory( "./" + name ) )
-			indexResponse += "<li><a href=\"" + path + "/" + name + "/\">" + name + "/</a></li>";
-		else
-			indexResponse += "<li><a href=\"" + path + "/" + name + "\">" + name + "</a></li>";
+		err.errorForbidden(socket);
+		reset();
+		return (RESET);
 	}
-	return (READING);
+	DIR *dir = opendir(fullPath.c_str());
+	if ( test == NULL )
+	{
+		err.errorInternal(socket);
+		reset();
+		return (RESET);
+	}
+	indexResponse += "<html><body><ul>";
+	struct  dirent *entry;	
+	while ( (entry = readdir(test)) != NULL )
+	{
+		std::string name = entry->d_name;
+		std::cout << name << std::endl;
+		if ( name != "." && name != ".." )
+		{
+			if ( help.isDirectory( "./" + name ) )
+				indexResponse += "<li><a href=\"" + path + "/" + name + "/\">" + name + "/</a></li>";
+			else
+				indexResponse += "<li><a href=\"" + path + "/" + name + "\">" + name + "</a></li>";
+		}
+	}
+	indexResponse += "</ul></body></html>";
+	oss << "HTTP/1.1 200 OK\r\n";
+	oss << "Connection: close\r\n";
+	oss << "Content-Length: " << indexResponse.size() << "\r\n";
+	oss << "Content-Type: " << "text/html" << "\r\n";
+	oss << "\r\n";
+	send(socket, oss.str().data(), oss.str().size(), 0);
+	send(socket, indexResponse.data(), indexResponse.size(), 0);
+	closedir(test);
+	reset();
+	return (RESET);
 }
 
 enum ResponseStates    Response::getResponseFile( void )
@@ -162,11 +165,13 @@ enum ResponseStates    Response::getResponseFile( void )
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
 			err.errorNotFound(socket);
+			reset();
 			return (RESET);
 		}
 		if ( access( fullPath.c_str(), R_OK) == -1 )
 		{
 			err.errorForbidden(socket);
+			reset();
 			return (RESET);
 		}
 		fileSize = help.getFileSize(fullPath.c_str());
@@ -174,6 +179,7 @@ enum ResponseStates    Response::getResponseFile( void )
 		if ( !file.is_open() )
 		{
 			err.errorInternal(socket);
+			reset();
 			return (RESET);
 		}
 		sendResponseHeader( GET, "200 OK", fullPath, NULL );
@@ -218,6 +224,7 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 		if ( !toUpload.is_open() )
 		{
 			err.errorInternal(socket);
+			reset();
 			return (RESET);
 		}
 	}
@@ -253,6 +260,7 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 	}
 	else
 		err.errorInternal(socket);
+	reset();
 	return (RESET);
 }
 
@@ -374,8 +382,6 @@ ssize_t  ResponseHelper::getFileSize( const char *path ) const
     struct stat fileStat;
     if ( stat(path, &fileStat) == 0 )
         return (fileStat.st_size);
-    else
-        std::cerr << "cant get file size\n";
     return (-1);
 }
 
