@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 11:01:16 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 15:33:31 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ int main( int ac, char **av )
 		if ( ac != 2 )
 			return (EXIT_FAILURE);
 		parser.openFile(av[1]);
+		// parser.printData();
 		initServers( servers, parser );
 		while ( true )
 		{
@@ -54,10 +55,7 @@ int main( int ac, char **av )
 				{
 					ClientManager *client = cl.getClient(-1, servers[i]);
 					if ( client->getSocket() == -1 )
-					{
-						std::cerr << "accept() failed: " << strerror(errno) << std::endl;
 						cl.deleteClient(client);
-					}
 				}
 			}
 			cl.multiplexing( readfds, writefds );

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 11:34:07 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 13:16:35 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ class Response
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( Resources & );
 		enum ResponseStates	deleteDir( Resources & );
+		std::string	getRootPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
 		bool		isRequestReceived( Resources & ) const;
@@ -58,14 +59,13 @@ class Response
 		int		bytesReceived;
 		int		bytesSent;
 		int     fileSize;
-		std::vector<Location> loc;
+		bool	autoIndex;
 		SOCKET  socket;
-		DIR     *dir;
-		std::string		indexResponse;
 		ErrorResponse   err;
 		ResponseHelper	help;
+		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;
 		std::string	    path;
-		// struct  dirent *entry;
+		std::vector<Location> loc;
 };

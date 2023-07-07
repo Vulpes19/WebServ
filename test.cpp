@@ -58,9 +58,9 @@ using namespace std;
 
 int main( void )
 {
-    DIR *dir = opendir("./tests");
-    struct dirent *entry;
-    while ( (entry = readdir(dir)) != NULL )
-        std::cout << entry->d_name << std::endl;
+    if ( access("./var/www/images/spongebob1.jpg", F_OK) == -1 )
+        std::cout << "nyeeh\n";
+    else
+        std::cout << "yaay\n";
     return (0);
 }
