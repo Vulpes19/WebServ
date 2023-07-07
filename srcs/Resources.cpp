@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 17:54:26 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 18:07:01 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ Resources &Resources::operator=( const Resources &rhs )
 	return (*this);
 }
 
-void	Resources::parseHeader(std::string &line)
+void	Resources::parseHeader( void )
 {
 	size_t colon = line.find(":");
 
@@ -52,7 +52,7 @@ void	Resources::parseHeader(std::string &line)
 		requiredLength = std::stoi(headerValue);
 }
 
-void	Resources::parseRequestLine(std::string &line)
+void	Resources::parseRequestLine( void )
 {
 	std::stringstream	ss2(line);
 	std::string 		str;
@@ -87,6 +87,20 @@ void	Resources::parseRequestLine(std::string &line)
 		setError(BAD_REQUEST);
 }
 
+void	Resources::parseBody( void )
+{
+	if (requiredLength > actualLength)
+	{	
+		std::ofstream	requestBody("requestBody");
+		fileContentBuffer += line;
+		fileContentBuffer += "\n";
+		actualLength += fileContentBuffer.size();
+		requestBody << fileContentBuffer;
+		requestBody.close();
+	}
+}
+
+
 void    Resources::checkRequest( std::string request )
 {
 	std::stringstream	ss(request);
@@ -102,15 +116,11 @@ void    Resources::checkRequest( std::string request )
 			continue ;
 		}
 		else if ( requestBodyStart )
-		{
-			fileContentBuffer += line;
-			fileContentBuffer += "\n";
-			actualLength += fileContentBuffer.size();
-		}
+			parseBody();
 		else if ( colon != std::string::npos )
-			parseHeader(line);
+			parseHeader();
 		else if ( line.find("HTTP") != std::string::npos )
-			parseRequestLine(line);
+			parseRequestLine();
 	}
 	errorHandling();
 	printError(getError());
