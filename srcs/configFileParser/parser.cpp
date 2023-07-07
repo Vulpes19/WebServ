@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 14:40:20 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 19:18:15 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,14 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			else
 				printError(EMPTY);
 			break ;
+		case RETURN:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setValue(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			break ;
 	}
 }
 
@@ -219,6 +227,8 @@ void	Parser::parseLocation(std::ifstream& confFile, Server& server, std::string&
 			setLocationContent(location, AUTOINDEX, value);
 		else if (directive == "upload")
 			setLocationContent(location, UPLOAD, value);
+		else if (directive == "return")
+			setLocationContent(location, RETURN, value);
 	}
 }
 
