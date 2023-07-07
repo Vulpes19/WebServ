@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/04 14:04:49 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 17:14:32 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,8 @@ enum Error_code
 	METHOD_NOT_ALLOWED,
 	UNSOPPORTED_MEDIA_TYPE,
 	REQUEST_TIMEOUT,
-	FILE_IO_ERROR
+	FILE_IO_ERROR,
+	LENGTH_REQUIRED
 };
 
 class Resources
@@ -44,11 +45,15 @@ class Resources
 		// enum ResponseStates	fillFile( const char * );
 		std::string	getRequest( std::string Key );
 		std::string	getRequestBody( void ) const;
+		enum Error_code	getError() const;
 		void		clear( void );
+		void		errorHandling( void );
 	private:
 		std::map< std::string, std::string > header;
 		enum Error_code error;
 		// std::fstream	buffer;
 		std::string	fileContentBuffer;
 		int			fileSize;
+		size_t				requiredLength;
+		size_t				actualLength;
 };

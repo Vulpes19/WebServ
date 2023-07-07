@@ -6,13 +6,13 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 21:30:05 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/07 17:15:05 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/Resources.hpp"
 
-Resources::Resources( void )
+Resources::Resources( void ): actualLength(0), requiredLength(-1)
 {}
 
 Resources::~Resources( void )
@@ -31,6 +31,8 @@ Resources &Resources::operator=( const Resources &rhs )
 		this->fileContentBuffer = rhs.fileContentBuffer;
 		this->fileSize = rhs.fileSize;
 		this->error = rhs.error;
+		this->actualLength = rhs.actualLength;
+		this->requiredLength = rhs.requiredLength;
 	}
 	return (*this);
 }
@@ -40,10 +42,9 @@ void    Resources::checkRequest( std::string request )
 	std::stringstream	ss(request);
 	std::string			line;
 	std::string			requestBody;
-	size_t				requiredLength = -1;
-	size_t				actualLength = 0;
 	bool				requestBodyStart = false;
-	std::cout << " ********************************* \n";
+	bool				isValidMethod = false;
+	std::string			methods[3] = {"GET", "POST", "DELETE"};
 	while ( std::getline(ss, line) )
 	{
 		size_t colon = line.find(":");
@@ -57,14 +58,15 @@ void    Resources::checkRequest( std::string request )
 			fileContentBuffer += line;
 			fileContentBuffer += "\n";
 			actualLength += fileContentBuffer.size();
-
 		}
 		else if ( colon != std::string::npos )
 		{
 			std::string headerKey = line.substr(0, colon);
 			std::string headerValue = line.substr( colon + 2 );
 			header[headerKey] = headerValue;
-			if (headerKey == "Content-Length")
+			if (headerValue.size() == 0)
+				setError(BAD_REQUEST);
+			if (headerKey == "Content-Length")	
 				requiredLength = std::stoi(headerValue);
 		}
 		else if ( line.find("HTTP") != std::string::npos )
@@ -72,17 +74,31 @@ void    Resources::checkRequest( std::string request )
 			std::stringstream ss2(line);
 			std::string str;
 			ss2 >> str;
-			header["Method"] = str;
+			for (int i = 0; i < 3; i++) {
+				if (methods[i] == str) {
+					isValidMethod = true;
+					break ;
+				}
+			}
+			if (isValidMethod)
+				header["Method"] = str;
+			else
+				setError(METHOD_NOT_ALLOWED);
 			ss2 >> str;
-			header["URL"] = str;
+			if (str.size())
+				header["URL"] = str;
+			else
+				setError(BAD_REQUEST);
 			ss2 >> str;
-			header["HTTP"] = str;
+			if (str.size()) {
+				if (str == "HTTP/1.1")
+					header["HTTP"] = str;
+				else
+					setError(BAD_REQUEST);
+			}
+			else
+				setError(BAD_REQUEST);
 		}
-	}
-	if (requiredLength < actualLength)
-	{
-		setError(BAD_REQUEST);
-		std::cout << "error" << std::endl;
 	}
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
@@ -94,9 +110,22 @@ void    Resources::checkRequest( std::string request )
 	// exit(1);
 }
 
+void	Resources::errorHandling( void ) {
+
+	if (requiredLength < actualLength)
+		setError(BAD_REQUEST);
+	if (requiredLength == -1)
+		setError(LENGTH_REQUIRED);
+}
+
 void    Resources::setError( enum Error_code error )
 {
 	this->error = error;
+}
+
+enum Error_code	Resources::getError() const {
+
+	return (error);
 }
 
 std::string	Resources::getRequest( std::string Key )
