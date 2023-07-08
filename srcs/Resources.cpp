@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 18:07:01 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 11:47:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/Resources.hpp"
+#include "Resources.hpp"
 
 Resources::Resources( void ): actualLength(0), requiredLength(-1), requestLineExists(false), hostExists(false) 
 {}

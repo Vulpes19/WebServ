@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/16 14:49:19 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/05 17:06:45 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ class Connection
 		ClientManager   *getClient( SOCKET socket, Server srv );
 		void        	deleteClient( ClientManager *cl );
 		void			setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds );
-		void			checkClients( fd_set &readfds, fd_set &writefds );
 		void    		multiplexing( fd_set &readfds, fd_set &writefds );
 	private:
 		std::list<ClientManager *> clients;

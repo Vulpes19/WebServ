@@ -3,14 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:42:17 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 11:41:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/configData.hpp"
+#include "configData.hpp"
 
 ErrorPage::ErrorPage() {} ;
 
@@ -105,65 +105,61 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-Server::Server(): body_size(10000), port("80"), server_name("localhost") {};
+ServerSettings::ServerSettings(): body_size(10000), port("80"), server_name("localhost") {};
 
-Server::Server(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
+ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
 
     locations.push_back(location);
 };
 
-void    Server::setPort(const std::string& p) {
+void    ServerSettings::setPort(const std::string& p) {
 
     port = p;
 }
 
-void    Server::setName(const std::string& name) {
+void    ServerSettings::setName(const std::string& name) {
 
     server_name = name;
 }
 
-void	Server::setSize(const int& bytes) {
+void	ServerSettings::setSize(const int& bytes) {
 
 	body_size = bytes;
 }
 
-void    Server::setLocations(const Location &location) {
-
+void    ServerSettings::setLocations(const Location &location) {
     locations.push_back(location);
 }
 
-void	Server::setErrorPages(const ErrorPage& error_page) {
+void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
 
 	errorPages.push_back(error_page);
 };
 
-std::string Server::getPort() const {
-
+std::string ServerSettings::getPort() const {
     return (port);
 }
 
-int	Server::getSize() const {
+int	ServerSettings::getSize() const {
 
 	return (body_size);
 }
 
-std::string Server::getName() const {
-
+std::string ServerSettings::getName() const {
     return (server_name);
 }
 
-std::vector<Location>   Server::getLocations() {
+std::vector<Location>   ServerSettings::getLocations() {
 
     return (locations);
 }
 
-std::vector<ErrorPage>	Server::getErrorPages() {
+std::vector<ErrorPage>	ServerSettings::getErrorPages() {
 
 	return (errorPages);
 }
 
-Server&	Server::operator=(const Server& server) {
-
+ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
 	if (this != &server)
 	{
 		this->port = server.port;
@@ -175,11 +171,11 @@ Server&	Server::operator=(const Server& server) {
 	return (*this);
 }
 
-Server::~Server() {};
+ServerSettings::~ServerSettings() {};
 
 Context::Context(): status(OK) {};
 
-Context::Context(Server &server): server(server), status(OK) {};
+Context::Context(ServerSettings &server): server(server), status(OK) {};
 
 
 Context&	Context::operator=(const Context& context) {
@@ -189,12 +185,12 @@ Context&	Context::operator=(const Context& context) {
 	return (*this);
 }
 
-void    Context::setServer(const Server& servr) {
+void    Context::setServer(const ServerSettings& servr) {
 
     server = servr;
 }
 
-Server  Context::getServer() const {
+ServerSettings  Context::getServer() const {
 
     return (server);
 }
