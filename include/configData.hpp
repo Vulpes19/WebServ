@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 11:44:56 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 14:36:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,6 @@ class ServerSettings {
 class Context {
 	private:
 		ServerSettings  server;
-		// Connection		*connection;
 		int     status;
 	public:
 		Context();

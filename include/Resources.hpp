@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 17:14:32 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 14:59:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <map>
 
@@ -29,7 +30,8 @@ enum Error_code
 	UNSOPPORTED_MEDIA_TYPE,
 	REQUEST_TIMEOUT,
 	FILE_IO_ERROR,
-	LENGTH_REQUIRED
+	LENGTH_REQUIRED,
+	HTTP_VERSION_NOT_SUPPORTED
 };
 
 class Resources
@@ -48,12 +50,19 @@ class Resources
 		enum Error_code	getError() const;
 		void		clear( void );
 		void		errorHandling( void );
+		void		parseBody( void );
+		void		parseRequestLine( void );
+		void    	parseHeader( void );
+		void    	printError(enum Error_code code);
 	private:
 		std::map< std::string, std::string > header;
 		enum Error_code error;
 		// std::fstream	buffer;
 		std::string	fileContentBuffer;
 		int			fileSize;
-		size_t				requiredLength;
-		size_t				actualLength;
+		ssize_t				requiredLength;
+		ssize_t				actualLength;
+		bool 				hostExists;
+		std::string			line;
+		bool 				requestLineExists;
 };

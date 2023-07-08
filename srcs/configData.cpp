@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 11:41:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 15:01:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,12 @@ std::string	ErrorPage::getPath() const {
 
 ErrorPage::~ErrorPage() {} ;
 
-Location::Location(): autoindex(OFF), upload("NONE"), value("NONE"), root("NONE"), index("NONE") {};
 
-Location::Location(std::string value, std::string root, std::string index, std::string upload): autoindex(OFF), value(value), root(root), index(index), upload(upload) {};
+Location::Location(): autoindex(OFF) {};
+
+Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
+	autoindex = OFF;
+};
 
 void    Location::setValue(const std::string& val) {
 
@@ -105,7 +108,7 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-ServerSettings::ServerSettings(): body_size(10000), port("80"), server_name("localhost") {};
+ServerSettings::ServerSettings() {};
 
 ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
 

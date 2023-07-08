@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 11:46:59 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 14:36:07 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ class Parser {
 		void    readFile(std::ifstream&   confFile);
 		void    parseServer(std::ifstream&   confFile);
 		void    parseLocation(std::ifstream&   confFile, ServerSettings& server, std::string& value);
-		std::vector<Context> getParsedData();
+		std::vector<Context> getParsedData() const;
 		void    printData();
 		bool    findSemicolon(std::string value);
 		void    printError(int which);
