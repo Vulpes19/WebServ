@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:21:33 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 18:23:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 14:17:31 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ class Server
         void    setName( std::string );
         void    setLocations( std::vector<Location> );
         std::vector<Location> getLocations( void ) const;
+        std::string getName( void ) const { return name;};
     //     ClientManager   *getClient( SOCKET socket );
 	// 	void        	deleteClient( ClientManager *cl );
 	// 	void			setsManager( fd_set &readfds, fd_set &writefds );

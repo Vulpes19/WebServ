@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 15:33:31 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 14:17:04 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		servers.push_back(server);
 	}
 	for ( size_t i = 0; i < servers.size(); i++ )
+		std::cout << servers[i].getName() << std::endl,
 		servers[i].createListenSocket();
 }
 
@@ -44,7 +45,6 @@ int main( int ac, char **av )
 		if ( ac != 2 )
 			return (EXIT_FAILURE);
 		parser.openFile(av[1]);
-		// parser.printData();
 		initServers( servers, parser );
 		while ( true )
 		{
