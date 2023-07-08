@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 16:39:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 11:46:59 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,11 @@ enum {
 	NAME,
 	ROOT,
 	INDEX,
-	AUTOINDEX
+	AUTOINDEX,
+	SIZE,
+	UPLOAD,
+	ERROR_PAGE,
+	RETURN
 } ;
 
 class Parser {
@@ -37,9 +41,9 @@ class Parser {
 		std::string value;
 		std::string line;
 		std::vector<Context> parsedData;
-		//connection
 		int 	openingBraceCount;
-		int     status;
+		bool    closingBraceExpected;
+		int     status; 
 	public:
 		Parser();
 		~Parser();
