@@ -6,21 +6,53 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 15:28:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 15:01:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "configData.hpp"
 
+ErrorPage::ErrorPage() {} ;
+
+ErrorPage::ErrorPage(int status_code, std::string path): status_code(status_code), path(path) {} ;
+
+void	ErrorPage::setStatusCode(const int code) {
+
+	status_code = code;
+}
+
+void	ErrorPage::setPath(const std::string file) {
+
+	path = file;
+} 
+
+int		ErrorPage::getStatusCode() const {
+
+	return (status_code);
+}
+
+std::string	ErrorPage::getPath() const {
+
+	return (path);
+}
+
+ErrorPage::~ErrorPage() {} ;
+
+
 Location::Location(): autoindex(OFF) {};
 
-Location::Location(std::string value, std::string root, std::string index): value(value), root(root), index(index) {
+Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
 	autoindex = OFF;
 };
 
 void    Location::setValue(const std::string& val) {
 
     value = val;
+}
+
+void	Location::setUpload(const std::string &upld) {
+	
+	upload = upld;	
 }
 
 void    Location::setRoot(const std::string& rt) {
@@ -36,6 +68,11 @@ void    Location::setIndex(const std::string& indx) {
 void	Location::setAutoIndex() {
 	
 	autoindex = ON;
+}
+
+std::string Location::getUpload() const {
+
+	return (upload);
 }
 
 std::string Location::getValue() const {
@@ -73,7 +110,7 @@ Location::~Location() {};
 
 ServerSettings::ServerSettings() {};
 
-ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location): port(port), server_name(server_name) {
+ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
 
     locations.push_back(location);
 };
@@ -88,18 +125,30 @@ void    ServerSettings::setName(const std::string& name) {
     server_name = name;
 }
 
-void    ServerSettings::setLocations(const Location &location) {
+void	ServerSettings::setSize(const int& bytes) {
 
+	body_size = bytes;
+}
+
+void    ServerSettings::setLocations(const Location &location) {
     locations.push_back(location);
 }
 
-std::string ServerSettings::getPort() const {
+void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
 
+	errorPages.push_back(error_page);
+};
+
+std::string ServerSettings::getPort() const {
     return (port);
 }
 
-std::string ServerSettings::getName() const {
+int	ServerSettings::getSize() const {
 
+	return (body_size);
+}
+
+std::string ServerSettings::getName() const {
     return (server_name);
 }
 
@@ -108,13 +157,19 @@ std::vector<Location>   ServerSettings::getLocations() {
     return (locations);
 }
 
-ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
+std::vector<ErrorPage>	ServerSettings::getErrorPages() {
 
+	return (errorPages);
+}
+
+ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
 	if (this != &server)
 	{
 		this->port = server.port;
 		this->server_name = server.server_name;
 		this->locations = server.locations;
+		this->errorPages = server.errorPages;
+		this->body_size = server.body_size;
 	}
 	return (*this);
 }
