@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 11:01:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 16:43:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,12 +58,19 @@ void    Connection::deleteClient( ClientManager *cl )
         std::cerr << "dropped client not found\n";
 }
 
-void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
-    FD_SET(socket, &readfds);
-    SOCKET maxSocket = socket;
+    SOCKET maxSocket;
+    maxSocket = servers[0].getListenSocket();
+    for ( size_t i = 0; i < servers.size(); i++ )
+    {
+        SOCKET serverSocket = servers[i].getListenSocket();
+        if ( serverSocket > maxSocket )
+            maxSocket = serverSocket;
+        FD_SET(serverSocket, &readfds);
+    }
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() > -1 )
