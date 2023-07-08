@@ -6,11 +6,11 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:26:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/06 11:02:17 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Resources.hpp"
+#include "../include/Resources.hpp"
 
 Resources::Resources( void )
 {}
@@ -41,7 +41,6 @@ void    Resources::checkRequest( std::string request )
 	std::string			line;
 	std::string			requestBody;
 	bool				requestBodyStart = false;
-	std::cout << " ********************************* \n";
 	while ( std::getline(ss, line) )
 	{
 		size_t colon = line.find(":");
@@ -52,8 +51,8 @@ void    Resources::checkRequest( std::string request )
 		}
 		else if ( requestBodyStart )
 		{
-			requestBody += line;
-			requestBody += "\n";
+			fileContentBuffer += line;
+			fileContentBuffer += "\n";
 		}
 		else if ( colon != std::string::npos )
 		{
@@ -73,7 +72,6 @@ void    Resources::checkRequest( std::string request )
 			header["HTTP"] = str;
 		}
 	}
-	fileContentBuffer = requestBody.c_str();
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {
 	//     std::cout << it->first << " " << it->second << std::endl;
@@ -89,12 +87,29 @@ void    Resources::setError( enum Error_code error )
 	this->error = error;
 }
 
-void    Resources::setResponseHeader( void )
+std::string	Resources::getRequest( std::string Key )
 {
-	
+	if ( header.find(Key) != header.end() )
+		return ( header[Key] );
+	else
+		return ( "NOT FOUND" );
 }
 
-std::string	&Resources::getRequest( std::string Key )
+std::string	Resources::getRequestBody( void ) const
 {
-	return ( header[Key] );
+	return ( fileContentBuffer );
 }
+
+void	Resources::clear( void )
+{
+	header.clear();
+}
+
+// enum	ResponseStates	Resources::fillFile( const char *content )
+// {
+// 	std::string end("\r\n\r\n");
+// 	std::string tmp;
+	
+// 	if ( tmp.substr( tmp.length() - end.length() )  )
+// 	buffer << content;
+// }

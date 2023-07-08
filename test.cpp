@@ -2,6 +2,8 @@
 #include <fstream>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/stat.h>
+#include <dirent.h>
 using namespace std;
 
 // int main( void )
@@ -22,10 +24,43 @@ using namespace std;
 //     file.close();
 // }
 
+// int main( void )
+// {
+//     std::ifstream file("./public/");
+//     std::cout << access("./obj/", F_OK) << std::endl;
+//     if ( access("./public/", X_OK) == -1 )
+//         std::cerr << strerror(errno) << std::endl;
+// }
+
+// std::string getTime( void )
+// {
+//     std::time_t now = std::time(NULL);
+//     std::string dateTime = std::ctime(&now);
+//     dateTime.erase(dateTime.length() - 1);
+//     return (dateTime);
+// }
+
+// int main( void )
+// {
+//     std::string toPrint = getTime();
+//     std::cout << toPrint << endl;
+// }
+
+// #include "testheader.hpp"
+
+// int main( int ac, char **av )
+// {
+//     Parser parser;
+
+//     parser.openFile(av[1]);
+//     parser.printData();
+// }
+
 int main( void )
 {
-    std::ifstream file("./public/");
-    std::cout << access("./obj/", F_OK) << std::endl;
-    if ( access("./public/", X_OK) == -1 )
-        std::cerr << strerror(errno) << std::endl;
+    if ( access("./var/www/images/spongebob1.jpg", F_OK) == -1 )
+        std::cout << "nyeeh\n";
+    else
+        std::cout << "yaay\n";
+    return (0);
 }
