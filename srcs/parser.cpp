@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:00:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 18:37:10 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), closingBraceExpected(false), status(OK) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK) {};
 
 Parser::~Parser() {};
 
@@ -41,9 +41,24 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	switch (which) {
 
 		case PORT:
+			if (host_exists == false)
+			{
+				if (value.size() - 1 > 0) {
+					if (findSemicolon(value))
+						server.setPort(value.erase(value.size() - 1));
+					else
+						printError(SEMICOLON);
+				}
+				else
+					printError(EMPTY);
+			}
+			else
+				server.setPort(value);
+			break ;
+		case HOST:
 			if (value.size() - 1 > 0) {
 				if (findSemicolon(value))
-					server.setPort(value.erase(value.size() - 1));
+					server.setHost(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
 			}
@@ -171,16 +186,22 @@ void	Parser::parseServer(std::ifstream& confFile) {
 
 	ServerSettings  server;
 	Context context;
-	std::string brace;
+	std::string host;
 
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
-		ss >> directive >> value;
+		ss >> directive >> value >> host;
 		if (directive == "listen")
+		{
+			if (host.size())
+				host_exists = true;
 			setServerContent(server, PORT, value);
+			if (host_exists)
+				setServerContent(server, HOST, host);
+		}
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
 		else if (directive == "body_size")
@@ -245,6 +266,7 @@ void	Parser::printData() {
 		std::cout << std::endl;
 		std::cout << "ServerSettings: " << std::endl;
 		std::cout << "listen: " << server.getPort() << std::endl;
+		std::cout << "host: " << server.getHost() << std::endl;
 		std::cout << "name: " << server.getName() << std::endl;
 		std::cout << "body size: " << server.getSize() << std::endl;
 		

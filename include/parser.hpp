@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:36:07 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 18:24:17 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ enum {
 	SIZE,
 	UPLOAD,
 	ERROR_PAGE,
-	RETURN
+	RETURN,
+	HOST
 } ;
 
 class Parser {
@@ -42,6 +43,7 @@ class Parser {
 		std::string line;
 		std::vector<Context> parsedData;
 		int 	openingBraceCount;
+		bool	host_exists;
 		bool    closingBraceExpected;
 		int     status; 
 	public:
@@ -51,13 +53,13 @@ class Parser {
 		void    readFile(std::ifstream&   confFile);
 		void    parseServer(std::ifstream&   confFile);
 		void    parseLocation(std::ifstream&   confFile, ServerSettings& server, std::string& value);
-		std::vector<Context> getParsedData() const;
 		void    printData();
 		bool    findSemicolon(std::string value);
 		void    printError(int which);
 		bool    checkBracesError();
 		void	setServerContent(ServerSettings &server, int which, std::string value);
 		void	setLocationContent(Location &location, int which, std::string value);
+		std::vector<Context> getParsedData() const;
 } ;
 
 #endif

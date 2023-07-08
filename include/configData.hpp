@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:36:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 18:03:52 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,19 +80,22 @@ class Location {
 class ServerSettings {
 	private:
 		std::string             port;
+		std::string				host;
 		std::string             server_name;
 		int						body_size;
 		std::vector<Location>    locations;
 		std::vector<ErrorPage>	errorPages;
 	public:
 		ServerSettings();
-		ServerSettings(std::string port, std::string server_name, Location &location, int body_size);
+		ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size);
 		ServerSettings&	operator=(const ServerSettings& server);
 		void    setPort(const std::string &p);
 		void	setSize(const int &bytes);
 		void    setName(const std::string &name);
 		void    setLocations(const Location &location);
 		void	setErrorPages(const ErrorPage &error_page);
+		void	setHost(const std::string &Host);
+		std::string	getHost() const;
 		std::string getPort() const;
 		int			getSize() const;
 		std::string getName() const;
