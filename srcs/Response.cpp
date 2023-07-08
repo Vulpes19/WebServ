@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 18:48:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 17:32:59 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,7 +130,6 @@ enum ResponseStates    Response::getResponseDir( void )
 	while ( (entry = readdir(dir)) != NULL )
 	{
 		std::string name = entry->d_name;
-		std::cout << name << std::endl;
 		if ( name != "." && name != ".." )
 		{
 			if ( help.isDirectory( "./" + name ) )
@@ -169,6 +168,8 @@ enum ResponseStates    Response::getResponseFile( void )
 			return (RESET);
 		}
 		std::string fullPath = oss.str();
+		if ( fullPath.back() == '/' )
+			fullPath = fullPath.substr(0, fullPath.length() - 1 );
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
 			err.errorNotFound(socket);
@@ -335,7 +336,6 @@ bool	Response::isRequestReceived( Resources &resources ) const
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
 	std::ostringstream oss;
-
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
 	oss << "Connection: close\r\n";
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
@@ -382,13 +382,10 @@ std::string	Response::getRootPath( std::string path )
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
 			std::string rootPath = loc[i].getRoot();
-			std::cout << rootPath << std::endl;
 			if ( rootPath.back() != '/' )
 				rootPath += '/';
 			std::string indexFile = loc[i].getIndex();
-			std::cout << indexFile << std::endl;
 			std::string ret = rootPath + path.substr(loc[i].getValue().length());
-			std::cout << ret << std::endl;
 			if ( indexFile.empty() )
 				return (ret);
 			else
@@ -402,13 +399,10 @@ std::string	Response::getRootPath( std::string path )
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
 		{
 			std::string rootPath = loc[i].getRoot();
-			std::cout << "root path: " << rootPath << std::endl;
 			if ( rootPath.back() != '/' )
 				rootPath += '/';
 			std::string indexFile = loc[i].getIndex();
-			std::cout << "index: " << indexFile << std::endl;
 			std::string ret = rootPath + path.substr(loc[i].getValue().length());
-			std::cout << "full path: " << ret << std::endl;
 			if ( indexFile.empty() )
 				return (ret);
 			else

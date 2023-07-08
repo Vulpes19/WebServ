@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 16:41:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 20:03:54 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,13 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		server.setName(settings.getName());
 		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
+		// servers[settings.getName()] = server;
 		servers.push_back(server);
 	}
-	for ( size_t i = 0; i < servers.size(); i++ )
+	// std::map<std::string, Server>::iterator it = servers.begin();
+	// for ( ; it != servers.end(); ++it)
+	// 	it->second.createListenSocket();
+	for ( size_t i = 0; i < servers.size(); i++)
 		servers[i].createListenSocket();
 }
 
@@ -48,6 +52,7 @@ int main( int ac, char **av )
 		while ( true )
 		{
 			cl.setsManager( servers, readfds, writefds );
+			// std::map<std::string, Server>::iterator it = servers.begin();
 			for ( size_t i = 0; i < servers.size(); i++ )
 			{
 				if ( FD_ISSET( servers[i].getListenSocket(), &readfds ) )

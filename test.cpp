@@ -58,9 +58,10 @@ using namespace std;
 
 int main( void )
 {
-    if ( access("./var/www/images/spongebob1.jpg", F_OK) == -1 )
-        std::cout << "nyeeh\n";
+    struct stat st;
+    if ( stat("./var/www/videos/jake.mp4", &st) == 0 )
+        cout << st.st_size << endl;
     else
-        std::cout << "yaay\n";
+        cout << "bruh\n";
     return (0);
 }

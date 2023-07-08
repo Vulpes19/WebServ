@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 16:43:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 20:02:02 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_
     FD_ZERO(&readfds);
     SOCKET maxSocket;
     maxSocket = servers[0].getListenSocket();
+    // std::map<std::string, Server>::iterator it = servers.begin();
     for ( size_t i = 0; i < servers.size(); i++ )
     {
         SOCKET serverSocket = servers[i].getListenSocket();

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:45:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 17:25:00 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void    Resources::checkRequest( std::string request )
 			parseRequestLine();
 	}
 	errorHandling();
-	printError(getError());
+	// printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
