@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:04:55 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/08 15:01:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,9 +38,12 @@ std::string	ErrorPage::getPath() const {
 
 ErrorPage::~ErrorPage() {} ;
 
-Location::Location(): value("NONE"), root("NONE"), index("NONE"), upload("NONE"), autoindex(OFF) {};
 
-Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload), autoindex(OFF) {};
+Location::Location(): autoindex(OFF) {};
+
+Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
+	autoindex = OFF;
+};
 
 void    Location::setValue(const std::string& val) {
 
@@ -105,7 +108,7 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-ServerSettings::ServerSettings(): port("-1"), server_name("localhost"), body_size(10000) {};
+ServerSettings::ServerSettings() {};
 
 ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
 
@@ -128,7 +131,6 @@ void	ServerSettings::setSize(const int& bytes) {
 }
 
 void    ServerSettings::setLocations(const Location &location) {
-
     locations.push_back(location);
 }
 
@@ -138,7 +140,6 @@ void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
 };
 
 std::string ServerSettings::getPort() const {
-
     return (port);
 }
 
@@ -148,7 +149,6 @@ int	ServerSettings::getSize() const {
 }
 
 std::string ServerSettings::getName() const {
-
     return (server_name);
 }
 
@@ -163,7 +163,6 @@ std::vector<ErrorPage>	ServerSettings::getErrorPages() {
 }
 
 ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
-
 	if (this != &server)
 	{
 		this->port = server.port;
