@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 15:00:09 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 16:46:55 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ class Resources
 	private:
 		std::map< std::string, std::string > header;
 		enum Error_code error;
-		// std::fstream	buffer;
+		std::ofstream	requestBody;
 		std::string	fileContentBuffer;
 		int			fileSize;
 		ssize_t				requiredLength;

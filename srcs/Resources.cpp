@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 15:35:29 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 16:56:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Resources &Resources::operator=( const Resources &rhs )
 	if ( this != &rhs )
 	{
 		this->header = rhs.header;
-		this->fileContentBuffer = rhs.fileContentBuffer;
+		// this->requestBodyBuffer = rhs.requestBodyBuffer;
 		this->fileSize = rhs.fileSize;
 		this->error = rhs.error;
 		this->actualLength = rhs.actualLength;
@@ -96,12 +96,11 @@ void	Resources::parseBody( void )
 {
 	if (requiredLength > actualLength)
 	{	
-		std::ofstream	requestBody("requestBody");
 		fileContentBuffer += line;
 		fileContentBuffer += "\n";
 		actualLength += fileContentBuffer.size();
 		requestBody << fileContentBuffer;
-		requestBody.close();
+		fileContentBuffer.clear();
 	}
 }
 
@@ -109,14 +108,13 @@ void	Resources::parseBody( void )
 void    Resources::checkRequest( void )
 {
 	//to check protection later
+	requestBody.open("requestBody");
 	std::ifstream test("testFile");
 	if ( !test.is_open() )
 	{
 		std::cerr << "failed to open the file\n";
 		exit(1);
 	}
-	// std::stringstream	ss(request);
-	std::string			requestBody;
 	bool				requestBodyStart = false;
 
 	while ( std::getline(test, line) )
@@ -136,6 +134,7 @@ void    Resources::checkRequest( void )
 	}
 	std::cout << "** I finished checking **\n";
 	test.close();
+	requestBody.close();
 	remove("testFile");
 	errorHandling();
 	// printError(getError());
@@ -169,10 +168,10 @@ std::string	Resources::getRequest( std::string Key )
 		return ( "NOT FOUND" );
 }
 
-std::string	Resources::getRequestBody( void ) const
-{
-	return ( fileContentBuffer );
-}
+// std::ofstream	Resources::getRequestBody( void ) const
+// {
+// 	return ( requestBodyBuffer );
+// }
 
 void	Resources::clear( void )
 {

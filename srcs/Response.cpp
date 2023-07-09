@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 15:31:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 18:28:29 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,21 +66,26 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
+	// std::cout << "im here\n";
 	if ( !test.is_open() )
 		test.open("testFile");
-	std::cout << "\n hello there \n";
 	char    request[4096 + 1];
 	ssize_t bytesRead = read( socket, request, 4096 );
 	if ( bytesRead > 0  )
 	{
 		bytesReceived += bytesRead;
-		request[bytesRead] = '\0';
-		std::string toCheck(request);
-		std::cout << toCheck;
+		// request[bytesRead] = '\0';
+		std::string toCheck(request, 4096);
 		test << toCheck;
-		if ( isRequestReceived(toCheck, bytesRead) )
+		size_t del = toCheck.find("\r\n\r\n");
+		if ( del != std::string::npos )
 		{
+			std::string receivedData = toCheck.substr(0, del);
+			std::string remainingData = toCheck.substr(del);
+			if ( !remainingData.empty() )
+				return (READING);
 			test.close();
+			std::cout << "REQUEST IS WELL RECEIVED\n";
 			resources.checkRequest();
 			return (READY_TO_WRITE);
 		}
@@ -88,6 +93,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 	else if ( bytesRead == 0 )
 	{
+			std::cout << "REQUEST IS WELL RECEIVED\n";
 		test.close();
 		resources.checkRequest();
 		return (READY_TO_WRITE);
@@ -231,22 +237,27 @@ enum ResponseStates    Response::getResponseFile( void )
 
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
-	std::cout << "\n Im here \n";
 	std::string filePath(resources.getRequest("URL"));
-	std::string toWrite(resources.getRequestBody());
-
-	if ( !toUpload.is_open() )
+	if ( rename("requestBody", "uploaded file") != 0 )
 	{
-		toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
-		if ( !toUpload.is_open() )
-		{
-			err.errorInternal(socket);
-			reset();
-			return (RESET);
-		}
+		err.errorInternal(socket);
+		reset();
+		return (RESET);
 	}
-	toUpload << toWrite;
-	toUpload.close();
+	// std::string toWrite(resources.getRequestBody());
+	// std::string toWrite = "";
+	// if ( !toUpload.is_open() )
+	// {
+	// 	toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
+	// 	if ( !toUpload.is_open() )
+	// 	{
+	// 		err.errorInternal(socket);
+	// 		reset();
+	// 		return (RESET);
+	// 	}
+	// }
+	// toUpload << toWrite;
+	// toUpload.close();
 	sendResponseHeader( POST, "201 Created", filePath, &resources );
 	send( socket, "File created.", 13, 0 );
 	reset();
@@ -320,8 +331,10 @@ bool    Response::handleWriteResponse( Resources &resources )
 bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) const
 {
 	std::string end("\r\n\r\n");
-
-	if ( strcmp( requestStr.c_str() + bytesRead - end.length(), end.c_str() ) == 0 )
+	(void)bytesRead;
+	std::cout << "CHECKING IF THE REQUEST IS RECEIVED\n";
+	std::cout << requestStr << std::endl;
+	if ( strcmp( requestStr.c_str() + bytesReceived - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);
 }

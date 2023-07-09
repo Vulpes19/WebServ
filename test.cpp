@@ -56,12 +56,21 @@ using namespace std;
 //     parser.printData();
 // }
 
+// int main( void )
+// {
+//     struct stat st;
+//     if ( stat("./var/www/videos/jake.mp4", &st) == 0 )
+//         cout << st.st_size << endl;
+//     else
+//         cout << "bruh\n";
+//     return (0);
+// }
+
 int main( void )
 {
     struct stat st;
-    if ( stat("./var/www/videos/jake.mp4", &st) == 0 )
+    if ( stat("uploaded file", &st) == 0 )
         cout << st.st_size << endl;
     else
-        cout << "bruh\n";
-    return (0);
+        cout << "no can do\n";
 }
