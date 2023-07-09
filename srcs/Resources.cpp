@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 15:23:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 15:35:29 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,7 @@ void	Resources::parseBody( void )
 
 void    Resources::checkRequest( void )
 {
+	//to check protection later
 	std::ifstream test("testFile");
 	if ( !test.is_open() )
 	{
@@ -135,6 +136,7 @@ void    Resources::checkRequest( void )
 	}
 	std::cout << "** I finished checking **\n";
 	test.close();
+	remove("testFile");
 	errorHandling();
 	// printError(getError());
 }

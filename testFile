@@ -1,14 +1,13 @@
-POST /example HTTP/1.1
-Content-Type: text/plain
-User-Agent: PostmanRuntime/7.32.2
-Accept: */*
-Postman-Token: 3ece4827-861b-48d2-a078-ea8cbbb92704
-Host: localhost:8000
+GET /favicon.ico HTTP/1.1
+Host: localhost:8080
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:109.0) Gecko/20100101 Firefox/114.0
+Accept: image/avif,image/webp,*/*
+Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
 Connection: keep-alive
-Content-Length: 65
+Referer: http://localhost:8080/videos/jake.mp4
+Cookie: wp-settings-time-1=1683111921; wordpress_test_cookie=WP+Cookie+check; wordpress_logged_in_812ec203ee00103a80d847d7c3d0ace6=abaioumy%7C1683284174%7CA4qw803zsoPkAzGXirOBMJ42sXywA6iv9T8l9acGNmB%7C8775cf57d4eb18a2aed3272a4f6bed75a1e29d99dc5d891182f1e59bbd946852
+Sec-Fetch-Dest: image
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Site: same-origin
 
-{
-    "name": "Ayman Baioumy",
-    "email": "example@gmail.com"
-}

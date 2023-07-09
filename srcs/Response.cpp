@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 15:20:17 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 15:31:18 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,19 +88,13 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 	else if ( bytesRead == 0 )
 	{
-		std::cout << "end\n";
-			// exit(1);
-			test.close();
-			resources.checkRequest();
-		// std::string toSend(request);
-		// resources.checkRequest(toSend);
-		// if ( isRequestReceived(resources) )
-			return (READY_TO_WRITE);
-		// return (READING);
+		test.close();
+		resources.checkRequest();
+		return (READY_TO_WRITE);
 	}
 	else
 	{
-			test.close();
+		test.close();
 		err.errorBadRequest(socket);
 		reset();
 		return (RESET);
