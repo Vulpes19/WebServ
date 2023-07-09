@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 17:25:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 15:23:48 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,13 +106,19 @@ void	Resources::parseBody( void )
 }
 
 
-void    Resources::checkRequest( std::string request )
+void    Resources::checkRequest( void )
 {
-	std::stringstream	ss(request);
+	std::ifstream test("testFile");
+	if ( !test.is_open() )
+	{
+		std::cerr << "failed to open the file\n";
+		exit(1);
+	}
+	// std::stringstream	ss(request);
 	std::string			requestBody;
 	bool				requestBodyStart = false;
 
-	while ( std::getline(ss, line) )
+	while ( std::getline(test, line) )
 	{
 		size_t colon = line.find(":");
 		if ( line == "\r" )
@@ -127,6 +133,8 @@ void    Resources::checkRequest( std::string request )
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
+	std::cout << "** I finished checking **\n";
+	test.close();
 	errorHandling();
 	// printError(getError());
 }

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 17:32:59 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 15:20:17 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 
 Response::Response( void )
 {
-	memset(request, 0, sizeof(request));
+	// memset(request, 0, sizeof(request));
 	autoIndex = false;
 	bytesReceived = 0;
 	bytesSent = 0;
@@ -66,27 +66,41 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
-	ssize_t bytesRead = read( socket, request, MAX_REQUEST_SIZE );
+	if ( !test.is_open() )
+		test.open("testFile");
+	std::cout << "\n hello there \n";
+	char    request[4096 + 1];
+	ssize_t bytesRead = read( socket, request, 4096 );
 	if ( bytesRead > 0  )
 	{
 		bytesReceived += bytesRead;
 		request[bytesRead] = '\0';
-		std::string toSend(request);
-		resources.checkRequest(toSend);
-		if ( isRequestReceived(resources) )
+		std::string toCheck(request);
+		std::cout << toCheck;
+		test << toCheck;
+		if ( isRequestReceived(toCheck, bytesRead) )
+		{
+			test.close();
+			resources.checkRequest();
 			return (READY_TO_WRITE);
+		}
 		return (READING);
 	}
 	else if ( bytesRead == 0 )
 	{
-		std::string toSend(request);
-		resources.checkRequest(toSend);
-		if ( isRequestReceived(resources) )
+		std::cout << "end\n";
+			// exit(1);
+			test.close();
+			resources.checkRequest();
+		// std::string toSend(request);
+		// resources.checkRequest(toSend);
+		// if ( isRequestReceived(resources) )
 			return (READY_TO_WRITE);
-		return (READING);
+		// return (READING);
 	}
 	else
 	{
+			test.close();
 		err.errorBadRequest(socket);
 		reset();
 		return (RESET);
@@ -223,6 +237,7 @@ enum ResponseStates    Response::getResponseFile( void )
 
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
+	std::cout << "\n Im here \n";
 	std::string filePath(resources.getRequest("URL"));
 	std::string toWrite(resources.getRequestBody());
 
@@ -274,7 +289,7 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 
 bool    Response::handleWriteResponse( Resources &resources )
 {
-	std::string requestString(request);
+	// std::string requestString(request);
 	enum ResponseStates ret;
 
 	path = resources.getRequest("URL");
@@ -308,30 +323,38 @@ bool    Response::handleWriteResponse( Resources &resources )
 	}
 }
 
-bool	Response::isRequestReceived( Resources &resources ) const
+bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) const
 {
 	std::string end("\r\n\r\n");
-	std::string requestStr(request);
-	std::string ret;
 
-	ret = resources.getRequest("Content-Length");
-	if ( ret == "NOT FOUND")
-		return (true);
-	else
-	{
-		size_t bodyStart = bytesReceived - atoi(ret.c_str());
-		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
-		if ( (int)requestBodyStr.size() == atoi(ret.c_str()) )
-			return (true);
-		else
-			return (false);
-	}
-	if ( bytesReceived < (int)end.length() )
-		return (false);
-	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
+	if ( strcmp( requestStr.c_str() + bytesRead - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);
 }
+// bool	Response::isRequestReceived( Resources &resources ) const
+// {
+// 	std::string end("\r\n\r\n");
+// 	std::string requestStr(request);
+// 	std::string ret;
+
+// 	ret = resources.getRequest("Content-Length");
+// 	if ( ret == "NOT FOUND")
+// 		return (true);
+// 	else
+// 	{
+// 		size_t bodyStart = bytesReceived - atoi(ret.c_str());
+// 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
+// 		if ( (int)requestBodyStr.size() == atoi(ret.c_str()) )
+// 			return (true);
+// 		else
+// 			return (false);
+// 	}
+// 	if ( bytesReceived < (int)end.length() )
+// 		return (false);
+// 	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
+// 		return (true);
+// 	return (false);
+// }
 
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
@@ -419,7 +442,7 @@ std::string	Response::getRootPath( std::string path )
 
 void	Response::reset( void )
 {
-	memset(request, 0, sizeof(request));
+	// memset(request, 0, sizeof(request));
 	bytesReceived = 0;
 	bytesSent = 0;
 	fileSize = 0;

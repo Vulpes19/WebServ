@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/07 13:16:35 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/09 12:46:48 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,11 +51,12 @@ class Response
 		std::string	getRootPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
-		bool		isRequestReceived( Resources & ) const;
+		bool		isRequestReceived( std::string, ssize_t ) const;
+		// bool		isRequestReceived( Resources & ) const;
 		void		setLocations( std::vector<Location> );
 		void		reset( void );
 	private:
-		char    request[MAX_REQUEST_SIZE + 1];
+		// char    request[MAX_REQUEST_SIZE + 1];
 		int		bytesReceived;
 		int		bytesSent;
 		int     fileSize;
@@ -68,4 +69,5 @@ class Response
 		std::ofstream	toUpload;
 		std::string	    path;
 		std::vector<Location> loc;
+		std::ofstream	test;
 };
