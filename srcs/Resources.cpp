@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 16:56:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 17:30:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,12 @@ void	Resources::parseRequestLine( void )
 
 void	Resources::parseBody( void )
 {
+	// std::cout << requiredLength << " vs " << actualLength << std::endl;
 	if (requiredLength > actualLength)
 	{	
 		fileContentBuffer += line;
 		fileContentBuffer += "\n";
+		// std::cout << fileContentBuffer;
 		actualLength += fileContentBuffer.size();
 		requestBody << fileContentBuffer;
 		fileContentBuffer.clear();

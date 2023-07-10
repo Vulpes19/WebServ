@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 18:28:29 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 17:43:54 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,8 @@ Response::Response( void )
 	socket = -1;
 	path = "";
 	indexResponse = "";
+	bodySize = 0;
+	isBody = false;
 }
 
 Response::~Response( void )
@@ -66,41 +68,69 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
-	// std::cout << "im here\n";
-	if ( !test.is_open() )
-		test.open("testFile");
+	if ( !buffer.is_open() )
+		buffer.open("testFile");
 	char    request[4096 + 1];
 	ssize_t bytesRead = read( socket, request, 4096 );
+	std::cout << bytesRead << std::endl;
+	bytesReceived += bytesRead;
 	if ( bytesRead > 0  )
 	{
-		bytesReceived += bytesRead;
-		// request[bytesRead] = '\0';
-		std::string toCheck(request, 4096);
-		test << toCheck;
-		size_t del = toCheck.find("\r\n\r\n");
+		// buffer.write(request, bytesRead);
+		std::string toCheck(request, bytesRead);
+		if ( isBody )
+			bytesReceived += bytesRead;
+		buffer << toCheck;
+		size_t lenPos = toCheck.find("Content-Length: ");
+		std::string end = "\r\n\r\n";
+		size_t del = toCheck.find(end);
 		if ( del != std::string::npos )
 		{
-			std::string receivedData = toCheck.substr(0, del);
-			std::string remainingData = toCheck.substr(del);
+			std::string receivedData = toCheck.substr(0, del + end.length() );
+			std::string remainingData = toCheck.substr(del + end.length());
 			if ( !remainingData.empty() )
-				return (READING);
-			test.close();
+				isBody = true;
+		}
+		if ( lenPos != std::string::npos )
+		{
+			lenPos += 16;
+			size_t endPos = toCheck.find("\r\n", lenPos);
+			if ( endPos != std::string::npos )
+			{
+				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
+				if ( !lenStr.empty() )
+				{
+					bodySize = std::stoul(lenStr);
+					// isBody = true;
+				}
+				std::cout << bodySize << std::endl;
+			}
+		}
+		std::cout << bytesReceived << " vs " << bodySize << std::endl;
+		if ( bodySize != 0 && bytesReceived >= bodySize )
+		{
+			buffer.close();
 			std::cout << "REQUEST IS WELL RECEIVED\n";
 			resources.checkRequest();
 			return (READY_TO_WRITE);
 		}
+		// 	buffer.close();
+		// 	std::cout << "REQUEST IS WELL RECEIVED\n";
+		// 	resources.checkRequest();
+		// 	return (READY_TO_WRITE);
+		// }
 		return (READING);
 	}
 	else if ( bytesRead == 0 )
 	{
-			std::cout << "REQUEST IS WELL RECEIVED\n";
-		test.close();
+		std::cout << "REQUEST IS WELL RECEIVED\n";
+		buffer.close();
 		resources.checkRequest();
 		return (READY_TO_WRITE);
 	}
 	else
 	{
-		test.close();
+		buffer.close();
 		err.errorBadRequest(socket);
 		reset();
 		return (RESET);
@@ -238,7 +268,10 @@ enum ResponseStates    Response::getResponseFile( void )
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
-	if ( rename("requestBody", "uploaded file") != 0 )
+	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
+	filePath += type;
+	std::cout << filePath << std::endl;
+	if ( rename("requestBody", filePath.substr(1).c_str()) != 0 )
 	{
 		err.errorInternal(socket);
 		reset();
@@ -373,7 +406,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	//server name
 	if ( method == GET )
 	{
-		oss << "Content-Type: " << help.getFileType(fileName.c_str()) << "\r\n";
+		oss << "Content-Type: " << help.getFileType(fileName, TYPE_NAME) << "\r\n";
 		oss << "Content-Length: "<< fileSize << "\r\n";
 	}
 	if ( method == POST )
@@ -466,11 +499,11 @@ ssize_t  ResponseHelper::getFileSize( const char *path ) const
     return (-1);
 }
 
-const std::string  	ResponseHelper::getFileType( const char *path ) const
+const std::string  	ResponseHelper::getFileType( std::string path, enum TYPES type ) const
 {
-    const char *fileName = strrchr(path, '.');
-    static std::map< std::string, std::string > fileTypes;
-    if ( fileTypes.empty() )
+    // const char *fileName = strrchr(path, '.');
+	static std::map< std::string, std::string > fileTypes;
+	if ( fileTypes.empty() )
 	{
 		fileTypes[".css"] = "text/css";
 		fileTypes[".mp4"] = "video/mp4";
@@ -489,11 +522,26 @@ const std::string  	ResponseHelper::getFileType( const char *path ) const
 		fileTypes[".svg"] = "image/svg+xml";
 		fileTypes[".txt"] = "text/plain";
 	}
-	std::map< std::string, std::string >::iterator it = fileTypes.find(fileName);
-    if ( it != fileTypes.end() )
-        return ( it->second );
-    else
-        return "text/plain";
+	if ( type == TYPE_NAME )
+	{
+		size_t pos = path.find_last_of('.');
+		std::string fileName = path.substr(pos);
+		std::map< std::string, std::string >::iterator it = fileTypes.find(fileName);
+		if ( it != fileTypes.end() )
+			return ( it->second );
+		else
+			return ("text/plain");
+	}
+	else
+	{
+		std::map< std::string, std::string >::iterator it = fileTypes.begin();
+		for ( ; it != fileTypes.end(); ++it )
+		{
+			if ( it->second == path.substr(0, path.length() - 1) )
+				return (it->first);
+		}
+		return ("text/plain");
+	}
 }
 
 const std::string	ResponseHelper::getCurrentTime( void ) const

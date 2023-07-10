@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <cstring>
 using namespace std;
 
 // int main( void )
@@ -69,8 +70,16 @@ using namespace std;
 int main( void )
 {
     struct stat st;
-    if ( stat("uploaded file", &st) == 0 )
+    if ( stat("example.txt", &st) == 0 )
         cout << st.st_size << endl;
     else
         cout << "no can do\n";
 }
+
+// int main( void )
+// {
+//     std::string p = "video.mp4";
+//     // char *f = strrchr(p, '.');
+    
+//     std::cout << p.substr(5) << std::endl;
+// }

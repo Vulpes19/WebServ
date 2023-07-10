@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 20:02:02 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 12:04:28 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,10 +91,12 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
+        // std::cout << "I'm here\n";
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
+            // std::cout << "it is set for read\n";
             if ( (*it)->getState() == READ_REQUEST )
             {
                 (*it)->startRead();
@@ -103,6 +105,7 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         }
         if ( FD_ISSET( (*it)->getSocket(), &writefds) )
         {
+            // std::cout << "it is set for write\n";
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
                 if ( (*it)->startResponse() )

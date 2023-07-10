@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 12:46:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 17:39:18 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ struct ResponseHelper
 {
 	ssize_t     getFileSize( const char * ) const;
 	bool		isDirectory( std::string ) const;
-	const std::string	getFileType( const char * ) const;
+	const std::string	getFileType( std::string, enum TYPES ) const;
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
 };
@@ -57,8 +57,8 @@ class Response
 		void		reset( void );
 	private:
 		// char    request[MAX_REQUEST_SIZE + 1];
-		int		bytesReceived;
-		int		bytesSent;
+		ssize_t		bytesReceived;
+		ssize_t		bytesSent;
 		int     fileSize;
 		bool	autoIndex;
 		SOCKET  socket;
@@ -69,5 +69,7 @@ class Response
 		std::ofstream	toUpload;
 		std::string	    path;
 		std::vector<Location> loc;
-		std::ofstream	test;
+		std::ofstream	buffer;
+		ssize_t			bodySize;
+		bool			isBody;
 };
