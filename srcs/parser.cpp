@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 18:37:10 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 17:34:57 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,25 +182,39 @@ void   Parser::readFile(std::ifstream& confFile) {
 		std::cout << "Error: could not open the configuration file!" << std::endl;
 } ;
 
+void	isPort(std::string value) {
+
+	std::istringstream ss(value);
+	int	res;
+
+	ss >> res;
+	std::cout << res << std::endl;
+	// if (ss >> res)
+	// 	return (true);
+	// return (false);
+}
+
 void	Parser::parseServer(std::ifstream& confFile) {
 
 	ServerSettings  server;
 	Context context;
-	std::string host;
+	std::string optionalVal;
 
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
-		ss >> directive >> value >> host;
+		ss >> directive >> value >> optionalVal;
+		std::cout << "directive: " << directive << std::endl;
+		std::cout << openingBraceCount << std::endl;
 		if (directive == "listen")
 		{
-			if (host.size())
+			if (optionalVal.size())
 				host_exists = true;
 			setServerContent(server, PORT, value);
 			if (host_exists)
-				setServerContent(server, HOST, host);
+				setServerContent(server, HOST, optionalVal);
 		}
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
@@ -209,34 +223,40 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		else if (directive == "error_page")
 			setServerContent(server, ERROR_PAGE, line);
 		else if (directive == "location") {
-			parseLocation(confFile, server, value);                
-		}
-		else if (line[0] == '}') {
+			std::cout << line << std::endl;
 
-			openingBraceCount--;
-			if (checkBracesError()) {
+			if (optionalVal == "{")
+			{
+				closingBraceExpected = true;
+				openingBraceCount++;
+			}
+			parseLocation(confFile, server, value);              
+		}
+		else if (directive == "}" && closingBraceExpected) {
+
+			// openingBraceCount--;
+			// std::cout << openingBraceCount << std::endl;
 				context.setServer(server);
 				parsedData.push_back(context);
 				break ;
-			}
-			else
-				std::cout << "server brace error" << std::endl;
 		}
-		else
-			printError(UNKNOWN);
 	}
 }
 
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
-	Location    location;
+	Location	location;
 
 	location.setValue(value);
 	while(getline(confFile, line) && status == OK) {
 
+		if (line[0] == '#' || line.empty())
+			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value;
-		if (directive == "}") {
+		if (directive == "}" && closingBraceExpected) {
+			// closingBraceExpected = false;
+			// openingBraceCount--;
 			server.setLocations(location);
 			break ;
 		}

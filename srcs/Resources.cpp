@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:45:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/10 18:28:07 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,10 @@ void    Resources::checkRequest( std::string request )
 	std::string			requestBody;
 	bool				requestBodyStart = false;
 
+	std::cout << "Request" << std::endl;
 	while ( std::getline(ss, line) )
 	{
+		std::cout << line << std::endl;
 		size_t colon = line.find(":");
 		if ( line == "\r" )
 		{
@@ -127,7 +129,7 @@ void    Resources::checkRequest( std::string request )
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
-	errorHandling();
+	// errorHandling();
 	printError(getError());
 }
 
@@ -135,8 +137,8 @@ void	Resources::errorHandling( void ) {
 
 	if (requiredLength < actualLength)
 		setError(BAD_REQUEST);
-	if (requiredLength == -1)
-		setError(LENGTH_REQUIRED);
+	// if (requiredLength == -1)
+	// 	setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
 		setError(BAD_REQUEST);
 }
