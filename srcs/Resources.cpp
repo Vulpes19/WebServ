@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 15:17:02 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 15:20:26 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,9 +98,7 @@ void	Resources::parseBody( void )
 	{	
 		std::ofstream	requestBody("requestBody");
 		fileContentBuffer += line;
-		std::cout << "line: " << line << std::endl;
 		fileContentBuffer += "\n";
-		std::cout << "fileContentBuffer: " << fileContentBuffer << std::endl;
 		actualLength = fileContentBuffer.size();
 		requestBody << fileContentBuffer;
 		requestBody.close();
@@ -138,21 +136,11 @@ void    Resources::checkRequest( std::string request )
 void	Resources::errorHandling( void ) {
 
 	if (requiredLength < actualLength - 1)
-	{
-		std::cout << "actual length: " << actualLength << std::endl;
-		std::cout << "here 1" << std::endl;
 		setError(BAD_REQUEST);
-	}
 	if (requiredLength == -1)
-	{
-		std::cout << "here 2" << std::endl;
 		setError(LENGTH_REQUIRED);
-	}
 	if (hostExists == false || requestLineExists == false)
-	{
-		std::cout << "here 3" << std::endl;
 		setError(BAD_REQUEST);
-	}
 }
 
 void    Resources::setError( enum Error_code error )
