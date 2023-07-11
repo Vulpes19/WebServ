@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 18:28:07 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 15:17:02 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,8 +98,10 @@ void	Resources::parseBody( void )
 	{	
 		std::ofstream	requestBody("requestBody");
 		fileContentBuffer += line;
+		std::cout << "line: " << line << std::endl;
 		fileContentBuffer += "\n";
-		actualLength += fileContentBuffer.size();
+		std::cout << "fileContentBuffer: " << fileContentBuffer << std::endl;
+		actualLength = fileContentBuffer.size();
 		requestBody << fileContentBuffer;
 		requestBody.close();
 	}
@@ -129,18 +131,28 @@ void    Resources::checkRequest( std::string request )
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
-	// errorHandling();
+	errorHandling();
 	printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
 
-	if (requiredLength < actualLength)
+	if (requiredLength < actualLength - 1)
+	{
+		std::cout << "actual length: " << actualLength << std::endl;
+		std::cout << "here 1" << std::endl;
 		setError(BAD_REQUEST);
-	// if (requiredLength == -1)
-	// 	setError(LENGTH_REQUIRED);
+	}
+	if (requiredLength == -1)
+	{
+		std::cout << "here 2" << std::endl;
+		setError(LENGTH_REQUIRED);
+	}
 	if (hostExists == false || requestLineExists == false)
+	{
+		std::cout << "here 3" << std::endl;
 		setError(BAD_REQUEST);
+	}
 }
 
 void    Resources::setError( enum Error_code error )
@@ -193,12 +205,3 @@ void	Resources::printError(enum Error_code code) {
 			break ;
 	}
 }
-
-// enum	ResponseStates	Resources::fillFile( const char *content )
-// {
-// 	std::string end("\r\n\r\n");
-// 	std::string tmp;
-	
-// 	if ( tmp.substr( tmp.length() - end.length() )  )
-// 	buffer << content;
-// }
