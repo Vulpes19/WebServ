@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 18:03:52 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 15:39:02 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,20 @@ class ErrorPage {
 
 } ;
 
+typedef struct s_brace {
+
+	int	openingBrace;
+	bool	closingBrace;
+	
+} t_brace ;
+
 class Location {
 	private:
 		std::string value;
 		std::string root;
 		std::string index;
 		std::string	upload;
+		// t_brace		braceLocation;
 		int         autoindex;
 	public:
 		Location();
@@ -68,6 +76,7 @@ class Location {
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
 		void	setUpload(const std::string &upld);
+		// void	setBraceValue();
 		std::string	getUpload() const;
 		std::string getValue() const;
 		std::string getRoot() const;
@@ -83,6 +92,7 @@ class ServerSettings {
 		std::string				host;
 		std::string             server_name;
 		int						body_size;
+		// t_brace					braceServer;
 		std::vector<Location>    locations;
 		std::vector<ErrorPage>	errorPages;
 	public:

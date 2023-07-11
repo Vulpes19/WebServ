@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 18:31:34 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 15:46:58 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,7 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-ServerSettings::ServerSettings(): host("localhost") {};
+ServerSettings::ServerSettings(): host("localhost"), body_size(10000) {};
 
 ServerSettings::ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size): port(port), host(host), server_name(server_name), body_size(body_size) {
 

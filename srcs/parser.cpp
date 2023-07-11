@@ -6,14 +6,14 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 17:34:57 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 19:10:10 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK) {};
 
 Parser::~Parser() {};
 
@@ -164,19 +164,32 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
+	// bool foundServer = false;
+	// bool openingBrace = false;
+	// std::string buffer;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
 		{
+			// buffer += line;
+			// buffer += "\n";
+			// if (buffer.find("server") != std::string::npos)
+			// 	foundServer = true;
+			// if (buffer.find("{") != std::string::npos && foundServer)
+			// {	
+			// 	std::cout << "start parsing" << std::endl;
+			// 	break ;
+			// }
 			std::stringstream ss(line);
 			ss >> directive >> value;
-			if (directive == "server" && value == "{") {
-
-				closingBraceExpected = true;
-				openingBraceCount++;
+			std::cout << "directive: " << directive << std::endl;
+			std::cout << "value: " << value << std::endl;
+			std::cout << "line: " << line << std::endl;
+			if ((directive == "server" && value == "{" )|| line == "{") {
 				parseServer(confFile);
 			}
 		}
+		// std::cout << buffer << std::endl;
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
@@ -189,9 +202,6 @@ void	isPort(std::string value) {
 
 	ss >> res;
 	std::cout << res << std::endl;
-	// if (ss >> res)
-	// 	return (true);
-	// return (false);
 }
 
 void	Parser::parseServer(std::ifstream& confFile) {
@@ -206,8 +216,6 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		std::cout << "directive: " << directive << std::endl;
-		std::cout << openingBraceCount << std::endl;
 		if (directive == "listen")
 		{
 			if (optionalVal.size())
@@ -223,19 +231,9 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		else if (directive == "error_page")
 			setServerContent(server, ERROR_PAGE, line);
 		else if (directive == "location") {
-			std::cout << line << std::endl;
-
-			if (optionalVal == "{")
-			{
-				closingBraceExpected = true;
-				openingBraceCount++;
-			}
 			parseLocation(confFile, server, value);              
 		}
 		else if (directive == "}" && closingBraceExpected) {
-
-			// openingBraceCount--;
-			// std::cout << openingBraceCount << std::endl;
 				context.setServer(server);
 				parsedData.push_back(context);
 				break ;
@@ -255,8 +253,6 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}" && closingBraceExpected) {
-			// closingBraceExpected = false;
-			// openingBraceCount--;
 			server.setLocations(location);
 			break ;
 		}

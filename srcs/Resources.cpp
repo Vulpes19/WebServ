@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 15:20:26 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 15:24:52 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,6 @@ void	Resources::parseBody( void )
 		requestBody.close();
 	}
 }
-
 
 void    Resources::checkRequest( std::string request )
 {
