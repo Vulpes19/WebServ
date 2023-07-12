@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 19:10:10 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 21:14:54 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,31 +164,52 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
-	// bool foundServer = false;
-	// bool openingBrace = false;
+	t_brace	brace;
+
+	brace.openingBrace = false;
+	brace.closingBrace = false;
 	// std::string buffer;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
 		{
-			// buffer += line;
-			// buffer += "\n";
-			// if (buffer.find("server") != std::string::npos)
-			// 	foundServer = true;
-			// if (buffer.find("{") != std::string::npos && foundServer)
-			// {	
-			// 	std::cout << "start parsing" << std::endl;
-			// 	break ;
+			// if (line.find("server") != std::string::npos)
+			// {
+			// 	std::string	nextLine;
+
+			// 	if (line.find("{") != std::string::npos)
+			// 		parseServer(confFile);
+			// 	else {
+			// 		while (getline(confFile, nextLine)) {
+			// 			if (nextLine != "\n")
+			// 			{
+			// 				std::cout << "syntax error" << std::endl;
+			// 				break ;
+			// 			}
+			// 			else if (nextLine == "{")
+			// 				parseServer(confFile);
+			// 		}
+			// 	}
+			// 	break ;				
 			// }
 			std::stringstream ss(line);
 			ss >> directive >> value;
 			std::cout << "directive: " << directive << std::endl;
 			std::cout << "value: " << value << std::endl;
 			std::cout << "line: " << line << std::endl;
-			if ((directive == "server" && value == "{" )|| line == "{") {
+			if ((directive == "server" && value == "{" )|| line.find("{") != std::string::npos) {
+	
+				// brace.openingBrace = true;
 				parseServer(confFile);
 			}
+			// if (line.find("}") != std::string::npos)
+			// {
+			// 	brace.closingBrace = true;
+			// 	break ;
+			// }
 		}
+		// if (brace.openingBrace == false || brace.closingBrace == false)
+		// 	std::cout << "brace error!" << std::endl;
 		// std::cout << buffer << std::endl;
 	}
 	else

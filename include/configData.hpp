@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 15:39:02 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 19:20:27 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,12 +53,6 @@ class ErrorPage {
 
 } ;
 
-typedef struct s_brace {
-
-	int	openingBrace;
-	bool	closingBrace;
-	
-} t_brace ;
 
 class Location {
 	private:

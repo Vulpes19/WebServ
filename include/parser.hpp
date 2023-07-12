@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 15:40:13 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 19:22:29 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,13 @@ enum {
 	RETURN,
 	HOST
 } ;
+
+typedef struct s_brace {
+
+	bool	openingBrace;
+	bool	closingBrace;
+	
+} t_brace ;
 
 class Parser {
 	private:
