@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/12 09:35:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 11:14:35 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,19 +68,37 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
+	// if ( !buffer.is_open() )
+	// 	buffer.open("testFile");
+	// char    request[4096 + 1];
+	// ssize_t bytesRead = 0;
+	// do
+	// {
+	// 	bytesRead = read( socket, request, 4096 );
+	// 	buffer.write(request, bytesRead);
+	// } while (bytesRead > 0);
+	// if ( bytesRead == 0 )
+	// {
+	// 	resources.checkRequest();
+	// 	buffer.close();
+	// 	return (READY_TO_WRITE);
+	// }
+	// else
+	// {
+	// 	buffer.close();
+	// 	err.errorBadRequest(socket);
+	// 	reset();
+	// 	return (RESET);
+	// }
 	if ( !buffer.is_open() )
 		buffer.open("testFile");
 	char    request[4096 + 1];
 	ssize_t bytesRead = read( socket, request, 4096 );
 	std::cout << bytesRead << std::endl;
-	bytesReceived += bytesRead;
 	if ( bytesRead > 0  )
 	{
 		std::string toCheck(request, bytesRead);
 		buffer.write(request, bytesRead);
-		if ( isBody )
-			bytesReceived += bytesRead;
-		// std::string end = "\r\n\r\n";
 		std::string receivedData;
 		std::string remainingData;
 		size_t del = toCheck.find("\r\n\r\n");
@@ -90,22 +108,11 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 			remainingData = toCheck.substr(del + 4);
 			if ( !remainingData.empty() )
 				return (READING);
-			// std::cout << toCheck;
-			std::cout << "***************\n";
-			std::cout << receivedData << std::endl;
-			std::cout << "***************\n";
-			std::cout << remainingData << std::endl;
-			std::cout << "***************\n";
 			buffer.close();
 			std::cout << "REQUEST IS WELL RECEIVED\n";
 			resources.checkRequest();
 			return (READY_TO_WRITE);
 		}
-		// else
-		// {
-		// 	receivedData = toCheck;
-		// 	remainingData = "";
-		// }
 		if ( bytesRead < 4096 )
 		{
 			buffer.close();
