@@ -69,11 +69,13 @@ using namespace std;
 
 int main( void )
 {
-    struct stat st;
-    if ( stat("example.txt", &st) == 0 )
-        cout << st.st_size << endl;
-    else
-        cout << "no can do\n";
+    std::ifstream f("example.txt");
+    std::string line;
+    while ( std::getline(f, line) )
+    {
+        std::cout << line;
+        line.clear();
+    }
 }
 
 // int main( void )

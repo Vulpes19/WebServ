@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 17:43:54 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 09:35:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,49 +76,43 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	bytesReceived += bytesRead;
 	if ( bytesRead > 0  )
 	{
-		// buffer.write(request, bytesRead);
 		std::string toCheck(request, bytesRead);
+		buffer.write(request, bytesRead);
 		if ( isBody )
 			bytesReceived += bytesRead;
-		buffer << toCheck;
-		size_t lenPos = toCheck.find("Content-Length: ");
-		std::string end = "\r\n\r\n";
-		size_t del = toCheck.find(end);
+		// std::string end = "\r\n\r\n";
+		std::string receivedData;
+		std::string remainingData;
+		size_t del = toCheck.find("\r\n\r\n");
 		if ( del != std::string::npos )
 		{
-			std::string receivedData = toCheck.substr(0, del + end.length() );
-			std::string remainingData = toCheck.substr(del + end.length());
+			receivedData = toCheck.substr(0, del + 4 );
+			remainingData = toCheck.substr(del + 4);
 			if ( !remainingData.empty() )
-				isBody = true;
+				return (READING);
+			// std::cout << toCheck;
+			std::cout << "***************\n";
+			std::cout << receivedData << std::endl;
+			std::cout << "***************\n";
+			std::cout << remainingData << std::endl;
+			std::cout << "***************\n";
+			buffer.close();
+			std::cout << "REQUEST IS WELL RECEIVED\n";
+			resources.checkRequest();
+			return (READY_TO_WRITE);
 		}
-		if ( lenPos != std::string::npos )
-		{
-			lenPos += 16;
-			size_t endPos = toCheck.find("\r\n", lenPos);
-			if ( endPos != std::string::npos )
-			{
-				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
-				if ( !lenStr.empty() )
-				{
-					bodySize = std::stoul(lenStr);
-					// isBody = true;
-				}
-				std::cout << bodySize << std::endl;
-			}
-		}
-		std::cout << bytesReceived << " vs " << bodySize << std::endl;
-		if ( bodySize != 0 && bytesReceived >= bodySize )
+		// else
+		// {
+		// 	receivedData = toCheck;
+		// 	remainingData = "";
+		// }
+		if ( bytesRead < 4096 )
 		{
 			buffer.close();
 			std::cout << "REQUEST IS WELL RECEIVED\n";
 			resources.checkRequest();
 			return (READY_TO_WRITE);
 		}
-		// 	buffer.close();
-		// 	std::cout << "REQUEST IS WELL RECEIVED\n";
-		// 	resources.checkRequest();
-		// 	return (READY_TO_WRITE);
-		// }
 		return (READING);
 	}
 	else if ( bytesRead == 0 )
