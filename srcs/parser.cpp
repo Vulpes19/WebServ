@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/12 21:14:54 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/13 18:24:00 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,13 +117,13 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 					location.setRoot(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
-			}	
+			}
 			else
 				printError(EMPTY);
 			break ;
 		case INDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))	
+				if (findSemicolon(value))
 					location.setIndex(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
@@ -133,7 +133,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case AUTOINDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
+				if (findSemicolon(value))	
 					location.setAutoIndex();
 				else
 					printError(SEMICOLON);
@@ -173,44 +173,28 @@ void   Parser::readFile(std::ifstream& confFile) {
 	{
 		while (getline(confFile, line))
 		{
-			// if (line.find("server") != std::string::npos)
-			// {
-			// 	std::string	nextLine;
+			if (line.find("server") != std::string::npos)
+			{
+				std::string	nextLine;
 
-			// 	if (line.find("{") != std::string::npos)
-			// 		parseServer(confFile);
-			// 	else {
-			// 		while (getline(confFile, nextLine)) {
-			// 			if (nextLine != "\n")
-			// 			{
-			// 				std::cout << "syntax error" << std::endl;
-			// 				break ;
-			// 			}
-			// 			else if (nextLine == "{")
-			// 				parseServer(confFile);
-			// 		}
-			// 	}
-			// 	break ;				
-			// }
-			std::stringstream ss(line);
-			ss >> directive >> value;
-			std::cout << "directive: " << directive << std::endl;
-			std::cout << "value: " << value << std::endl;
-			std::cout << "line: " << line << std::endl;
-			if ((directive == "server" && value == "{" )|| line.find("{") != std::string::npos) {
-	
-				// brace.openingBrace = true;
-				parseServer(confFile);
+				if (line.find("{") != std::string::npos)
+					parseServer(confFile);
+				else {
+					while (getline(confFile, nextLine)) {
+						if (nextLine.size())
+						{
+							if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos)
+								parseServer(confFile);
+							else
+							{
+								std::cout << "brace error" << std::endl;
+								exit(1);
+							}
+						}
+					}
+				}
 			}
-			// if (line.find("}") != std::string::npos)
-			// {
-			// 	brace.closingBrace = true;
-			// 	break ;
-			// }
 		}
-		// if (brace.openingBrace == false || brace.closingBrace == false)
-		// 	std::cout << "brace error!" << std::endl;
-		// std::cout << buffer << std::endl;
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
@@ -237,7 +221,8 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		if (directive == "listen")
+		// std::cout << "directive: " << directive << std::endl;
+		if (directive.find("listen") != std::string::npos)
 		{
 			if (optionalVal.size())
 				host_exists = true;
