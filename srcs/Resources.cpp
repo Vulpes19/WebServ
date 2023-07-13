@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 17:30:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/13 09:46:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	Resources::parseHeader( void )
 		hostExists = true;
 	if (headerValue.size() == 0)
 		setError(BAD_REQUEST);
-	if (headerKey == "Content-Length")	
+	if (headerKey == "Content-Length")
 		requiredLength = std::stoi(headerValue);
 }
 
@@ -92,34 +92,35 @@ void	Resources::parseRequestLine( void )
 		setError(BAD_REQUEST);
 }
 
-void	Resources::parseBody( void )
+void	Resources::parseBody( size_t &size )
 {
 	// std::cout << requiredLength << " vs " << actualLength << std::endl;
-	if (requiredLength > actualLength)
-	{	
+	// if (requiredLength >= actualLength)
+	// {	
 		fileContentBuffer += line;
 		fileContentBuffer += "\n";
+		size += fileContentBuffer.size();
 		// std::cout << fileContentBuffer;
 		actualLength += fileContentBuffer.size();
 		requestBody << fileContentBuffer;
 		fileContentBuffer.clear();
-	}
+	// }
 }
 
 
 void    Resources::checkRequest( void )
 {
-	//to check protection later
 	requestBody.open("requestBody");
-	std::ifstream test("testFile");
-	if ( !test.is_open() )
+	std::ifstream requestFile("testFile");
+	size_t size = 0;
+	if ( !requestFile.is_open() )
 	{
 		std::cerr << "failed to open the file\n";
 		exit(1);
 	}
 	bool				requestBodyStart = false;
 
-	while ( std::getline(test, line) )
+	while ( std::getline(requestFile, line) )
 	{
 		size_t colon = line.find(":");
 		if ( line == "\r" )
@@ -128,14 +129,15 @@ void    Resources::checkRequest( void )
 			continue ;
 		}
 		else if ( requestBodyStart )
-			parseBody();
+			parseBody(size);
 		else if ( colon != std::string::npos )
 			parseHeader();
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
+	std::cout << "size is: " << size << std::endl;
 	std::cout << "** I finished checking **\n";
-	test.close();
+	requestFile.close();
 	requestBody.close();
 	remove("testFile");
 	errorHandling();

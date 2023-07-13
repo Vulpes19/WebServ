@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/09 16:46:55 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/13 09:45:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ class Resources
 		enum Error_code	getError() const;
 		void		clear( void );
 		void		errorHandling( void );
-		void		parseBody( void );
+		void		parseBody( size_t &size );
 		void		parseRequestLine( void );
 		void    	parseHeader( void );
 		void    	printError(enum Error_code code);
