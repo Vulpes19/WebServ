@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 18:17:44 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:04:34 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ std::string	ErrorPage::getPath() const {
 ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): autoindex(OFF), missingValue(true) {};
+Location::Location(): upload("default"), autoindex(OFF), missingValue(true) {};
 
 Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
 	autoindex = OFF;

@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 18:15:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:27:33 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,9 +56,9 @@ class ErrorPage {
 
 class Location {
 	private:
-		std::string value;
-		std::string root;
-		std::string index;
+		std::string value; //darori
+		std::string root; //darori
+		std::string index; //darori
 		std::string	upload;
 		int         autoindex;
 		bool		missingValue;
@@ -84,13 +84,12 @@ class Location {
 
 class ServerSettings {
 	private:
-		std::string             port;
-		std::string				host;
-		std::string             server_name;
+		std::string             port;  //darori
+		std::string				host; 
+		std::string             server_name; //darori
 		int						body_size;
-		// t_brace					braceServer;
-		std::vector<Location>    locations;
-		std::vector<ErrorPage>	errorPages;
+		std::vector<Location>    locations; //darori
+		std::vector<ErrorPage>	errorPages; 
 		bool					missingValue;
 	public:
 		ServerSettings();
@@ -110,6 +109,7 @@ class ServerSettings {
 		bool		getMissingValue() const;
 		std::vector<Location> getLocations();
 		std::vector<ErrorPage>	getErrorPages();
+
 		~ServerSettings();
 } ;
 

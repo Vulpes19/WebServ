@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 18:24:00 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:54:30 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,7 +168,6 @@ void   Parser::readFile(std::ifstream& confFile) {
 
 	brace.openingBrace = false;
 	brace.closingBrace = false;
-	// std::string buffer;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
@@ -200,13 +199,29 @@ void   Parser::readFile(std::ifstream& confFile) {
 		std::cout << "Error: could not open the configuration file!" << std::endl;
 } ;
 
-void	isPort(std::string value) {
+void	Parser::serverValuesValidation(ServerSettings server) {
 
-	std::istringstream ss(value);
-	int	res;
+	std::string port = server.getPort();
+	int			portInt;
+	std::stringstream ss(port);
 
-	ss >> res;
-	std::cout << res << std::endl;
+	ss >> portInt;
+	if (port.size() == 0) {
+		std::cerr << "Syntax Error: port not found!" << std::endl;
+		exit(1);
+	}
+	if (server.getName().size() == 0) {	
+		std::cerr << "Syntax Error: server name not found!" << std::endl;
+		exit(1);
+	}
+	if (portInt == 0) {	
+		std::cerr << "Syntax Error: port is invalid!" << std::endl;
+		exit(1);
+	}
+	if (server.getLocations().size() == 0) {
+		std::cerr << "Syntax Error: Location is undefined!" << std::endl;
+		exit(1);
+	}
 }
 
 void	Parser::parseServer(std::ifstream& confFile) {
@@ -221,7 +236,6 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		// std::cout << "directive: " << directive << std::endl;
 		if (directive.find("listen") != std::string::npos)
 		{
 			if (optionalVal.size())
@@ -244,6 +258,30 @@ void	Parser::parseServer(std::ifstream& confFile) {
 				parsedData.push_back(context);
 				break ;
 		}
+	}
+	serverValuesValidation(server);
+}
+
+bool	examinePath(std::string value) {
+
+	if (value.find("/") != std::string::npos)
+		return (true);
+	return (false);
+}
+
+void	Parser::locationValuesValidation(Location location) {
+
+	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
+		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
+		std::cerr << "Syntax Error: location root value not found or invalid!" << std::endl; 
+		exit(1);
+	}
+	if (location.getIndex().size() == 0) {
+		std::cerr << "Syntax Error: location index not found or invalid!" << std::endl;
+		exit(1);
 	}
 }
 
@@ -273,6 +311,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 		else if (directive == "return")
 			setLocationContent(location, RETURN, value);
 	}
+	locationValuesValidation(location);
 }
 
 void	Parser::printData() {
