@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 12:41:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 10:31:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,65 +94,41 @@ void	Resources::parseRequestLine( void )
 
 void	Resources::parseBody( size_t &size )
 {
-	std::cout << requiredLength << " vs " << actualLength << std::endl;
-	(void)size;
-	line += '\n';
+	// std::cout << requiredLength << " vs " << actualLength << std::endl;
 	size += line.size();
 	actualLength += line.size();
 	requestBody.write(line.c_str(), line.size());
 }
 
-
-
 void    Resources::checkRequest( void )
 {
+	requestBody.open("requestBody");
 	std::ifstream requestFile("testFile", std::ios::binary);
-	
-	requestBody.open("requestBody", std::ios::binary);
+	size_t size = 0;
 	if ( !requestFile.is_open() )
 	{
 		std::cerr << "failed to open the file\n";
 		exit(1);
 	}
 	bool				requestBodyStart = false;
-	size_t size = 0;
-	char buffer[4096];
-	std::string toSend;
-	ssize_t bytesRead;
-	while ( requestFile.read(buffer, sizeof(buffer)) )
+
+	while ( std::getline(requestFile, line) )
 	{
-		bytesRead = requestFile.gcount();
-		
-		if ( !requestBodyStart )
+		if (!requestFile.eof() && requestBodyStart )
+			line += '\n';
+		size_t colon = line.find(":");
+		if ( line == "\r" )
 		{
-			std::string s(buffer, bytesRead);
-			size_t pos = s.find("\r\n\r\n");
-			if ( pos != std::string::npos )
-			{
-				std::string r = s.substr(pos + 4);
-				if ( !r.empty() )
-				{
-					char *b = strstr(buffer, buffer + pos + 4);
-					requestBody.write(b, r.size());
-				}
-				testFunc(toSend);
-				requestBodyStart = true;
-			}
-			else
-			{
-				toSend += s;
-			}
+			requestBodyStart = true;
+			continue ;
 		}
-		size += bytesRead;
-		if ( requestBodyStart )
-		{
-			requestBody.write(buffer, bytesRead);
-		}
+		else if ( requestBodyStart )
+			parseBody(size);
+		else if ( colon != std::string::npos )
+			parseHeader();
+		else if ( line.find("HTTP") != std::string::npos )
+			parseRequestLine();
 	}
-	// if ( requestFile.eof() )
-	// 	std::cout << "everything is read\n";
-	// if ( requestFile.fail() )
-	// 	std::cout << "errorrrrrrrrrr\n";
 	std::cout << "size is: " << size << std::endl;
 	std::cout << "** I finished checking **\n";
 	requestFile.close();
@@ -161,55 +137,6 @@ void    Resources::checkRequest( void )
 	errorHandling();
 	// printError(getError());
 }
-
- void    Resources::testFunc( std::string s )
-{
-	std::stringstream ss(s);
-	while ( std::getline(ss, line) )
-	{
-		size_t colon = line.find(":");
-		if ( colon != std::string::npos )
-			parseHeader();
-		else if ( line.find("HTTP") != std::string::npos )
-			parseRequestLine();
-	}
-}
-// void    Resources::checkRequest( void )
-// {
-// 	std::ifstream requestFile("testFile", std::ios::binary);
-	
-// 	size_t size = 0;
-// 	requestBody.open("requestBody");
-// 	if ( !requestFile.is_open() )
-// 	{
-// 		std::cerr << "failed to open the file\n";
-// 		exit(1);
-// 	}
-// 	bool				requestBodyStart = false;
-
-// 	while ( std::getline(requestFile, line) )
-// 	{
-// 		size_t colon = line.find(":");
-// 		if ( line == "\r" )
-// 		{
-// 			requestBodyStart = true;
-// 			continue ;
-// 		}
-// 		else if ( requestBodyStart )
-// 			parseBody(size);
-// 		else if ( colon != std::string::npos )
-// 			parseHeader();
-// 		else if ( line.find("HTTP") != std::string::npos )
-// 			parseRequestLine();
-// 	}
-// 	std::cout << "size is: " << size << std::endl;
-// 	std::cout << "** I finished checking **\n";
-// 	requestFile.close();
-// 	requestBody.close();
-// 	remove("testFile");
-// 	errorHandling();
-// 	// printError(getError());
-// }
 
 void	Resources::errorHandling( void ) {
 

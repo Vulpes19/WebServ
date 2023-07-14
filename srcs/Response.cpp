@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 09:45:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 10:33:03 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,38 +68,47 @@ void    Response::setSocket( SOCKET socket )
 
 enum ResponseStates    Response::handleReadRequest( Resources &resources )
 {
+	char    request[4096];
+	ssize_t bytesRead;
+	size_t	lenPos;
+	size_t	endPos;
+	size_t	delimiter;
+	
 	if ( !buffer.is_open() )
-		buffer.open("testFile");
-	char    request[4096 + 1];
-	ssize_t bytesRead = read( socket, request, 4096 );
+		buffer.open("testFile", std::ios::binary);
+	bytesRead = read( socket, request, 4096 );
 	std::cout << bytesRead << std::endl;
 	if ( bytesRead > 0  )
 	{
 		std::string toCheck(request, bytesRead);
 		buffer.write(request, bytesRead);
-		size_t lenPos = toCheck.find("Content-Length: ");
+		lenPos = toCheck.find("Content-Length: ");
 		if ( lenPos != std::string::npos )
 		{
 			lenPos += 16;
-			size_t endPos = toCheck.find("\r\n", lenPos);
+			endPos = toCheck.find("\r\n", lenPos);
 			if ( endPos != std::string::npos )
 			{
 				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
 				if ( !lenStr.empty() )
 					bodySize = std::stoul(lenStr);
-				std::cout << bodySize << std::endl;
+				std::cout << "body size: " << bodySize << std::endl;
 			}
 		}
-		size_t del = toCheck.find("\r\n\r\n");
+		std::string end("\r\n\r\n");
+		delimiter = toCheck.find(end);
 		if ( isBody )
 			bytesReceived += bytesRead;
-		if ( del != std::string::npos )
+		if ( delimiter != std::string::npos )
 		{
 			isBody = true;
-			// bodySize = std::stol(resources.getRequest("Content-Length"));
-			std::string bodyStart = toCheck.substr(del + 4);
+			std::cout << toCheck.substr(0, delimiter) << std::endl;;
+			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
 			if ( !bodyStart.empty() )
+			{
 				bytesReceived += bodyStart.length();
+				// buffer.write(bodyStart.c_str(), bodyStart.length());	
+			}
 		}
 		if ( bytesReceived >= bodySize )
 		{
@@ -259,6 +268,8 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
+	std::string uploadPath;
+	
 	filePath += type;
 	std::cout << filePath << std::endl;
 	if ( rename("requestBody", filePath.substr(1).c_str()) != 0 )
@@ -422,6 +433,11 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 void    Response::setLocations( std::vector<Location> loc )
 {
     this->loc = loc;
+}
+
+void	Response::setName( std::string name )
+{
+	this->serverName = name;
 }
 
 std::string	Response::getRootPath( std::string path )

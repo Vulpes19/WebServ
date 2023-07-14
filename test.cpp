@@ -69,12 +69,14 @@ using namespace std;
 
 int main( void )
 {
-    std::ifstream f("example.txt");
-    std::string line;
-    while ( std::getline(f, line) )
+    std::ifstream f;
+    f.open("example.txt", std::ios::binary);
+    char buffer[4096];
+    while (f.read(buffer, sizeof(buffer)))
     {
-        std::cout << line;
-        line.clear();
+        std::streamsize b = f.gcount();
+        std::string bruh(buffer, b);
+        std::cout << bruh << std::endl;
     }
 }
 

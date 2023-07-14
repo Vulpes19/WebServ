@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 17:39:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:34:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,20 +54,22 @@ class Response
 		bool		isRequestReceived( std::string, ssize_t ) const;
 		// bool		isRequestReceived( Resources & ) const;
 		void		setLocations( std::vector<Location> );
+		void		setName( std::string );
 		void		reset( void );
 	private:
 		// char    request[MAX_REQUEST_SIZE + 1];
-		ssize_t		bytesReceived;
-		ssize_t		bytesSent;
-		int     fileSize;
-		bool	autoIndex;
-		SOCKET  socket;
+		ssize_t			bytesReceived;
+		ssize_t			bytesSent;
+		int     		fileSize;
+		bool			autoIndex;
+		SOCKET  		socket;
 		ErrorResponse   err;
 		ResponseHelper	help;
 		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;
 		std::string	    path;
+		std::string		serverName;
 		std::vector<Location> loc;
 		std::ofstream	buffer;
 		ssize_t			bodySize;

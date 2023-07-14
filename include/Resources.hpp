@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/13 12:41:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 07:18:44 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ class Resources
 		void		parseBody( size_t &size );
 		void		parseRequestLine( void );
 		void    	parseHeader( void );
-		void		testFunc(std::string s);
 		void    	printError(enum Error_code code);
 	private:
 		std::map< std::string, std::string > header;
