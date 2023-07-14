@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/05 14:51:43 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:34:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,4 +87,9 @@ void    ClientManager::createClient( SOCKET listenSocket )
 void    ClientManager::setLocations( std::vector<Location> loc )
 {
     response->setLocations(loc);
+}
+
+void    ClientManager::setName( std::string name )
+{
+    response->setName(name);
 }

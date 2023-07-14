@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:45:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 10:31:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Resources &Resources::operator=( const Resources &rhs )
 	if ( this != &rhs )
 	{
 		this->header = rhs.header;
-		this->fileContentBuffer = rhs.fileContentBuffer;
+		// this->requestBodyBuffer = rhs.requestBodyBuffer;
 		this->fileSize = rhs.fileSize;
 		this->error = rhs.error;
 		this->actualLength = rhs.actualLength;
@@ -53,7 +53,7 @@ void	Resources::parseHeader( void )
 		hostExists = true;
 	if (headerValue.size() == 0)
 		setError(BAD_REQUEST);
-	if (headerKey == "Content-Length")	
+	if (headerKey == "Content-Length")
 		requiredLength = std::stoi(headerValue);
 }
 
@@ -92,28 +92,30 @@ void	Resources::parseRequestLine( void )
 		setError(BAD_REQUEST);
 }
 
-void	Resources::parseBody( void )
+void	Resources::parseBody( size_t &size )
 {
-	if (requiredLength > actualLength)
-	{	
-		std::ofstream	requestBody("requestBody");
-		fileContentBuffer += line;
-		fileContentBuffer += "\n";
-		actualLength += fileContentBuffer.size();
-		requestBody << fileContentBuffer;
-		requestBody.close();
-	}
+	// std::cout << requiredLength << " vs " << actualLength << std::endl;
+	size += line.size();
+	actualLength += line.size();
+	requestBody.write(line.c_str(), line.size());
 }
 
-
-void    Resources::checkRequest( std::string request )
+void    Resources::checkRequest( void )
 {
-	std::stringstream	ss(request);
-	std::string			requestBody;
+	requestBody.open("requestBody");
+	std::ifstream requestFile("testFile", std::ios::binary);
+	size_t size = 0;
+	if ( !requestFile.is_open() )
+	{
+		std::cerr << "failed to open the file\n";
+		exit(1);
+	}
 	bool				requestBodyStart = false;
 
-	while ( std::getline(ss, line) )
+	while ( std::getline(requestFile, line) )
 	{
+		if (!requestFile.eof() && requestBodyStart )
+			line += '\n';
 		size_t colon = line.find(":");
 		if ( line == "\r" )
 		{
@@ -121,14 +123,19 @@ void    Resources::checkRequest( std::string request )
 			continue ;
 		}
 		else if ( requestBodyStart )
-			parseBody();
+			parseBody(size);
 		else if ( colon != std::string::npos )
 			parseHeader();
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
+	std::cout << "size is: " << size << std::endl;
+	std::cout << "** I finished checking **\n";
+	requestFile.close();
+	requestBody.close();
+	remove("testFile");
 	errorHandling();
-	printError(getError());
+	// printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
@@ -159,10 +166,10 @@ std::string	Resources::getRequest( std::string Key )
 		return ( "NOT FOUND" );
 }
 
-std::string	Resources::getRequestBody( void ) const
-{
-	return ( fileContentBuffer );
-}
+// std::ofstream	Resources::getRequestBody( void ) const
+// {
+// 	return ( requestBodyBuffer );
+// }
 
 void	Resources::clear( void )
 {

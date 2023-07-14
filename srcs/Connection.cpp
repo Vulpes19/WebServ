@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/06 11:01:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:34:08 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->createClient( srv.getListenSocket() );
     newClient->setState( READ_REQUEST);
     newClient->setLocations(srv.getLocations());
+    newClient->setName(srv.getName());
     clients.push_back(newClient);
     return (newClient);
 }
@@ -58,12 +59,20 @@ void    Connection::deleteClient( ClientManager *cl )
         std::cerr << "dropped client not found\n";
 }
 
-void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
-    FD_SET(socket, &readfds);
-    SOCKET maxSocket = socket;
+    SOCKET maxSocket;
+    maxSocket = servers[0].getListenSocket();
+    // std::map<std::string, Server>::iterator it = servers.begin();
+    for ( size_t i = 0; i < servers.size(); i++ )
+    {
+        SOCKET serverSocket = servers[i].getListenSocket();
+        if ( serverSocket > maxSocket )
+            maxSocket = serverSocket;
+        FD_SET(serverSocket, &readfds);
+    }
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() > -1 )
@@ -83,10 +92,12 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
+        // std::cout << "I'm here\n";
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
+            // std::cout << "it is set for read\n";
             if ( (*it)->getState() == READ_REQUEST )
             {
                 (*it)->startRead();
@@ -95,6 +106,7 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         }
         if ( FD_ISSET( (*it)->getSocket(), &writefds) )
         {
+            // std::cout << "it is set for write\n";
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
                 if ( (*it)->startResponse() )
