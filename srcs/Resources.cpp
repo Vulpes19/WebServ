@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 10:31:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 11:23:53 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,9 +94,7 @@ void	Resources::parseRequestLine( void )
 
 void	Resources::parseBody( size_t &size )
 {
-	// std::cout << requiredLength << " vs " << actualLength << std::endl;
 	size += line.size();
-	actualLength += line.size();
 	requestBody.write(line.c_str(), line.size());
 }
 

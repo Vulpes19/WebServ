@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 10:33:03 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 10:42:25 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,10 +105,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 			std::cout << toCheck.substr(0, delimiter) << std::endl;;
 			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
 			if ( !bodyStart.empty() )
-			{
 				bytesReceived += bodyStart.length();
-				// buffer.write(bodyStart.c_str(), bodyStart.length());	
-			}
 		}
 		if ( bytesReceived >= bodySize )
 		{
