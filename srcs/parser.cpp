@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:54:30 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:57:02 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -172,6 +172,8 @@ void   Parser::readFile(std::ifstream& confFile) {
 	{
 		while (getline(confFile, line))
 		{
+			if (line[0] == '#' || line.empty())
+				continue ;
 			if (line.find("server") != std::string::npos)
 			{
 				std::string	nextLine;

@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 15:24:52 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 09:29:02 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ void    Resources::checkRequest( std::string request )
 	std::cout << "Request" << std::endl;
 	while ( std::getline(ss, line) )
 	{
-		std::cout << line << std::endl;
+		// std::cout << line << std::endl;
 		size_t colon = line.find(":");
 		if ( line == "\r" )
 		{
@@ -176,16 +176,16 @@ void	Resources::printError(enum Error_code code) {
 	switch (code) {
 
 		case BAD_REQUEST:
-			std::cout << "bad request: " << line << std::endl;
+			std::cout << "BAD REQUEST!" << std::endl;
 			break ;
 		case LENGTH_REQUIRED:
-			std::cout << "length required" << std::endl;
+			std::cout << "LENGTH REQUIRED!" << std::endl;
 			break ;
 		case METHOD_NOT_ALLOWED:
-			std::cout << "method not allowed" << std::endl;
+			std::cout << "METHOD NOT ALLOWED" << std::endl;
 			break ;
 		case HTTP_VERSION_NOT_SUPPORTED:
-			std::cout << "http version not supported" << std::endl;
+			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
 			break ;
 		default:
 			std::cout << "all good" << std::endl;
