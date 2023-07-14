@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <cstring>
 using namespace std;
 
 // int main( void )
@@ -56,11 +57,33 @@ using namespace std;
 //     parser.printData();
 // }
 
+// int main( void )
+// {
+//     struct stat st;
+//     if ( stat("./var/www/videos/jake.mp4", &st) == 0 )
+//         cout << st.st_size << endl;
+//     else
+//         cout << "bruh\n";
+//     return (0);
+// }
+
 int main( void )
 {
-    if ( access("./var/www/images/spongebob1.jpg", F_OK) == -1 )
-        std::cout << "nyeeh\n";
-    else
-        std::cout << "yaay\n";
-    return (0);
+    std::ifstream f;
+    f.open("example.txt", std::ios::binary);
+    char buffer[4096];
+    while (f.read(buffer, sizeof(buffer)))
+    {
+        std::streamsize b = f.gcount();
+        std::string bruh(buffer, b);
+        std::cout << bruh << std::endl;
+    }
 }
+
+// int main( void )
+// {
+//     std::string p = "video.mp4";
+//     // char *f = strrchr(p, '.');
+    
+//     std::cout << p.substr(5) << std::endl;
+// }

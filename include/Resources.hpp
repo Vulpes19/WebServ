@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:59:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 07:18:44 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ class Resources
 		~Resources( void );
 		Resources( const Resources &src );
 		Resources &operator=( const Resources &rhs );
-		void		checkRequest( std::string request );
+		void		checkRequest( void );
 		void		setError( enum Error_code error );
 		// enum ResponseStates	fillFile( const char * );
 		std::string	getRequest( std::string Key );
@@ -50,14 +50,14 @@ class Resources
 		enum Error_code	getError() const;
 		void		clear( void );
 		void		errorHandling( void );
-		void		parseBody( void );
+		void		parseBody( size_t &size );
 		void		parseRequestLine( void );
 		void    	parseHeader( void );
 		void    	printError(enum Error_code code);
 	private:
 		std::map< std::string, std::string > header;
 		enum Error_code error;
-		// std::fstream	buffer;
+		std::ofstream	requestBody;
 		std::string	fileContentBuffer;
 		int			fileSize;
 		ssize_t				requiredLength;
