@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/12 11:26:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/11 16:48:13 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,17 @@ void    Resources::checkRequest( std::string request )
 			header["HTTP"] = str;
 		}
 	}
+
+	std::cout << "*#########################\n";
+	std::map<std::string, std::string>::iterator it;
+	for (it = header.begin(); it != header.end(); it++)
+	{
+		std::cout << it->first << " " << it->second << std::endl;
+	}
+
+	std::cout << "*#########################\n";
+
+	
 	fileContentBuffer = requestBody.c_str();
 	// for ( iterator it = header.begin(); it != header.end(); ++it )
 	// {

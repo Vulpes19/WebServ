@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 14:11:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/12 16:26:06 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,10 @@
 #include "Libraries.hpp"
 #include "ClientManager.hpp"
 #include "Resources.hpp"
+#include "CGI.hpp"
 
 class ClientManager;
+class CGI;
 
 struct ErrorResponse
 {
@@ -26,6 +28,7 @@ struct ErrorResponse
 };
 
 class Response
+
 {
     public:
         Response( void );
@@ -34,7 +37,7 @@ class Response
         enum ResponseStates    	handleReadRequest( Resources & );
 		bool    	handleWriteResponse( Resources & );
 		bool    	isRequestReceived( void );
-		enum ResponseStates        getResponseFile( void );
+		enum ResponseStates        getResponseFile(Resources &resources);
 		enum ResponseStates        getResponseDir( void );
 		size_t      getFileSize( const char * ) const;
 		std::string	getFileType( const char * ) const;

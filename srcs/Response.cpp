@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 14:53:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 12:01:43 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Response.hpp"
+#include "CGI.hpp"
 
 void    ErrorResponse::errorBadRequest( SOCKET socket )
 {
@@ -90,8 +91,8 @@ enum ResponseStates    Response::getResponseDir( void )
 	if ( dir == NULL )
 	{
 		std::ostringstream oss;
-		std::string fullPath = "." + path;
-		std::cout << "*******" << path << "*******" << "\n";
+		std::string fullPath = "/Users/elias" + path; //////////
+		std::cout << "*******" << fullPath << "*******" << "\n";
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
 			std::cout << "NOT FOUND HEREEE\n";
@@ -137,17 +138,26 @@ enum ResponseStates    Response::getResponseDir( void )
 	return (RESET);
 }
 
-enum ResponseStates    Response::getResponseFile( void )
+enum ResponseStates    Response::getResponseFile(Resources &resources)
 {
 	std::cout << "generating the response\n";
+	CGI cgi;
+		
+	if (cgi.checkCGI(path))
+	{
+		std::cout << "CGI\n";
+		cgi.exec(resources);
+	}
 	if ( !file.is_open() )
 	{
 		std::string response;
 		bytesSent = 0;
 		bytesReceived = 0;
 		std::ostringstream oss;
-		oss << "public" << path;
+		std::cout << "PAAATH:: " << path << "\n";
+		oss << path;
 		std::string fullPath = oss.str();
+		std::cout << "PAAATH:: " << fullPath << "\n";
 		if ( access(fullPath.c_str(), F_OK) == -1 )
 		{
 			err.errorNotFound(socket);
@@ -170,7 +180,12 @@ enum ResponseStates    Response::getResponseFile( void )
 		oss << "\r\n";
 		response = oss.str();
 		send( socket, response.data(), response.size(), 0 );
+		
+		std::cout << "\n RESPONSE:\n";
+		std::cout << response;
+		std::cout << " 000000000\n";
 	}
+
 	char buffer[BSIZE];
 	file.read(buffer, BSIZE);
 	ssize_t bytesRead = file.gcount();
@@ -207,8 +222,10 @@ bool    Response::handleWriteResponse( Resources &resources )
 		path = "/index.html";
 	if ( path[path.length() - 1] == '/' )
 		ret = getResponseDir();
-	if ( resources.getRequest("Method") == "GET")
-		ret = getResponseFile();
+	if ( resources.getRequest("Method") == "GET") {
+		// std::string extension = 
+		ret = getResponseFile(resources);
+	}
 	if ( ret == READING )
 		return (false);
 	else
