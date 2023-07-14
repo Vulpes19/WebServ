@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:33:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 11:40:34 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ int main( int ac, char **av )
 		if ( ac != 2 )
 			return (EXIT_FAILURE);
 		parser.openFile(av[1]);
+		// parser.printData();
+		// exit(1);
 		initServers( servers, parser );
 		while ( true )
 		{

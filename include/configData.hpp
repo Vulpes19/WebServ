@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:36:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:27:33 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,13 +53,15 @@ class ErrorPage {
 
 } ;
 
+
 class Location {
 	private:
-		std::string value;
-		std::string root;
-		std::string index;
+		std::string value; //darori
+		std::string root; //darori
+		std::string index; //darori
 		std::string	upload;
 		int         autoindex;
+		bool		missingValue;
 	public:
 		Location();
 		Location(std::string value, std::string root, std::string index, std::string upload);
@@ -68,36 +70,46 @@ class Location {
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
 		void	setUpload(const std::string &upld);
+		void	setMissingValue();
+		// void	setBraceValue();
 		std::string	getUpload() const;
 		std::string getValue() const;
 		std::string getRoot() const;
 		std::string getIndex() const;
 		int         getAutoIndex() const;
+		bool		getMissingValue() const;
 		Location&	operator=(const Location& location);
 		~Location();
 } ;
 
 class ServerSettings {
 	private:
-		std::string             port;
-		std::string             server_name;
+		std::string             port;  //darori
+		std::string				host; 
+		std::string             server_name; //darori
 		int						body_size;
-		std::vector<Location>    locations;
-		std::vector<ErrorPage>	errorPages;
+		std::vector<Location>    locations; //darori
+		std::vector<ErrorPage>	errorPages; 
+		bool					missingValue;
 	public:
 		ServerSettings();
-		ServerSettings(std::string port, std::string server_name, Location &location, int body_size);
+		ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size);
 		ServerSettings&	operator=(const ServerSettings& server);
 		void    setPort(const std::string &p);
 		void	setSize(const int &bytes);
 		void    setName(const std::string &name);
+		void	setMissingValue();
 		void    setLocations(const Location &location);
 		void	setErrorPages(const ErrorPage &error_page);
+		void	setHost(const std::string &Host);
+		std::string	getHost() const;
 		std::string getPort() const;
 		int			getSize() const;
 		std::string getName() const;
+		bool		getMissingValue() const;
 		std::vector<Location> getLocations();
 		std::vector<ErrorPage>	getErrorPages();
+
 		~ServerSettings();
 } ;
 

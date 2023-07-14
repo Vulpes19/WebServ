@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 14:00:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 11:20:54 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), closingBraceExpected(false), status(OK) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK) {};
 
 Parser::~Parser() {};
 
@@ -41,9 +41,24 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	switch (which) {
 
 		case PORT:
+			if (host_exists == false)
+			{
+				if (value.size() - 1 > 0) {
+					if (findSemicolon(value))
+						server.setPort(value.erase(value.size() - 1));
+					else
+						printError(SEMICOLON);
+				}
+				else
+					printError(EMPTY);
+			}
+			else
+				server.setPort(value);
+			break ;
+		case HOST:
 			if (value.size() - 1 > 0) {
 				if (findSemicolon(value))
-					server.setPort(value.erase(value.size() - 1));
+					server.setHost(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
 			}
@@ -102,13 +117,13 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 					location.setRoot(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
-			}	
+			}
 			else
 				printError(EMPTY);
 			break ;
 		case INDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))	
+				if (findSemicolon(value))
 					location.setIndex(value.erase(value.size() - 1));
 				else
 					printError(SEMICOLON);
@@ -118,7 +133,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case AUTOINDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
+				if (findSemicolon(value))	
 					location.setAutoIndex();
 				else
 					printError(SEMICOLON);
@@ -149,38 +164,110 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
+	t_brace	brace;
+
+	brace.openingBrace = false;
+	brace.closingBrace = false;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
 		{
-			std::stringstream ss(line);
-			ss >> directive >> value;
-			if (directive == "server" && value == "{") {
+			if (line[0] == '#' || line.empty())
+				continue ;
+			if (line.find("server") != std::string::npos)
+			{
+				std::string	nextLine;
 
-				closingBraceExpected = true;
-				openingBraceCount++;
-				parseServer(confFile);
+				if (line.find("{") != std::string::npos) {
+					brace.openingBrace = true;
+					parseServer(confFile);
+				}
+				else {
+					while (getline(confFile, nextLine)) {
+						if (nextLine.size())
+						{
+							if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
+								brace.openingBrace = true;
+								parseServer(confFile);
+							}
+						}
+					}
+				}
 			}
+			if (line.find("}") != std::string::npos)
+			{
+				brace.closingBrace = true;
+				break ;
+			}
+		}
+		if (!brace.closingBrace || !brace.openingBrace) {
+			std::cerr << "Syntax Error: Braces error!" << std::endl;
+			exit(1);
 		}
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
 } ;
 
+void	Parser::serverValuesValidation(ServerSettings server) {
+
+	std::string port = server.getPort();
+	int			portInt;
+	std::stringstream ss(port);
+
+	ss >> portInt;
+	if (port.size() == 0) {
+		std::cerr << "Syntax Error: port not found!" << std::endl;
+		exit(1);
+	}
+	if (server.getName().size() == 0) {	
+		std::cerr << "Syntax Error: server name not found!" << std::endl;
+		exit(1);
+	}
+	if (portInt == 0) {	
+		std::cerr << "Syntax Error: port is invalid!" << std::endl;
+		exit(1);
+	}
+	if (server.getLocations().size() == 0) {
+		std::cerr << "Syntax Error: Location is undefined!" << std::endl;
+		exit(1);
+	}
+}
+
+void	checkBraces(bool brace) {
+	
+	if (!brace) {
+		std::cerr << "Syntax Error: Braces error!" << std::endl;
+		exit(1);
+	}
+}
+
 void	Parser::parseServer(std::ifstream& confFile) {
 
 	ServerSettings  server;
 	Context context;
-	std::string brace;
+	std::string optionalVal;
+	// t_brace		brace;
 
+	// brace.closingBrace = false;
+	// brace.openingBrace = false;
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
-		ss >> directive >> value;
-		if (directive == "listen")
+		ss >> directive >> value >> optionalVal;
+		// brace.openingBrace = false;
+		// if (line.find("{") != std::string::npos)
+		// 	brace.openingBrace = true;
+		if (directive.find("listen") != std::string::npos)
+		{
+			if (optionalVal.size())
+				host_exists = true;
 			setServerContent(server, PORT, value);
+			if (host_exists)
+				setServerContent(server, HOST, optionalVal);
+		}
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
 		else if (directive == "body_size")
@@ -188,34 +275,62 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		else if (directive == "error_page")
 			setServerContent(server, ERROR_PAGE, line);
 		else if (directive == "location") {
-			parseLocation(confFile, server, value);                
+			// checkBraces(brace.openingBrace);	
+			parseLocation(confFile, server, value);              
 		}
-		else if (line[0] == '}') {
+		else if (line.find("}") != std::string::npos) {
+			// brace.closingBrace = true;
+			context.setServer(server);
+			parsedData.push_back(context);
+			break ;
+		}
+	}
+	serverValuesValidation(server);
+	// if (!brace.closingBrace || !brace.openingBrace) {
+	// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
+	// 	exit(1);
+	// }
+}
 
-			openingBraceCount--;
-			if (checkBracesError()) {
-				context.setServer(server);
-				parsedData.push_back(context);
-				break ;
-			}
-			else
-				std::cout << "server brace error" << std::endl;
-		}
-		else
-			printError(UNKNOWN);
+bool	examinePath(std::string value) {
+
+	if (value.find("/") != std::string::npos)
+		return (true);
+	return (false);
+}
+
+void	Parser::locationValuesValidation(Location location) {
+
+	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
+		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
+		std::cerr << "Syntax Error: location root value not found or invalid!" << std::endl; 
+		exit(1);
+	}
+	if (location.getIndex().size() == 0) {
+		std::cerr << "Syntax Error: location index not found or invalid!" << std::endl;
+		exit(1);
 	}
 }
 
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
-	Location    location;
+	Location	location;
+	t_brace		brace;
 
+	brace.openingBrace = false;
+	brace.closingBrace = false;
+	
 	location.setValue(value);
 	while(getline(confFile, line) && status == OK) {
 
+		if (line[0] == '#' || line.empty())
+			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value;
-		if (directive == "}") {
+		if (directive == "}" && closingBraceExpected) {
 			server.setLocations(location);
 			break ;
 		}
@@ -230,6 +345,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 		else if (directive == "return")
 			setLocationContent(location, RETURN, value);
 	}
+	locationValuesValidation(location);
 }
 
 void	Parser::printData() {
@@ -245,6 +361,7 @@ void	Parser::printData() {
 		std::cout << std::endl;
 		std::cout << "ServerSettings: " << std::endl;
 		std::cout << "listen: " << server.getPort() << std::endl;
+		std::cout << "host: " << server.getHost() << std::endl;
 		std::cout << "name: " << server.getName() << std::endl;
 		std::cout << "body size: " << server.getSize() << std::endl;
 		

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/08 15:01:58 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 08:04:34 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,11 +39,17 @@ std::string	ErrorPage::getPath() const {
 ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): autoindex(OFF) {};
+Location::Location(): upload("default"), autoindex(OFF), missingValue(true) {};
 
 Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
 	autoindex = OFF;
 };
+
+void	Location::setMissingValue() {
+
+	missingValue = false;
+}
+
 
 void    Location::setValue(const std::string& val) {
 
@@ -70,6 +76,7 @@ void	Location::setAutoIndex() {
 	autoindex = ON;
 }
 
+
 std::string Location::getUpload() const {
 
 	return (upload);
@@ -78,6 +85,10 @@ std::string Location::getUpload() const {
 std::string Location::getValue() const {
 
     return (value);
+}
+
+bool	Location::getMissingValue() const {
+	return (missingValue);
 }
 
 std::string Location::getRoot() const {
@@ -108,9 +119,9 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-ServerSettings::ServerSettings() {};
+ServerSettings::ServerSettings(): host("localhost"), body_size(10000), missingValue(true) {};
 
-ServerSettings::ServerSettings(std::string port, std::string server_name, Location &location, int body_size): port(port), server_name(server_name), body_size(body_size) {
+ServerSettings::ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size): port(port), host(host), server_name(server_name), body_size(body_size) {
 
     locations.push_back(location);
 };
@@ -118,6 +129,16 @@ ServerSettings::ServerSettings(std::string port, std::string server_name, Locati
 void    ServerSettings::setPort(const std::string& p) {
 
     port = p;
+}
+
+void	ServerSettings::setMissingValue() {
+
+	missingValue = false;
+}
+
+void	ServerSettings::setHost(const std::string &Host) {
+
+	host = Host;
 }
 
 void    ServerSettings::setName(const std::string& name) {
@@ -141,6 +162,15 @@ void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
 
 std::string ServerSettings::getPort() const {
     return (port);
+}
+
+std::string	ServerSettings::getHost() const {
+
+	return (host);
+}
+
+bool	ServerSettings::getMissingValue() const {
+	return (missingValue);
 }
 
 int	ServerSettings::getSize() const {
@@ -170,6 +200,7 @@ ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
 		this->locations = server.locations;
 		this->errorPages = server.errorPages;
 		this->body_size = server.body_size;
+		this->host = server.host;
 	}
 	return (*this);
 }

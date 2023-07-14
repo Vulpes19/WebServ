@@ -8,8 +8,8 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "enter program name, for example ${workspaceFolder}/a.out",
-            "args": [],
+            "program": "${workspaceFolder}/webserv",
+            "args": ["${workspaceFolder}/tests/confile_1.conf"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],
@@ -20,7 +20,7 @@
             "name": "(lldb) Attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "enter program name, for example ${workspaceFolder}/a.out",
+            "program": "${workspaceFolder}/webserv",
             "MIMode": "lldb"
         }
 

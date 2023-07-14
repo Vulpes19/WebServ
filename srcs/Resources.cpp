@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 10:31:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 11:40:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ void    Resources::checkRequest( void )
 
 void	Resources::errorHandling( void ) {
 
-	if (requiredLength < actualLength)
+	if (requiredLength < actualLength - 1)
 		setError(BAD_REQUEST);
 	if (requiredLength == -1)
 		setError(LENGTH_REQUIRED);
@@ -182,28 +182,19 @@ void	Resources::printError(enum Error_code code) {
 	switch (code) {
 
 		case BAD_REQUEST:
-			std::cout << "bad request: " << line << std::endl;
+			std::cout << "BAD REQUEST!" << std::endl;
 			break ;
 		case LENGTH_REQUIRED:
-			std::cout << "length required" << std::endl;
+			std::cout << "LENGTH REQUIRED!" << std::endl;
 			break ;
 		case METHOD_NOT_ALLOWED:
-			std::cout << "method not allowed" << std::endl;
+			std::cout << "METHOD NOT ALLOWED" << std::endl;
 			break ;
 		case HTTP_VERSION_NOT_SUPPORTED:
-			std::cout << "http version not supported" << std::endl;
+			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
 			break ;
 		default:
 			std::cout << "all good" << std::endl;
 			break ;
 	}
 }
-
-// enum	ResponseStates	Resources::fillFile( const char *content )
-// {
-// 	std::string end("\r\n\r\n");
-// 	std::string tmp;
-	
-// 	if ( tmp.substr( tmp.length() - end.length() )  )
-// 	buffer << content;
-// }
