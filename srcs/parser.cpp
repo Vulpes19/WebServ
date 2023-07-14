@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 11:20:54 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 14:50:58 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,34 +176,35 @@ void   Parser::readFile(std::ifstream& confFile) {
 				continue ;
 			if (line.find("server") != std::string::npos)
 			{
-				std::string	nextLine;
+				// std::cout << "line: " << line << std::endl;
+				// std::string	nextLine;
 
-				if (line.find("{") != std::string::npos) {
-					brace.openingBrace = true;
+				// if (line.find("{") != std::string::npos) {
+				// 	brace.openingBrace = true;
 					parseServer(confFile);
-				}
-				else {
-					while (getline(confFile, nextLine)) {
-						if (nextLine.size())
-						{
-							if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
-								brace.openingBrace = true;
-								parseServer(confFile);
-							}
-						}
-					}
-				}
+				// }
+				// else {
+				// 	while (getline(confFile, nextLine)) {
+				// 		if (nextLine.size())
+				// 		{
+				// 			if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
+				// 				brace.openingBrace = true;
+				// 				parseServer(confFile);
+				// 			}
+				// 		}
+				// 	}
+				// }
 			}
-			if (line.find("}") != std::string::npos)
-			{
-				brace.closingBrace = true;
-				break ;
-			}
+			// if (line.find("}") != std::string::npos)
+			// {
+			// 	brace.closingBrace = true;
+			// 	break ;
+			// }
 		}
-		if (!brace.closingBrace || !brace.openingBrace) {
-			std::cerr << "Syntax Error: Braces error!" << std::endl;
-			exit(1);
-		}
+		// if (!brace.closingBrace || !brace.openingBrace) {
+		// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
+		// 	exit(1);
+		// }
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
@@ -247,10 +248,11 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	ServerSettings  server;
 	Context context;
 	std::string optionalVal;
-	// t_brace		brace;
+	t_brace		brace;
 
-	// brace.closingBrace = false;
-	// brace.openingBrace = false;
+	brace.closingBrace = false;
+	brace.openingBrace = false;
+	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())

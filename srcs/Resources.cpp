@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 11:40:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 11:53:41 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,13 +129,13 @@ void    Resources::checkRequest( void )
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
-	std::cout << "size is: " << size << std::endl;
-	std::cout << "** I finished checking **\n";
+	// std::cout << "size is: " << size << std::endl;
+	// std::cout << "** I finished checking **\n";
 	requestFile.close();
 	requestBody.close();
 	remove("testFile");
 	errorHandling();
-	// printError(getError());
+	printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
