@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:43:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:14:45 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,11 @@ void  Server::createListenSocket( void )
     }
     if ( bind( listenSocket, bindAddress->ai_addr, bindAddress->ai_addrlen) != 0 )
     {
-        std::string msg(strerror(errno));
-        throw excp("bind() failed: " + msg);     
+        if ( errno != EADDRINUSE )
+        {            
+            std::string msg(strerror(errno));
+            throw excp("bind() failed: " + msg);
+        }     
     }
     freeaddrinfo(bindAddress);
     if ( listen(listenSocket, 10) < 0 )

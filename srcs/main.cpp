@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:26:04 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:19:16 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,10 @@ int main( int ac, char **av )
 	try
 	{
 		if ( ac != 2 )
+		{
+			std::cerr << "error please enter: ./webserv [config file]\n";
 			return (EXIT_FAILURE);
+		}
 		parser.openFile(av[1]);
 		initServers( servers, parser );
 		while ( true )

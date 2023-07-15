@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 10:34:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:45:26 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		{
 			buffer.close();
 			resources.checkRequest();
+			std::cout << "safi\n";
 			return (READY_TO_WRITE);	
 		}
 		return (READING);
@@ -386,6 +387,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
+	std::cout << serverName << " " << resources.getRequest("Host") << std::endl;
 	path = resources.getRequest("URL");
 	if ( resources.getRequest("Method") == "GET")
 	{
