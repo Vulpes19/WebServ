@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 07:18:44 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 09:45:47 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,8 @@ enum Error_code
 	REQUEST_TIMEOUT,
 	FILE_IO_ERROR,
 	LENGTH_REQUIRED,
-	HTTP_VERSION_NOT_SUPPORTED
+	HTTP_VERSION_NOT_SUPPORTED,
+	PAYLOAD_TOO_LARGE // 413
 };
 
 class Resources
@@ -43,6 +44,7 @@ class Resources
 		Resources( const Resources &src );
 		Resources &operator=( const Resources &rhs );
 		void		checkRequest( void );
+		bool		methodValidity(std::string value);
 		void		setError( enum Error_code error );
 		// enum ResponseStates	fillFile( const char * );
 		std::string	getRequest( std::string Key );
@@ -65,4 +67,5 @@ class Resources
 		bool 				hostExists;
 		std::string			line;
 		bool 				requestLineExists;
+		bool				isPost;
 };

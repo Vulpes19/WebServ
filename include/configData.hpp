@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:27:33 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 09:57:08 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ class Location {
 		std::string root; //darori
 		std::string index; //darori
 		std::string	upload;
-		int         autoindex;
+		int         autoindex ;
 		bool		missingValue;
 	public:
 		Location();
@@ -85,7 +85,7 @@ class Location {
 class ServerSettings {
 	private:
 		std::string             port;  //darori
-		std::string				host; 
+		std::string				host;
 		std::string             server_name; //darori
 		int						body_size;
 		std::vector<Location>    locations; //darori
