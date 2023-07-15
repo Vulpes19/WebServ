@@ -13,7 +13,6 @@ CGI &CGI::operator = (const CGI &rhs) {
         this->fileExtension = rhs.fileExtension;
         this->path = rhs.path;
         this->method = rhs.method;
-        this->body = rhs.body;
         this->fileName = rhs.fileName;
     }
     return *this;
@@ -24,16 +23,17 @@ CGI::~CGI() {
         delete[] envArray;
 }
 
-bool CGI::checkCGI(std::string path) {
+bool CGI::execCGI(Resources &resources, std::string path, std::ifstream &file) {
+	std::cout << "CGI\n";
     std::cout << path << std::endl;
-    size_t pos = path.find("/CGI/");
+    size_t pos = path.find("/cgi/");
 
     this->path = path;
     if (pos != std::string::npos) {
-        fileName = path.substr(pos + 5);
+        fileName = path.substr(pos + 5, path.find("?"));
         if (fileName.empty())
             return false;
-        if (checkExtension())
+        if (exec(resources, path))
             return true;
     }
     return false;
@@ -98,16 +98,15 @@ void CGI::getEnvAsArray() {
     envArray[i] = NULL;
 }
 
-void CGI::exec(Resources& resources) {
-    std::string inFile("./CGI/inFile");
-    std::string outFile("./CGI/outFile");
+bool CGI::exec(Resources& resources, std::string path) {
+    std::string infile(path);
+    
+    outFile = "./CGI/outFile";
 
-    int in_fd = open(inFile.c_str(), O_RDONLY | O_CREAT, 0755);
+    int in_fd = open(path.c_str() , O_RDONLY);
 	int out_fd = open(outFile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0755);
 
-    std::cout << "in " << in_fd << " out " << out_fd << std::endl;
-
-    setEnv(resources);getEnvAsArray();
+    checkExtension();setEnv(resources);getEnvAsArray();
 
     pid_t pid = fork();
     if (pid == -1)
@@ -123,6 +122,9 @@ void CGI::exec(Resources& resources) {
         exit(1);
     }
 
+    std::stringstream buff;
+    std::ifstream file(outFile);
+
     int start_time = time(NULL);
 	int timeout = 120;
 	while (time(NULL) - start_time < timeout)
@@ -132,8 +134,35 @@ void CGI::exec(Resources& resources) {
             std::cout << "Child process " << p << std::endl;
             close(in_fd);
             close(out_fd);
+            buff << file.rdbuf();
+			outFileStr = buff.str();
+			if (outFileStr.size() == 0)
+				statusCode = "400";
+			if (outFileStr.substr(0, 7) == "Status:")
+				statusCode = outFileStr.substr(outFile.find("Status:") + 9, 3);
+            buff.clear();
+            buff << outFileStr.substr(outFileStr.find("\r\n\r\n") + 4, outFileStr.size());
+            outFileStr = buff.str();
+            oFile = file;
+            file.close();
+            
+            std::cout << "CGI EXECUTED\n";
+            return true;
         }
     }
     kill(pid, SIGTERM);
-	// err.errorNotFound(socket);
+    statusCode = "404";
+    return false;
+}
+
+std::ifstream CGI::getOutFile() {
+    return this->oFile;
+}
+
+size_t CGI::getOutFileSize() {
+    return this->outFileStr.size();
+}
+
+std::string CGI::getStatusCode() {
+    return this->statusCode;
 }

@@ -6,7 +6,7 @@
 /*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 15:06:58 by elias            ###   ########.fr       */
+/*   Updated: 2023/07/15 19:13:07 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,11 +258,6 @@ enum ResponseStates    Response::getResponseFile(Resources &resources)
 {
 	CGI cgi;
 		
-	if (cgi.checkCGI(path))
-	{
-		std::cout << "CGI\n";
-		cgi.exec(resources);
-	}
 	if ( !file.is_open() )
 	{
 		std::ostringstream oss;
@@ -300,7 +295,13 @@ enum ResponseStates    Response::getResponseFile(Resources &resources)
 			reset();
 			return (RESET);
 		}
-		sendResponseHeader( GET, "200 OK", fullPath, NULL );
+		if (cgi.execCGI(resources, fullPath, file)) {
+			fileSize = cgi.getOutFileSize();
+			file = cgi.getOutFile();
+			sendResponseHeader( GET, cgi.getStatusCode().c_str(), fullPath, NULL );
+		}
+		else
+			sendResponseHeader( GET, "200 OK", fullPath, NULL );
 	}
 	char buffer[BSIZE + 1];
 	file.read(buffer, BSIZE);
