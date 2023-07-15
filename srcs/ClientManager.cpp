@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:34:19 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:32:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,4 +92,14 @@ void    ClientManager::setLocations( std::vector<Location> loc )
 void    ClientManager::setName( std::string name )
 {
     response->setName(name);
+}
+
+void    ClientManager::setHost( std::string host )
+{
+    response->setHost(host);
+}
+
+void    ClientManager::setBodySize( size_t bodySize )
+{
+    response->setBodySize(bodySize);
 }

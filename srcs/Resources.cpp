@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 11:40:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:15:40 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,6 @@ void	Resources::parseRequestLine( void )
 
 void	Resources::parseBody( size_t &size )
 {
-	// std::cout << requiredLength << " vs " << actualLength << std::endl;
 	size += line.size();
 	actualLength += line.size();
 	requestBody.write(line.c_str(), line.size());
@@ -129,8 +128,6 @@ void    Resources::checkRequest( void )
 		else if ( line.find("HTTP") != std::string::npos )
 			parseRequestLine();
 	}
-	std::cout << "size is: " << size << std::endl;
-	std::cout << "** I finished checking **\n";
 	requestFile.close();
 	requestBody.close();
 	remove("testFile");
@@ -165,11 +162,6 @@ std::string	Resources::getRequest( std::string Key )
 	else
 		return ( "NOT FOUND" );
 }
-
-// std::ofstream	Resources::getRequestBody( void ) const
-// {
-// 	return ( requestBodyBuffer );
-// }
 
 void	Resources::clear( void )
 {

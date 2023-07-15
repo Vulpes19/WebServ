@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 10:33:03 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:29:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,62 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
+void    ErrorResponse::errorUnauthorized( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 401 Unauthorized\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 12\r\n\r\nUnauthorized";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorMethodNotAllowed( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 405 Method Not Allowed\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 18\r\n\r\nMethod Not Allowed";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorUnsupportedMediaType( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 415 Unsupported Media Type\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 22\r\n\r\nUnsupported Media Type";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorTimeout( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 504 Request Timeout\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 15\r\n\r\nRequest Timeout";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorLengthRequired( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 411 Length Required\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 15\r\n\r\nLength Required";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorHTTPVersion( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 26\r\n\r\nHTTP Version Not Supported";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorRequestTooLarge( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 413 Request Entity Too Large\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 24\r\n\r\nRequest Entity Too Large";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
 Response::Response( void )
 {
 	// memset(request, 0, sizeof(request));
@@ -77,7 +133,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	if ( !buffer.is_open() )
 		buffer.open("testFile", std::ios::binary);
 	bytesRead = read( socket, request, 4096 );
-	std::cout << bytesRead << std::endl;
 	if ( bytesRead > 0  )
 	{
 		std::string toCheck(request, bytesRead);
@@ -92,7 +147,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
 				if ( !lenStr.empty() )
 					bodySize = std::stoul(lenStr);
-				std::cout << "body size: " << bodySize << std::endl;
 			}
 		}
 		std::string end("\r\n\r\n");
@@ -102,13 +156,9 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		if ( delimiter != std::string::npos )
 		{
 			isBody = true;
-			std::cout << toCheck.substr(0, delimiter) << std::endl;;
 			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
 			if ( !bodyStart.empty() )
-			{
 				bytesReceived += bodyStart.length();
-				// buffer.write(bodyStart.c_str(), bodyStart.length());	
-			}
 		}
 		if ( bytesReceived >= bodySize )
 		{
@@ -331,6 +381,14 @@ bool    Response::handleWriteResponse( Resources &resources )
 	// std::string requestString(request);
 	enum ResponseStates ret;
 
+	if ( resources.getError() != NO_ERROR )
+	{
+		if ( handleErrors( resources ) )
+		{
+			resources.clear();
+			return (true);
+		}
+	}
 	path = resources.getRequest("URL");
 	if ( resources.getRequest("Method") == "GET")
 	{
@@ -372,30 +430,49 @@ bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) co
 		return (true);
 	return (false);
 }
-// bool	Response::isRequestReceived( Resources &resources ) const
-// {
-// 	std::string end("\r\n\r\n");
-// 	std::string requestStr(request);
-// 	std::string ret;
 
-// 	ret = resources.getRequest("Content-Length");
-// 	if ( ret == "NOT FOUND")
-// 		return (true);
-// 	else
-// 	{
-// 		size_t bodyStart = bytesReceived - atoi(ret.c_str());
-// 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
-// 		if ( (int)requestBodyStr.size() == atoi(ret.c_str()) )
-// 			return (true);
-// 		else
-// 			return (false);
-// 	}
-// 	if ( bytesReceived < (int)end.length() )
-// 		return (false);
-// 	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
-// 		return (true);
-// 	return (false);
-// }
+bool	Response::handleErrors( Resources &resources )
+{
+	switch ( resources.getError() )
+	{
+		case BAD_REQUEST:
+			err.errorBadRequest(socket);
+			break ;
+		case NOT_FOUND:
+			err.errorNotFound(socket);
+			break ;
+		case FORBIDDEN:
+			err.errorForbidden(socket);
+			break ;
+		case INTERNAL_SERVER_ERROR:
+			err.errorInternal(socket);
+			break ;
+		case UNAUTHORIZED:
+			err.errorUnauthorized(socket);
+			break ;
+		case METHOD_NOT_ALLOWED:
+			err.errorMethodNotAllowed(socket);
+			break ;
+		case UNSUPPORTED_MEDIA_TYPE:
+			err.errorUnsupportedMediaType(socket);
+			break ;
+		case REQUEST_TIMEOUT:
+			err.errorTimeout(socket);
+			break ;
+		case LENGTH_REQUIRED:
+			err.errorLengthRequired(socket);
+			break ;
+		case HTTP_VERSION_NOT_SUPPORTED:
+			err.errorHTTPVersion(socket);
+			break ;
+		case REQUEST_ENTITY_TOO_LARGE:
+			err.errorRequestTooLarge(socket);
+			break ;
+		default:
+			return (false);
+	}
+	return (true);
+}
 
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
@@ -438,6 +515,16 @@ void    Response::setLocations( std::vector<Location> loc )
 void	Response::setName( std::string name )
 {
 	this->serverName = name;
+}
+
+void	Response::setHost( std::string host )
+{
+	this->host = host;
+}
+
+void	Response::setBodySize( size_t bodyLimit )
+{
+	this->bodyLimit = bodyLimit;
 }
 
 std::string	Response::getRootPath( std::string path )

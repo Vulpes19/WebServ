@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 19:51:54 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:26:04 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,10 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		Server server;
 		settings = contexts[i].getServer();
 		server.setName(settings.getName());
+		server.setHost(settings.getHost());
 		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
+		server.setBodySize(settings.getSize());
 		servers.push_back(server);
 	}
 	for ( size_t i = 0; i < servers.size(); i++)
@@ -44,13 +46,10 @@ int main( int ac, char **av )
 		if ( ac != 2 )
 			return (EXIT_FAILURE);
 		parser.openFile(av[1]);
-		parser.printData();
-		// exit(1);
 		initServers( servers, parser );
 		while ( true )
 		{
 			cl.setsManager( servers, readfds, writefds );
-			// std::map<std::string, Server>::iterator it = servers.begin();
 			for ( size_t i = 0; i < servers.size(); i++ )
 			{
 				if ( FD_ISSET( servers[i].getListenSocket(), &readfds ) )

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:34:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:29:39 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,17 @@ class ClientManager;
 
 struct ErrorResponse
 {
-	void        errorBadRequest( SOCKET );
-	void        errorNotFound( SOCKET );
-	void    	errorForbidden( SOCKET );
-	void    	errorInternal( SOCKET );
+	void        errorBadRequest( SOCKET ); //400
+	void        errorNotFound( SOCKET ); //404
+	void    	errorForbidden( SOCKET ); //403
+	void    	errorInternal( SOCKET ); //500
+	void    	errorUnauthorized( SOCKET ); //401
+	void    	errorMethodNotAllowed( SOCKET ); //405
+	void    	errorUnsupportedMediaType( SOCKET ); //415
+	void    	errorTimeout( SOCKET ); //504
+	void    	errorLengthRequired( SOCKET ); //411
+	void    	errorHTTPVersion( SOCKET ); //505
+	void		errorRequestTooLarge( SOCKET ); //413
 };
 
 struct ResponseHelper
@@ -51,10 +58,12 @@ class Response
 		std::string	getRootPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
+		bool		handleErrors( Resources & );
 		bool		isRequestReceived( std::string, ssize_t ) const;
-		// bool		isRequestReceived( Resources & ) const;
 		void		setLocations( std::vector<Location> );
 		void		setName( std::string );
+		void		setHost( std::string );
+        void		setBodySize( size_t );
 		void		reset( void );
 	private:
 		// char    request[MAX_REQUEST_SIZE + 1];
@@ -70,8 +79,10 @@ class Response
 		std::ofstream	toUpload;
 		std::string	    path;
 		std::string		serverName;
+		std::string		host;
 		std::vector<Location> loc;
 		std::ofstream	buffer;
 		ssize_t			bodySize;
+		size_t			bodyLimit;
 		bool			isBody;
 };
