@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/15 11:24:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:42:09 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,9 @@ Connection::Connection( void )
 }
 
 Connection::~Connection( void )
-{}
+{
+    clients.erase(clients.begin(), clients.end());
+}
 
 ClientManager   *Connection::getClient( SOCKET socket, Server srv )
 {
@@ -29,11 +31,15 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
         if ( (*it)->getSocket() == socket )
             return (*it);
     }
+    std::cout << "hello\n";
     ClientManager *newClient = new ClientManager();
     newClient->reset();
     newClient->createClient( srv.getListenSocket() );
-
-    // newClient->setState( READ_REQUEST);
+    newClient->setState( READ_REQUEST);
+    newClient->setLocations(srv.getLocations());
+    newClient->setName(srv.getName());
+    newClient->setHost(srv.getHost());
+    newClient->setBodySize(srv.getBodySize());
     clients.push_back(newClient);
     return (newClient);
 }
@@ -48,17 +54,28 @@ void    Connection::deleteClient( ClientManager *cl )
         ++it;
     }
     if ( it != clients.end() )
+    {
+        std::cout << "client is deleted :D\n";
         clients.erase(it);
+    }
     else
         std::cerr << "dropped client not found\n";
 }
 
-void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
-    FD_SET(socket, &readfds);
-    SOCKET maxSocket = socket;
+    SOCKET maxSocket;
+    maxSocket = servers[0].getListenSocket();
+    // std::map<std::string, Server>::iterator it = servers.begin();
+    for ( size_t i = 0; i < servers.size(); i++ )
+    {
+        SOCKET serverSocket = servers[i].getListenSocket();
+        if ( serverSocket > maxSocket )
+            maxSocket = serverSocket;
+        FD_SET(serverSocket, &readfds);
+    }
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() > -1 )
@@ -67,42 +84,17 @@ void  Connection::setsManager( SOCKET socket, fd_set &readfds, fd_set &writefds 
             if ( (*it)->getState() == WRITE_RESPONSE )
                 (*it)->changeSet( readfds, writefds );
             if ( (*it)->getSocket() > maxSocket )
-            {
-                std::cout << "added the socket\n";
                 maxSocket = (*it)->getSocket();
-            }
         }
     }
     if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
-    {
-        std::cerr << "select() failed: " << strerror(errno) << std::endl;
-        exit(1);
-    }
+        throw excp("select() failed");
 }
-
-// void    Client::errorBadRequest( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 400 Bad Request\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 11\r\n\r\nBad Request";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0 );
-//     deleteClient( cl );
-// }
-
-// void    Client::errorNotFound( ClientManager *cl )
-// {
-//     const char *errorMsg = "HTTP/1.1 404 Not Found\r\n"
-//                             "Connection: close\r\n"
-//                             "Content-Length: 9\r\n\r\nNot Found";
-//     send( cl->getSocket(), errorMsg, strlen(errorMsg), 0);
-// }
 
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
-    // std::cout << "entering multiplexing\n";
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
@@ -127,5 +119,4 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
             }
         }
     }
-    // std::cout << "exiting multiplexing\n";
 }

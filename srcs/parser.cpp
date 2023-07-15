@@ -6,227 +6,417 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 18:43:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/14 19:54:36 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "include/parser.hpp"
+#include "parser.hpp"
+#include "configData.hpp"
 
-Location::Location() {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK) {};
 
-Location::Location(std::string value, std::string root, std::string index): value(value), root(root), index(index) {};
+Parser::~Parser() {};
 
-void    Location::setValue(const std::string& val) {
+void    Parser::openFile(char *argv) {
 
-    value = val;
-}
-
-void    Location::setRoot(const std::string& rt) {
-
-    root = rt;
-}
-
-void    Location::setIndex(const std::string& indx) {
-
-    index = indx;
-}
-
-std::string Location::getValue() const {
-
-    return (value);
-}
-
-std::string Location::getRoot() const {
-
-    return (root);
-}
-
-std::string Location::getIndex() const {
-
-    return(index);
-}
-
-Location&	Location::operator=(const Location& location) {
-
-	if (this != &location)
+	if (!argv)
+		std::cout << "ERROR: File doesn't exist or could not be open!" << std::endl;
+	else
 	{
-		this->value = location.value;
-		this->root = location.root;
-		this->index = location.index;
+		std::ifstream   confFile(argv);
+		readFile(confFile);
 	}
-	return (*this);
+} ;
+
+bool    Parser::checkBracesError() {
+
+	if (openingBraceCount == 0)
+		return true;
+	else
+		return false;
 }
 
-Location::~Location() {};
+void	Parser::setServerContent(ServerSettings &server, int which, std::string value) {
 
-Server::Server() {};
+	switch (which) {
 
-Server::Server(std::string port, std::string server_name, Location &location): port(port), server_name(server_name) {
-
-    locations.push(location);
-};
-
-void    Server::setPort(const std::string& p) {
-
-    port = p;
+		case PORT:
+			if (host_exists == false)
+			{
+				if (value.size() - 1 > 0) {
+					if (findSemicolon(value))
+						server.setPort(value.erase(value.size() - 1));
+					else
+						printError(SEMICOLON);
+				}
+				else
+					printError(EMPTY);
+			}
+			else
+				server.setPort(value);
+			break ;
+		case HOST:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					server.setHost(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case NAME:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))    
+					server.setName(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case SIZE:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					server.setSize(stoi(value));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case ERROR_PAGE:
+			std::stringstream ss(value);
+			std::string directive, status_code, path;
+			
+			ss >> directive >> status_code >> path;
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(path)) {
+					ErrorPage	error_page;
+					
+					error_page.setStatusCode(stoi(status_code));
+					error_page.setPath(path.erase(path.size() - 1));
+					server.setErrorPages(error_page);
+				}
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+	}
 }
 
-void    Server::setName(const std::string& name) {
+void	Parser::setLocationContent(Location& location, int which, std::string value) {
 
-    server_name = name;
+	switch (which) {
+
+		case ROOT:
+			if (value.size() - 1 > 0) {	
+				if (findSemicolon(value))
+					location.setRoot(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case INDEX:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setIndex(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case AUTOINDEX:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))	
+					location.setAutoIndex();
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case UPLOAD:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setUpload(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
+		case RETURN:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value))
+					location.setValue(value.erase(value.size() - 1));
+				else
+					printError(SEMICOLON);
+			}
+			break ;
+	}
 }
 
-void    Server::setLocations(const Location &location) {
+void   Parser::readFile(std::ifstream& confFile) {
 
-    locations.push(location);
-}
+	// t_brace	brace;
 
-std::string Server::getPort() const {
-
-    return (port);
-}
-
-std::string Server::getName() const {
-
-    return (server_name);
-}
-
-Location    Server::getLocations() {
-
-    Location    location;
-    if (!locations.empty())
-    {
-        location = locations.top();
-        locations.pop();
-    }
-    return (location);
-}
-
-Server&	Server::operator=(const Server& server) {
-
-	if (this != &server)
+	// brace.openingBrace = false;
+	// brace.closingBrace = false;
+	if (confFile.is_open())
 	{
-		this->port = server.port;
-		this->server_name = server.server_name;
-		this->locations = server.locations;
+		while (getline(confFile, line))
+		{
+			if (line[0] == '#' || line.empty())
+				continue ;
+			if (line.find("server") != std::string::npos)
+			{
+				// std::string	nextLine;
+
+				// if (line.find("{") != std::string::npos) {
+				// 	brace.openingBrace = true;
+					parseServer(confFile);
+			}
+			// 	else {
+			// 		while (getline(confFile, nextLine)) {
+			// 			if (nextLine.size())
+			// 			{
+			// 				if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
+			// 					brace.openingBrace = true;
+			// 					parseServer(confFile);
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
+			// if (line.find("}") != std::string::npos)
+			// {
+			// 	brace.closingBrace = true;
+			// 	break ;
+			// }
+		}
+		// if (!brace.closingBrace || !brace.openingBrace) {
+		// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
+		// 	exit(1);
+		// }
 	}
-	return (*this);
+	else
+		std::cout << "Error: could not open the configuration file!" << std::endl;
+} ;
+
+void	Parser::serverValuesValidation(ServerSettings server) {
+
+	std::string port = server.getPort();
+	int			portInt;
+	std::stringstream ss(port);
+
+	ss >> portInt;
+	if (port.size() == 0) {
+		std::cerr << "Syntax Error: port not found!" << std::endl;
+		exit(1);
+	}
+	if (server.getName().size() == 0) {	
+		std::cerr << "Syntax Error: server name not found!" << std::endl;
+		exit(1);
+	}
+	if (portInt == 0) {	
+		std::cerr << "Syntax Error: port is invalid!" << std::endl;
+		exit(1);
+	}
+	if (server.getLocations().size() == 0) {
+		std::cerr << "Syntax Error: Location is undefined!" << std::endl;
+		exit(1);
+	}
 }
 
-Server::~Server() {};
-
-Context::Context() {};
-
-Context::Context(Server &server): server(server) {};
-
-
-Context&	Context::operator=(const Context& context) {
-
-	if (this != &context)
-		this->server = context.server;
-	return (*this);
+void	checkBraces(bool brace) {
+	
+	if (!brace) {
+		std::cerr << "Syntax Error: Braces error!" << std::endl;
+		exit(1);
+	}
 }
 
-void    Context::setServer(const Server& servr) {
+void	Parser::parseServer(std::ifstream& confFile) {
 
-    server = servr;
+	ServerSettings  server;
+	Context context;
+	std::string optionalVal;
+	// t_brace		brace;
+
+	// brace.closingBrace = false;
+	// brace.openingBrace = false;
+	while (getline(confFile, line)) {
+
+		if (line[0] == '#' || line.empty())
+			continue ;
+		std::stringstream ss(line);
+		ss >> directive >> value >> optionalVal;
+		// brace.openingBrace = false;
+		// if (line.find("{") != std::string::npos)
+		// 	brace.openingBrace = true;
+		if (directive.find("listen") != std::string::npos)
+		{
+			if (optionalVal.size())
+				host_exists = true;
+			setServerContent(server, PORT, value);
+			if (host_exists)
+				setServerContent(server, HOST, optionalVal);
+		}
+		else if (directive == "server_name")
+			setServerContent(server, NAME, value);
+		else if (directive == "body_size")
+			setServerContent(server, SIZE, value);
+		else if (directive == "error_page")
+			setServerContent(server, ERROR_PAGE, line);
+		else if (directive == "location") {
+			// checkBraces(brace.openingBrace);	
+			parseLocation(confFile, server, value);              
+		}
+		else if (line.find("}") != std::string::npos) {
+			// brace.closingBrace = true;
+			context.setServer(server);
+			parsedData.push_back(context);
+			break ;
+		}
+	}
+	serverValuesValidation(server);
+	// if (!brace.closingBrace || !brace.openingBrace) {
+	// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
+	// 	exit(1);
+	// }
 }
 
-Server  Context::getServer() const {
+bool	examinePath(std::string value) {
 
-    return (server);
+	if (value.find("/") != std::string::npos)
+		return (true);
+	return (false);
 }
 
-Context::~Context() {};
+void	Parser::locationValuesValidation(Location location) {
 
-int main(int argc, char **argv) {
+	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
+		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
+		std::cerr << "Syntax Error: location root value not found or invalid!" << std::endl; 
+		exit(1);
+	}
+	if (location.getIndex().size() == 0) {
+		std::cerr << "Syntax Error: location index not found or invalid!" << std::endl;
+		exit(1);
+	}
+}
 
-    std::ifstream       confFile(argv[1]);
-    std::stack<Context> nestedDirs;
-    if (confFile.is_open())
-    {
-        std::string line;
-        while (getline(confFile, line))
-        {    
-            std::stringstream ss(line);
-            std::string directive, value;
-            ss >> directive >> value;
-            if (directive == "server" && value[0] == '{')
-            {
-                Server  server;
-                Context context;
-                while (getline(confFile, line)) {
-                    if (line[0] == '#' || line.empty())
-                        continue ;
-                    std::stringstream ss(line);
-                    std::string directive, value;
-                    ss >> directive >> value;
-                    if (directive == "listen")
-                        server.setPort(value.erase(value.size() - 1));
-                    else if (directive == "server_name")
-                        server.setName(value.erase(value.size() - 1));
-                    else if (directive == "location") {
-                            
-                            Location    location;
-                            location.setValue(value.erase(value.size() - 1));
-                            while(getline(confFile, line)) {
-                                
-                                std::stringstream ss(line);
-                                std::string directive, value;
-                                ss >> directive >> value;
-                                if (directive == "root")
-                                    location.setRoot(value.erase(value.size() - 1));
-                                else if (directive == "index")
-                                    location.setIndex(value.erase(value.size() - 1));
-                                if (line[0] == '}') {
-                                    
-                                    server.setLocations(location);
-                                    break ;
-                                }
-                            }
-                    }                       
-                    if (line[0] == '}') {
+void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
-                        context.setServer(server);
-                        nestedDirs.push(context);
-                        break ;
-                    }
-                }
-            }
-        }
-        Context printCont;
+	Location	location;
+	t_brace		brace;
 
-        printCont = nestedDirs.top();
-        nestedDirs.pop();
-        Server  printServ;
-        printServ = printCont.getServer();
-        std::cout << "server: " << std::endl;
-        std::cout << "port: " << printServ.getPort() << std::endl;
-        std::cout << "name: " << printServ.getName() << std::endl;
-        
-        Location    printLoc;
-        printLoc = printServ.getLocations();
-        std::cout << "location: " << std::endl;
-        std::cout << "value: " << printLoc.getValue() << std::endl;
-        std::cout << "root: " << printLoc.getRoot() << std::endl;
-        std::cout << "index: " << printLoc.getIndex() << std::endl;
+	brace.openingBrace = false;
+	brace.closingBrace = false;
+	
+	location.setValue(value);
+	while(getline(confFile, line) && status == OK) {
 
-        printCont = nestedDirs.top();
-        nestedDirs.pop();
-        Server  printServ1;
-        printServ1 = printCont.getServer();
-        std::cout << "server: " << std::endl;
-        std::cout << "port: " << printServ1.getPort() << std::endl;
-        std::cout << "name: " << printServ1.getName() << std::endl;
-        
-        Location    printLoc1;
-        printLoc1 = printServ1.getLocations();
-        std::cout << "location: " << std::endl;
-        std::cout << "value: " << printLoc1.getValue() << std::endl;
-        std::cout << "root: " << printLoc1.getRoot() << std::endl;
-        std::cout << "index: " << printLoc1.getIndex() << std::endl;
+		if (line[0] == '#' || line.empty())
+			continue ;
+		std::stringstream ss(line);
+		ss >> directive >> value;
+		if (directive == "}" && closingBraceExpected) {
+			server.setLocations(location);
+			break ;
+		}
+		if (directive == "root")
+			setLocationContent(location, ROOT, value);
+		else if (directive == "index")
+			setLocationContent(location, INDEX, value);
+		else if (directive == "autoindex")
+			setLocationContent(location, AUTOINDEX, value);
+		else if (directive == "upload")
+			setLocationContent(location, UPLOAD, value);
+		else if (directive == "return")
+			setLocationContent(location, RETURN, value);
+	}
+	locationValuesValidation(location);
+}
 
-    }
-    
-    return 0;
+void	Parser::printData() {
+
+	for (size_t i = 0; i < parsedData.size(); i++) {
+
+		Context context;
+		context = parsedData[i];
+
+		ServerSettings  server;
+		server = context.getServer();
+
+		std::cout << std::endl;
+		std::cout << "ServerSettings: " << std::endl;
+		std::cout << "listen: " << server.getPort() << std::endl;
+		std::cout << "host: " << server.getHost() << std::endl;
+		std::cout << "name: " << server.getName() << std::endl;
+		std::cout << "body size: " << server.getSize() << std::endl;
+		
+		std::vector<ErrorPage>	epVec = server.getErrorPages();
+		for (size_t i = 0; i < epVec.size(); i++) {
+			
+			std::cout << "error_pages: " << std::endl;
+			std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
+			std::cout << "path: " << epVec[i].getPath() << std::endl;
+		}
+		std::vector<Location>   locationVec = server.getLocations();
+		for (size_t i = 0; i < locationVec.size(); i++) {
+
+			std::cout << "locations: " << std::endl;
+			std::cout << "value: " << locationVec[i].getValue() << std::endl;
+			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
+			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
+			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
+			if (locationVec[i].getAutoIndex() == ON)
+				std::cout << "autoindex: on" << std::endl;
+		}
+	}
+}
+
+bool    Parser::findSemicolon(std::string value) {
+
+	size_t  pos = value.find(";") ;
+
+	if (pos  != std::string::npos)
+		return (true);
+	return (false);
+}
+
+void    Parser::printError(int which) {
+
+	status = ERROR;
+	switch(which) {
+
+		case SEMICOLON:
+			std::cout << "Error: could not find semicolon" << std::endl;
+			break ;
+		case CURLYBRACE:
+			std::cout << "Error: could not find curly brace" << std::endl;
+			break ;
+		case UNKNOWN:
+			std::cout << "Error: " << directive << " <- Unknown expression." << std::endl;
+			break ;
+		case EMPTY:
+			std::cout << "Error: " << directive << " <- Directive can't have empty value!" << std::endl;
+			break ;
+	}
+	exit(1);
+}
+
+std::vector<Context> Parser::getParsedData( void ) const
+{
+	return (parsedData);
 }

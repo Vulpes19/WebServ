@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:31:39 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/06/14 11:28:52 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/06/20 16:08:13 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@ enum ResponseStates
     ERROR_FOUND,
     READY_TO_WRITE
 };
-// class States
-// {
-//     public:
-//         virtual void handleState( ClientManager *client ) = 0;                
-//         void    reset( ClientManager *client );
-// };
+
+enum METHODS
+{
+    GET,
+    POST,
+    DELETE
+};

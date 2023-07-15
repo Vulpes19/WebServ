@@ -6,14 +6,19 @@
 /*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/11 16:48:13 by elias            ###   ########.fr       */
+/*   Updated: 2023/07/15 14:52:03 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Resources.hpp"
 
 Resources::Resources( void )
-{}
+{
+	requestLineExists = false;
+	hostExists = false;
+	requiredLength = -1;
+	actualLength = 0; 
+}
 
 Resources::~Resources( void )
 {}
@@ -28,22 +33,88 @@ Resources &Resources::operator=( const Resources &rhs )
 	if ( this != &rhs )
 	{
 		this->header = rhs.header;
-		this->fileContentBuffer = rhs.fileContentBuffer;
+		// this->requestBodyBuffer = rhs.requestBodyBuffer;
 		this->fileSize = rhs.fileSize;
 		this->error = rhs.error;
+		this->actualLength = rhs.actualLength;
+		this->requiredLength = rhs.requiredLength;
 	}
 	return (*this);
 }
 
-void    Resources::checkRequest( std::string request )
+void	Resources::parseHeader( void )
 {
-	std::stringstream	ss(request);
-	std::string			line;
-	std::string			requestBody;
-	bool				requestBodyStart = false;
-	std::cout << " ********************************* \n";
-	while ( std::getline(ss, line) )
+	size_t colon = line.find(":");
+
+	std::string headerKey = line.substr(0, colon);
+	std::string headerValue = line.substr( colon + 2 );
+	header[headerKey] = headerValue;
+	if (headerKey == "Host")
+		hostExists = true;
+	if (headerValue.size() == 0)
+		setError(BAD_REQUEST);
+	if (headerKey == "Content-Length")
+		requiredLength = std::stoi(headerValue);
+}
+
+void	Resources::parseRequestLine( void )
+{
+	std::stringstream	ss2(line);
+	std::string 		str;
+	bool				isValidMethod = false;
+	std::string			methods[3] = {"GET", "POST", "DELETE"};
+
+	requestLineExists = true;
+	ss2 >> str;
+	for (int i = 0; i < 3; i++) {
+		if (methods[i] == str) {
+			isValidMethod = true;
+			break ;
+		}
+	}
+	if (isValidMethod)
+		header["Method"] = str;
+	else
+		setError(METHOD_NOT_ALLOWED);
+	ss2 >> str;
+	if (str.size())
+		header["URL"] = str;
+	else
+		setError(BAD_REQUEST);
+	ss2 >> str;
+	if (str.size()) {
+		if (str == "HTTP/1.1")
+			header["HTTP"] = str;
+		else
+			setError(HTTP_VERSION_NOT_SUPPORTED);
+	}
+	else
+		setError(BAD_REQUEST);
+}
+
+void	Resources::parseBody( size_t &size )
+{
+	size += line.size();
+	actualLength += line.size();
+	requestBody.write(line.c_str(), line.size());
+}
+
+void    Resources::checkRequest( void )
+{
+	requestBody.open("requestBody");
+	std::ifstream requestFile("readingRequestFile", std::ios::binary);
+	size_t size = 0;
+	if ( !requestFile.is_open() )
 	{
+		std::cerr << "failed to open the file\n";
+		exit(1);
+	}
+	bool				requestBodyStart = false;
+
+	while ( std::getline(requestFile, line) )
+	{
+		if (!requestFile.eof() && requestBodyStart )
+			line += '\n';
 		size_t colon = line.find(":");
 		if ( line == "\r" )
 		{
@@ -51,48 +122,28 @@ void    Resources::checkRequest( std::string request )
 			continue ;
 		}
 		else if ( requestBodyStart )
-		{
-			requestBody += line;
-			requestBody += "\n";
-		}
+			parseBody(size);
 		else if ( colon != std::string::npos )
-		{
-			std::string headerKey = line.substr(0, colon);
-			std::string headerValue = line.substr( colon + 2 );
-			header[headerKey] = headerValue;
-		}
+			parseHeader();
 		else if ( line.find("HTTP") != std::string::npos )
-		{
-			std::stringstream ss2(line);
-			std::string str;
-			ss2 >> str;
-			header["Method"] = str;
-			ss2 >> str;
-			header["URL"] = str;
-			ss2 >> str;
-			header["HTTP"] = str;
-		}
+			parseRequestLine();
 	}
+	requestFile.close();
+	requestBody.close();
+	remove("readingRequestFile");
+	errorHandling();
+	// printError(getError());
+}
 
-	std::cout << "*#########################\n";
-	std::map<std::string, std::string>::iterator it;
-	for (it = header.begin(); it != header.end(); it++)
-	{
-		std::cout << it->first << " " << it->second << std::endl;
-	}
+void	Resources::errorHandling( void ) {
 
-	std::cout << "*#########################\n";
-
+	if (requiredLength < actualLength - 1)
+		setError(BAD_REQUEST);
+	if (requiredLength == -1)
+		setError(LENGTH_REQUIRED);
+	if (hostExists == false || requestLineExists == false)
+		setError(BAD_REQUEST);
 	
-	fileContentBuffer = requestBody.c_str();
-	// for ( iterator it = header.begin(); it != header.end(); ++it )
-	// {
-	//     std::cout << it->first << " " << it->second << std::endl;
-	// }
-	// std::cout << "*********************\n";
-	// std::cout << requestBody << std::endl;
-	// std::cout << "*********************\n";
-	// exit(1);
 }
 
 void    Resources::setError( enum Error_code error )
@@ -100,12 +151,43 @@ void    Resources::setError( enum Error_code error )
 	this->error = error;
 }
 
-void    Resources::setResponseHeader( void )
-{
-	
+enum Error_code	Resources::getError() const {
+
+	return (error);
 }
 
-std::string	&Resources::getRequest( std::string Key )
+std::string	Resources::getRequest( std::string Key )
 {
-	return ( header[Key] );
+	if ( header.find(Key) != header.end() )
+		return ( header[Key] );
+	else
+		return ( "NOT FOUND" );
+}
+
+void	Resources::clear( void )
+{
+	header.clear();
+}
+
+void	Resources::printError(enum Error_code code) {
+
+	//this is only for debugging purposes
+	switch (code) {
+
+		case BAD_REQUEST:
+			std::cout << "BAD REQUEST!" << std::endl;
+			break ;
+		case LENGTH_REQUIRED:
+			std::cout << "LENGTH REQUIRED!" << std::endl;
+			break ;
+		case METHOD_NOT_ALLOWED:
+			std::cout << "METHOD NOT ALLOWED" << std::endl;
+			break ;
+		case HTTP_VERSION_NOT_SUPPORTED:
+			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
+			break ;
+		default:
+			std::cout << "all good" << std::endl;
+			break ;
+	}
 }

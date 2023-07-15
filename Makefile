@@ -2,7 +2,7 @@
 TARGET = webserv
 
 #*SOURCE FILES *#
-FILES = main.cpp Connection.cpp Server.cpp Resources.cpp ClientManager.cpp Response.cpp CGI.cpp
+FILES = main.cpp Connection.cpp Server.cpp Resources.cpp ClientManager.cpp Response.cpp parser.cpp configData.cpp CGI.cpp
 		
 SRC = $(addprefix srcs/, $(FILES))
 
@@ -22,7 +22,6 @@ INCLUDE = include/
 DEL = rm -rf
 
 all: $(TARGET)
-
 $(OBJ_DIR)/%.o: srcs/%.cpp $(INCLUDE)
 	g++ $(FLAGS) -I $(INCLUDE) -c $< -o $@
 

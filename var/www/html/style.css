@@ -1,0 +1,19 @@
+html {
+    scroll-behavior: smooth;
+  }
+
+.btn {
+    transition: all 0.4s;
+}
+
+.btn:hover {
+    transform: scale(1.1);
+}
+
+.card {
+    transition: all 0.4s;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
