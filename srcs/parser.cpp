@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 12:03:19 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:42:00 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,10 +205,10 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
-	t_brace	brace;
+	// t_brace	brace;
 
-	brace.openingBrace = false;
-	brace.closingBrace = false;
+	// brace.openingBrace = false;
+	// brace.closingBrace = false;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
@@ -236,6 +236,19 @@ void   Parser::readFile(std::ifstream& confFile) {
 				// 	}
 				// }
 			}
+			// }
+			// 	else {
+			// 		while (getline(confFile, nextLine)) {
+			// 			if (nextLine.size())
+			// 			{
+			// 				if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
+			// 					brace.openingBrace = true;
+			// 					parseServer(confFile);
+			// 				}
+			// 			}
+			// 		}
+			// 	}
+			// }
 			// if (line.find("}") != std::string::npos)
 			// {
 			// 	brace.closingBrace = true;

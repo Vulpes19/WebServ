@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 10:33:03 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 15:18:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,62 @@ void    ErrorResponse::errorInternal( SOCKET socket )
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
+void    ErrorResponse::errorUnauthorized( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 401 Unauthorized\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 12\r\n\r\nUnauthorized";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorMethodNotAllowed( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 405 Method Not Allowed\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 18\r\n\r\nMethod Not Allowed";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorUnsupportedMediaType( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 415 Unsupported Media Type\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 22\r\n\r\nUnsupported Media Type";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorTimeout( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 504 Request Timeout\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 15\r\n\r\nRequest Timeout";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorLengthRequired( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 411 Length Required\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 15\r\n\r\nLength Required";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorHTTPVersion( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 26\r\n\r\nHTTP Version Not Supported";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
+void    ErrorResponse::errorRequestTooLarge( SOCKET socket )
+{
+	std::string errorMsg = "HTTP/1.1 413 Request Entity Too Large\r\n";
+	errorMsg += "Connection: close\r\n";
+	errorMsg += "Content-Length: 24\r\n\r\nRequest Entity Too Large";
+	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+}
+
 Response::Response( void )
 {
 	// memset(request, 0, sizeof(request));
@@ -75,9 +131,8 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	size_t	delimiter;
 	
 	if ( !buffer.is_open() )
-		buffer.open("testFile", std::ios::binary);
+		buffer.open("readingRequestFile", std::ios::binary);
 	bytesRead = read( socket, request, 4096 );
-	std::cout << bytesRead << std::endl;
 	if ( bytesRead > 0  )
 	{
 		std::string toCheck(request, bytesRead);
@@ -91,8 +146,17 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 			{
 				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
 				if ( !lenStr.empty() )
+				{
 					bodySize = std::stoul(lenStr);
-				std::cout << "body size: " << bodySize << std::endl;
+					if ( bodySize > bodyLimit )
+					{
+						err.errorRequestTooLarge(socket);
+						buffer.close();
+						remove("readingRequestFile");
+						reset();
+						return (RESET);
+					}
+				}
 			}
 		}
 		std::string end("\r\n\r\n");
@@ -102,18 +166,12 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		if ( delimiter != std::string::npos )
 		{
 			isBody = true;
-			std::cout << toCheck.substr(0, delimiter) << std::endl;;
 			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
 			if ( !bodyStart.empty() )
-			{
 				bytesReceived += bodyStart.length();
-				// buffer.write(bodyStart.c_str(), bodyStart.length());	
-			}
 		}
 		if ( bytesReceived >= bodySize )
 		{
-			std::cout << "received bytes: " << bytesReceived << " " << "body size: " << bodySize << std::endl;
-			std::cout << "REQUEST IS WELL RECEIVED\n";
 			buffer.close();
 			resources.checkRequest();
 			return (READY_TO_WRITE);	
@@ -122,7 +180,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 	else if ( bytesRead == 0 )
 	{
-		std::cout << "REQUEST IS WELL RECEIVED\n";
 		buffer.close();
 		resources.checkRequest();
 		return (READY_TO_WRITE);
@@ -131,6 +188,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	{
 		buffer.close();
 		err.errorBadRequest(socket);
+		remove("readingRequestFile");
 		reset();
 		return (RESET);
 	}
@@ -201,9 +259,9 @@ enum ResponseStates    Response::getResponseFile( void )
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		std::string test = getRootPath(path);
-		if ( test != "NONE" )
-			oss << "." << test;
+		std::string root = getRootPath(path);
+		if ( root != "NONE" )
+			oss << "." << root;
 		else
 		{
 			err.errorForbidden(socket);
@@ -268,30 +326,18 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
-	std::string uploadPath;
-	
-	filePath += type;
-	std::cout << filePath << std::endl;
-	if ( rename("requestBody", filePath.substr(1).c_str()) != 0 )
+	std::string	ret = getUploadPath(resources.getRequest("URL"));
+
+	if ( ret != "NONE" )
+		help.normalizePath(ret);
+	ret += filePath.substr(1).c_str() + type;
+	ret = "." + ret;
+	if ( rename("requestBody", ret.c_str()) != 0 )
 	{
 		err.errorInternal(socket);
 		reset();
 		return (RESET);
 	}
-	// std::string toWrite(resources.getRequestBody());
-	// std::string toWrite = "";
-	// if ( !toUpload.is_open() )
-	// {
-	// 	toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
-	// 	if ( !toUpload.is_open() )
-	// 	{
-	// 		err.errorInternal(socket);
-	// 		reset();
-	// 		return (RESET);
-	// 	}
-	// }
-	// toUpload << toWrite;
-	// toUpload.close();
 	sendResponseHeader( POST, "201 Created", filePath, &resources );
 	send( socket, "File created.", 13, 0 );
 	reset();
@@ -331,6 +377,15 @@ bool    Response::handleWriteResponse( Resources &resources )
 	// std::string requestString(request);
 	enum ResponseStates ret;
 
+	if ( resources.getError() != NO_ERROR )
+	{
+		if ( handleErrors( resources ) )
+		{
+			resources.clear();
+			return (true);
+		}
+	}
+	// std::cout << serverName << " " << resources.getRequest("Host") << std::endl;
 	path = resources.getRequest("URL");
 	if ( resources.getRequest("Method") == "GET")
 	{
@@ -366,36 +421,53 @@ bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) co
 {
 	std::string end("\r\n\r\n");
 	(void)bytesRead;
-	std::cout << "CHECKING IF THE REQUEST IS RECEIVED\n";
-	std::cout << requestStr << std::endl;
 	if ( strcmp( requestStr.c_str() + bytesReceived - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);
 }
-// bool	Response::isRequestReceived( Resources &resources ) const
-// {
-// 	std::string end("\r\n\r\n");
-// 	std::string requestStr(request);
-// 	std::string ret;
 
-// 	ret = resources.getRequest("Content-Length");
-// 	if ( ret == "NOT FOUND")
-// 		return (true);
-// 	else
-// 	{
-// 		size_t bodyStart = bytesReceived - atoi(ret.c_str());
-// 		std::string requestBodyStr = requestStr.substr( bodyStart, bytesReceived );
-// 		if ( (int)requestBodyStr.size() == atoi(ret.c_str()) )
-// 			return (true);
-// 		else
-// 			return (false);
-// 	}
-// 	if ( bytesReceived < (int)end.length() )
-// 		return (false);
-// 	if ( strcmp( request + bytesReceived - end.length(), end.c_str() ) == 0 )
-// 		return (true);
-// 	return (false);
-// }
+bool	Response::handleErrors( Resources &resources )
+{
+	switch ( resources.getError() )
+	{
+		case BAD_REQUEST:
+			err.errorBadRequest(socket);
+			break ;
+		case NOT_FOUND:
+			err.errorNotFound(socket);
+			break ;
+		case FORBIDDEN:
+			err.errorForbidden(socket);
+			break ;
+		case INTERNAL_SERVER_ERROR:
+			err.errorInternal(socket);
+			break ;
+		case UNAUTHORIZED:
+			err.errorUnauthorized(socket);
+			break ;
+		case METHOD_NOT_ALLOWED:
+			err.errorMethodNotAllowed(socket);
+			break ;
+		case UNSUPPORTED_MEDIA_TYPE:
+			err.errorUnsupportedMediaType(socket);
+			break ;
+		case REQUEST_TIMEOUT:
+			err.errorTimeout(socket);
+			break ;
+		case LENGTH_REQUIRED:
+			err.errorLengthRequired(socket);
+			break ;
+		case HTTP_VERSION_NOT_SUPPORTED:
+			err.errorHTTPVersion(socket);
+			break ;
+		case REQUEST_ENTITY_TOO_LARGE:
+			err.errorRequestTooLarge(socket);
+			break ;
+		default:
+			return (false);
+	}
+	return (true);
+}
 
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
@@ -440,6 +512,16 @@ void	Response::setName( std::string name )
 	this->serverName = name;
 }
 
+void	Response::setHost( std::string host )
+{
+	this->host = host;
+}
+
+void	Response::setBodySize( ssize_t bodyLimit )
+{
+	this->bodyLimit = bodyLimit;
+}
+
 std::string	Response::getRootPath( std::string path )
 {
 	if ( path.empty() )
@@ -482,6 +564,23 @@ std::string	Response::getRootPath( std::string path )
 					return ( ret + indexFile );
 			}
 		}
+	}
+	return ("NONE");
+}
+
+std::string	Response::getUploadPath( std::string path )
+{
+	if ( path.empty() )
+		path = "/";
+	if ( path.back() != '/' )
+		path += '/';
+	for ( size_t i = 0; i < loc.size(); i++ )
+	{
+		std::cout << path << " " << loc[i].getValue() << std::endl;
+		if ( (path == "/" || path.find("/") != std::string::npos) && loc[i].getValue() == "/" )
+			return (loc[i].getUpload());
+		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
+			return (loc[i].getUpload());
 	}
 	return ("NONE");
 }
@@ -567,4 +666,14 @@ const std::string	ResponseHelper::getFileLocation( const char *relativePath ) co
 		return (absolutePath);
 	else
 		return ("");
+}
+
+void	ResponseHelper::normalizePath( std::string &path )
+{
+	while ( !path.empty() && path[path.length() - 1] == '/' )
+		path.erase(path.size() - 1);
+	if ( !path.empty() && path[0] != '/' )
+		path = '/' + path;
+	if ( !path.empty() && path[path.length() - 1] != '/' )
+		path += '/';
 }

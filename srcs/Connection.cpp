@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:34:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:54:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->setState( READ_REQUEST);
     newClient->setLocations(srv.getLocations());
     newClient->setName(srv.getName());
+    newClient->setHost(srv.getHost());
+    newClient->setBodySize(srv.getBodySize());
     clients.push_back(newClient);
     return (newClient);
 }
@@ -92,12 +94,10 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
 {
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
-        // std::cout << "I'm here\n";
         if ( (*it)->getSocket() == -1 )
             continue ;
         if ( FD_ISSET( (*it)->getSocket(), &readfds) )
         {
-            // std::cout << "it is set for read\n";
             if ( (*it)->getState() == READ_REQUEST )
             {
                 (*it)->startRead();
@@ -106,7 +106,6 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         }
         if ( FD_ISSET( (*it)->getSocket(), &writefds) )
         {
-            // std::cout << "it is set for write\n";
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
                 if ( (*it)->startResponse() )

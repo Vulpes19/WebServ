@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 09:45:47 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:40:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,12 +27,12 @@ enum Error_code
 	UNAUTHORIZED,
 	FORBIDDEN,
 	METHOD_NOT_ALLOWED,
-	UNSOPPORTED_MEDIA_TYPE,
+	UNSUPPORTED_MEDIA_TYPE,
 	REQUEST_TIMEOUT,
 	FILE_IO_ERROR,
 	LENGTH_REQUIRED,
 	HTTP_VERSION_NOT_SUPPORTED,
-	PAYLOAD_TOO_LARGE // 413
+	REQUEST_ENTITY_TOO_LARGE
 };
 
 class Resources
@@ -46,7 +46,6 @@ class Resources
 		void		checkRequest( void );
 		bool		methodValidity(std::string value);
 		void		setError( enum Error_code error );
-		// enum ResponseStates	fillFile( const char * );
 		std::string	getRequest( std::string Key );
 		std::string	getRequestBody( void ) const;
 		enum Error_code	getError() const;
@@ -58,14 +57,14 @@ class Resources
 		void    	printError(enum Error_code code);
 	private:
 		std::map< std::string, std::string > header;
-		enum Error_code error;
-		std::ofstream	requestBody;
-		std::string	fileContentBuffer;
-		int			fileSize;
+		enum Error_code		error;
+		std::ofstream		requestBody;
+		std::string			fileContentBuffer;
+		std::string			line;
+		int					fileSize;
 		ssize_t				requiredLength;
 		ssize_t				actualLength;
 		bool 				hostExists;
-		std::string			line;
 		bool 				requestLineExists;
 		bool				isPost;
 };

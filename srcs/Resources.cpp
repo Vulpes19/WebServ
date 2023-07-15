@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 09:49:20 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:43:34 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,6 @@ void	Resources::parseRequestLine( void )
 
 void	Resources::parseBody( size_t &size )
 {
-	// std::cout << requiredLength << " vs " << actualLength << std::endl;
 	size += line.size();
 	actualLength += line.size();
 	requestBody.write(line.c_str(), line.size());
@@ -119,7 +118,7 @@ void	Resources::parseBody( size_t &size )
 void    Resources::checkRequest( void )
 {
 	requestBody.open("requestBody");
-	std::ifstream requestFile("testFile", std::ios::binary);
+	std::ifstream requestFile("readingRequestFile", std::ios::binary);
 	size_t size = 0;
 	if ( !requestFile.is_open() )
 	{
@@ -147,7 +146,7 @@ void    Resources::checkRequest( void )
 	}
 	requestFile.close();
 	requestBody.close();
-	remove("testFile");
+	remove("readingRequestFile");
 	errorHandling();
 	printError(getError());
 }
@@ -155,7 +154,7 @@ void    Resources::checkRequest( void )
 void	Resources::errorHandling( void ) {
 
 	if (requiredLength < actualLength - 1)
-		setError(PAYLOAD_TOO_LARGE);
+		setError(REQUEST_ENTITY_TOO_LARGE);
 	if (requiredLength == -1 && isPost)
 		setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
@@ -182,11 +181,6 @@ std::string	Resources::getRequest( std::string Key )
 	else
 		return ( "NOT FOUND" );
 }
-
-// std::ofstream	Resources::getRequestBody( void ) const
-// {
-// 	return ( requestBodyBuffer );
-// }
 
 void	Resources::clear( void )
 {
