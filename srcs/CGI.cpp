@@ -73,6 +73,12 @@ void CGI::setEnv(Resources& resources) {
     env["SERVER_PROTOCOL"] = "HTTP/1.1";
     env["SERVER_SOFTWARE"] = "webserv";
     env["REMOTE_ADDR"] = "";
+    env["HTTP_ACCEPT"] = resources.getRequest("Accept");
+    env["HTTP_ACCEPT_ENCODING"] = resources.getRequest("AcceptEncoding");
+    env["HTTP_ACCEPT_LANGUAGE"] = resources.getRequest("AcceptLanguage");
+    env["HTTP_CONNECTION"] = resources.getRequest("Connection");
+    env["HTTP_HOST"] = resources.getRequest("Host");
+    env["HTTP_USER_AGENT"] = resources.getRequest("UserAgent");
 
     std::cout << "\n----------------------------------------------------------------" << std::endl;
     for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); ++it)
@@ -96,7 +102,7 @@ void CGI::exec(Resources& resources) {
     std::string inFile("./CGI/inFile");
     std::string outFile("./CGI/outFile");
 
-    int in_fd = open(inFile.c_str(), O_RDONLY | O_CREAT);
+    int in_fd = open(inFile.c_str(), O_RDONLY | O_CREAT, 0755);
 	int out_fd = open(outFile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0755);
 
     std::cout << "in " << in_fd << " out " << out_fd << std::endl;
