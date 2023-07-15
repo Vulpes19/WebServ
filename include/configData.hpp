@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:27:33 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:43:25 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,12 @@ enum {
 	OK
 } ;
 
+typedef struct s_redir {
+
+	std::string	status_code;
+	std::string	path;
+} t_redir ;
+
 class ErrorPage {
 	private:
 		int			status_code;
@@ -60,7 +66,8 @@ class Location {
 		std::string root; //darori
 		std::string index; //darori
 		std::string	upload;
-		int         autoindex;
+		t_redir		redirection;
+		int         autoindex ;
 		bool		missingValue;
 	public:
 		Location();
@@ -69,6 +76,7 @@ class Location {
 		void    setRoot(const std::string &rt);
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
+		void	setRedirection(std::string status_code, std::string path);
 		void	setUpload(const std::string &upld);
 		void	setMissingValue();
 		// void	setBraceValue();
@@ -78,6 +86,7 @@ class Location {
 		std::string getIndex() const;
 		int         getAutoIndex() const;
 		bool		getMissingValue() const;
+		t_redir		getRedirection() const;
 		Location&	operator=(const Location& location);
 		~Location();
 } ;
@@ -85,7 +94,7 @@ class Location {
 class ServerSettings {
 	private:
 		std::string             port;  //darori
-		std::string				host; 
+		std::string				host;
 		std::string             server_name; //darori
 		int						body_size;
 		std::vector<Location>    locations; //darori

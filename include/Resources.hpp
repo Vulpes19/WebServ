@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:30:44 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:40:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ class Resources
 		Resources( const Resources &src );
 		Resources &operator=( const Resources &rhs );
 		void		checkRequest( void );
+		bool		methodValidity(std::string value);
 		void		setError( enum Error_code error );
 		std::string	getRequest( std::string Key );
 		std::string	getRequestBody( void ) const;
@@ -65,4 +66,5 @@ class Resources
 		ssize_t				actualLength;
 		bool 				hostExists;
 		bool 				requestLineExists;
+		bool				isPost;
 };

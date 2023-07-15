@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:40:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:43:34 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ Resources::Resources( void )
 	requestLineExists = false;
 	hostExists = false;
 	requiredLength = -1;
-	actualLength = 0; 
+	actualLength = 0;
+	isPost = false;
 }
 
 Resources::~Resources( void )
@@ -33,7 +34,6 @@ Resources &Resources::operator=( const Resources &rhs )
 	if ( this != &rhs )
 	{
 		this->header = rhs.header;
-		// this->requestBodyBuffer = rhs.requestBodyBuffer;
 		this->fileSize = rhs.fileSize;
 		this->error = rhs.error;
 		this->actualLength = rhs.actualLength;
@@ -57,22 +57,32 @@ void	Resources::parseHeader( void )
 		requiredLength = std::stoi(headerValue);
 }
 
+bool	Resources::methodValidity(std::string value) {
+	
+	std::string			methods[3] = {"GET", "POST", "DELETE"};
+
+	if (value == "POST") {
+
+		isPost = true;
+		return (true);
+	}
+	for (int i = 0; i < 3; i++) {
+		if (methods[i] == value) {
+			return (true);
+			break ;
+		}
+	}
+	return (false);
+}
+
 void	Resources::parseRequestLine( void )
 {
 	std::stringstream	ss2(line);
 	std::string 		str;
-	bool				isValidMethod = false;
-	std::string			methods[3] = {"GET", "POST", "DELETE"};
 
 	requestLineExists = true;
 	ss2 >> str;
-	for (int i = 0; i < 3; i++) {
-		if (methods[i] == str) {
-			isValidMethod = true;
-			break ;
-		}
-	}
-	if (isValidMethod)
+	if (methodValidity(str))
 		header["Method"] = str;
 	else
 		setError(METHOD_NOT_ALLOWED);
@@ -80,7 +90,10 @@ void	Resources::parseRequestLine( void )
 	if (str.size())
 		header["URL"] = str;
 	else
+	{
+		std::cout << "here" << std::endl;
 		setError(BAD_REQUEST);
+	}
 	ss2 >> str;
 	if (str.size()) {
 		if (str == "HTTP/1.1")
@@ -89,7 +102,10 @@ void	Resources::parseRequestLine( void )
 			setError(HTTP_VERSION_NOT_SUPPORTED);
 	}
 	else
+	{
+		std::cout << "here 1" << std::endl;
 		setError(BAD_REQUEST);
+	}
 }
 
 void	Resources::parseBody( size_t &size )
@@ -132,17 +148,20 @@ void    Resources::checkRequest( void )
 	requestBody.close();
 	remove("readingRequestFile");
 	errorHandling();
-	// printError(getError());
+	printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
 
 	if (requiredLength < actualLength - 1)
-		setError(BAD_REQUEST);
-	if (requiredLength == -1)
+		setError(REQUEST_ENTITY_TOO_LARGE);
+	if (requiredLength == -1 && isPost)
 		setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
+	{
+		std::cout << "here 2" << std::endl;
 		setError(BAD_REQUEST);
+	}
 }
 
 void    Resources::setError( enum Error_code error )

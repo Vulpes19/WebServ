@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:04:34 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 11:50:44 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,15 +39,27 @@ std::string	ErrorPage::getPath() const {
 ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("default"), autoindex(OFF), missingValue(true) {};
+Location::Location(): upload("default") ,autoindex(OFF), missingValue(true) {
+
+	redirection.status_code = "-1"; 
+	redirection.path = ""; 
+};
 
 Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
 	autoindex = OFF;
+	redirection.status_code = "-1";
+	redirection.path = "";
 };
 
 void	Location::setMissingValue() {
 
 	missingValue = false;
+}
+
+void	Location::setRedirection(std::string status_code, std::string path) {
+
+	redirection.status_code = status_code;
+	redirection.path = path;
 }
 
 
@@ -106,6 +118,11 @@ int			Location::getAutoIndex() const {
 	return(autoindex);
 }
 
+t_redir		Location::getRedirection() const {
+
+	return (redirection);
+}
+
 Location&	Location::operator=(const Location& location) {
 
 	if (this != &location)
@@ -113,6 +130,7 @@ Location&	Location::operator=(const Location& location) {
 		this->value = location.value;
 		this->root = location.root;
 		this->index = location.index;
+		this->redirection = location.redirection;
 	}
 	return (*this);
 }

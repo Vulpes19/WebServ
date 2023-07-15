@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 11:45:26 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 15:18:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,7 +174,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		{
 			buffer.close();
 			resources.checkRequest();
-			std::cout << "safi\n";
 			return (READY_TO_WRITE);	
 		}
 		return (READING);
@@ -333,7 +332,6 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 		help.normalizePath(ret);
 	ret += filePath.substr(1).c_str() + type;
 	ret = "." + ret;
-	std::cout << ret << std::endl;
 	if ( rename("requestBody", ret.c_str()) != 0 )
 	{
 		err.errorInternal(socket);
@@ -387,7 +385,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
-	std::cout << serverName << " " << resources.getRequest("Host") << std::endl;
+	// std::cout << serverName << " " << resources.getRequest("Host") << std::endl;
 	path = resources.getRequest("URL");
 	if ( resources.getRequest("Method") == "GET")
 	{
@@ -423,8 +421,6 @@ bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) co
 {
 	std::string end("\r\n\r\n");
 	(void)bytesRead;
-	std::cout << "CHECKING IF THE REQUEST IS RECEIVED\n";
-	std::cout << requestStr << std::endl;
 	if ( strcmp( requestStr.c_str() + bytesReceived - end.length(), end.c_str() ) == 0 )
 		return (true);
 	return (false);

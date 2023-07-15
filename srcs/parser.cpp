@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 19:54:36 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:42:00 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,17 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	}
 }
 
+int		countWords(std::string str) {
+
+	std::stringstream ss(str);
+	int	words = 0;
+	std::string	word;
+
+	while (ss >> word)
+		words++;
+	return (words);
+}
+
 void	Parser::setLocationContent(Location& location, int which, std::string value) {
 
 	switch (which) {
@@ -152,11 +163,41 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 				printError(EMPTY);
 			break ;
 		case RETURN:
-			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
-					location.setValue(value.erase(value.size() - 1));
+			std::stringstream ss(value);
+			std::string path;
+			std::string	str;
+			int			words = countWords(value);
+			std::string	status_code;
+
+			if (words == 2) {
+				ss >> str >> status_code;
+				if (status_code.size() - 1 > 0) {
+					if (findSemicolon(status_code))
+						location.setRedirection(status_code.erase(status_code.size() - 1), "");
+					else
+						printError(SEMICOLON);				
+				}
 				else
-					printError(SEMICOLON);
+					printError(EMPTY);
+			}
+			else if (words == 3) {	
+				ss >> str >> status_code >> path;
+				if (path.size() - 1 > 0) {
+					if (findSemicolon(path))
+						location.setRedirection(status_code, path.erase(path.size() - 1));
+					else
+						printError(SEMICOLON);				
+				}
+				else
+					printError(EMPTY);
+			}
+			else if (words > 3) {
+				std::cerr << "Syntax Error: Return field is invalid, too many elements!" << std::endl;
+				exit(1);
+			}
+			else {
+				printError(EMPTY);
+				break ;
 			}
 			break ;
 	}
@@ -176,12 +217,26 @@ void   Parser::readFile(std::ifstream& confFile) {
 				continue ;
 			if (line.find("server") != std::string::npos)
 			{
+				// std::cout << "line: " << line << std::endl;
 				// std::string	nextLine;
 
 				// if (line.find("{") != std::string::npos) {
 				// 	brace.openingBrace = true;
 					parseServer(confFile);
+				// }
+				// else {
+				// 	while (getline(confFile, nextLine)) {
+				// 		if (nextLine.size())
+				// 		{
+				// 			if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
+				// 				brace.openingBrace = true;
+				// 				parseServer(confFile);
+				// 			}
+				// 		}
+				// 	}
+				// }
 			}
+			// }
 			// 	else {
 			// 		while (getline(confFile, nextLine)) {
 			// 			if (nextLine.size())
@@ -247,10 +302,11 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	ServerSettings  server;
 	Context context;
 	std::string optionalVal;
-	// t_brace		brace;
+	t_brace		brace;
 
-	// brace.closingBrace = false;
-	// brace.openingBrace = false;
+	brace.closingBrace = false;
+	brace.openingBrace = false;
+	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
@@ -310,7 +366,19 @@ void	Parser::locationValuesValidation(Location location) {
 		exit(1);
 	}
 	if (location.getIndex().size() == 0) {
-		std::cerr << "Syntax Error: location index not found or invalid!" << std::endl;
+		location.setIndex("HOMEPAGE");
+	}
+	if ((location.getRedirection().status_code.size() > 3 || location.getRedirection().status_code.size() < 3) && 
+		location.getRedirection().status_code != "-1") {
+		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
+		exit(1);
+	}
+	std::stringstream ss(location.getRedirection().status_code);
+	int				  code;
+	
+	ss >> code;
+	if (code == 0) {
+		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
 		exit(1);
 	}
 }
@@ -343,7 +411,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 		else if (directive == "upload")
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
-			setLocationContent(location, RETURN, value);
+			setLocationContent(location, RETURN, line);
 	}
 	locationValuesValidation(location);
 }
@@ -380,6 +448,8 @@ void	Parser::printData() {
 			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
 			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
 			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
+			std::cout << "return: " << locationVec[i].getRedirection().status_code; 
+			std::cout << " " << locationVec[i].getRedirection().path << std::endl;
 			if (locationVec[i].getAutoIndex() == ON)
 				std::cout << "autoindex: on" << std::endl;
 		}

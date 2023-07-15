@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 11:42:09 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 14:54:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
         if ( (*it)->getSocket() == socket )
             return (*it);
     }
-    std::cout << "hello\n";
     ClientManager *newClient = new ClientManager();
     newClient->reset();
     newClient->createClient( srv.getListenSocket() );
