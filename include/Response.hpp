@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:42:11 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 10:31:20 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ struct ResponseHelper
 {
 	ssize_t     getFileSize( const char * ) const;
 	bool		isDirectory( std::string ) const;
+	void		normalizePath( std::string & );
 	const std::string	getFileType( std::string, enum TYPES ) const;
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
@@ -56,6 +57,7 @@ class Response
 		enum ResponseStates	deleteFile( Resources & );
 		enum ResponseStates	deleteDir( Resources & );
 		std::string	getRootPath( std::string );
+		std::string	getUploadPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
 		bool		handleErrors( Resources & );

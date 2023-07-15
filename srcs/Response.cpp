@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:43:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 10:34:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,9 +259,9 @@ enum ResponseStates    Response::getResponseFile( void )
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		std::string test = getRootPath(path);
-		if ( test != "NONE" )
-			oss << "." << test;
+		std::string root = getRootPath(path);
+		if ( root != "NONE" )
+			oss << "." << root;
 		else
 		{
 			err.errorForbidden(socket);
@@ -326,30 +326,19 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
-	std::string uploadPath;
-	
-	filePath += type;
-	std::cout << filePath << std::endl;
-	if ( rename("requestBody", filePath.substr(1).c_str()) != 0 )
+	std::string	ret = getUploadPath(resources.getRequest("URL"));
+
+	if ( ret != "NONE" )
+		help.normalizePath(ret);
+	ret += filePath.substr(1).c_str() + type;
+	ret = "." + ret;
+	std::cout << ret << std::endl;
+	if ( rename("requestBody", ret.c_str()) != 0 )
 	{
 		err.errorInternal(socket);
 		reset();
 		return (RESET);
 	}
-	// std::string toWrite(resources.getRequestBody());
-	// std::string toWrite = "";
-	// if ( !toUpload.is_open() )
-	// {
-	// 	toUpload.open(filePath.substr(1, filePath.length()).c_str(), std::ios::binary);
-	// 	if ( !toUpload.is_open() )
-	// 	{
-	// 		err.errorInternal(socket);
-	// 		reset();
-	// 		return (RESET);
-	// 	}
-	// }
-	// toUpload << toWrite;
-	// toUpload.close();
 	sendResponseHeader( POST, "201 Created", filePath, &resources );
 	send( socket, "File created.", 13, 0 );
 	reset();
@@ -581,6 +570,23 @@ std::string	Response::getRootPath( std::string path )
 	return ("NONE");
 }
 
+std::string	Response::getUploadPath( std::string path )
+{
+	if ( path.empty() )
+		path = "/";
+	if ( path.back() != '/' )
+		path += '/';
+	for ( size_t i = 0; i < loc.size(); i++ )
+	{
+		std::cout << path << " " << loc[i].getValue() << std::endl;
+		if ( (path == "/" || path.find("/") != std::string::npos) && loc[i].getValue() == "/" )
+			return (loc[i].getUpload());
+		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
+			return (loc[i].getUpload());
+	}
+	return ("NONE");
+}
+
 void	Response::reset( void )
 {
 	// memset(request, 0, sizeof(request));
@@ -662,4 +668,14 @@ const std::string	ResponseHelper::getFileLocation( const char *relativePath ) co
 		return (absolutePath);
 	else
 		return ("");
+}
+
+void	ResponseHelper::normalizePath( std::string &path )
+{
+	while ( !path.empty() && path[path.length() - 1] == '/' )
+		path.erase(path.size() - 1);
+	if ( !path.empty() && path[0] != '/' )
+		path = '/' + path;
+	if ( !path.empty() && path[path.length() - 1] != '/' )
+		path += '/';
 }
