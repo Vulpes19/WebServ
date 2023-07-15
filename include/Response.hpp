@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:29:39 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:42:11 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ class Response
 		void		setLocations( std::vector<Location> );
 		void		setName( std::string );
 		void		setHost( std::string );
-        void		setBodySize( size_t );
+        void		setBodySize( ssize_t );
 		void		reset( void );
 	private:
 		// char    request[MAX_REQUEST_SIZE + 1];
@@ -80,9 +80,10 @@ class Response
 		std::string	    path;
 		std::string		serverName;
 		std::string		host;
+		std::string		uploadPath;
 		std::vector<Location> loc;
 		std::ofstream	buffer;
 		ssize_t			bodySize;
-		size_t			bodyLimit;
+		ssize_t			bodyLimit;
 		bool			isBody;
 };

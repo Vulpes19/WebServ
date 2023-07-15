@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:15:40 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:40:23 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ void	Resources::parseBody( size_t &size )
 void    Resources::checkRequest( void )
 {
 	requestBody.open("requestBody");
-	std::ifstream requestFile("testFile", std::ios::binary);
+	std::ifstream requestFile("readingRequestFile", std::ios::binary);
 	size_t size = 0;
 	if ( !requestFile.is_open() )
 	{
@@ -130,7 +130,7 @@ void    Resources::checkRequest( void )
 	}
 	requestFile.close();
 	requestBody.close();
-	remove("testFile");
+	remove("readingRequestFile");
 	errorHandling();
 	// printError(getError());
 }

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:21:33 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:33:02 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:42:37 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,12 @@ class Server
         void    setPort( std::string );
         void    setName( std::string );
         void    setHost( std::string );
-        void    setBodySize( size_t );
+        void    setBodySize( ssize_t );
         void    setLocations( std::vector<Location> );
         std::vector<Location> getLocations( void ) const;
         std::string getName( void ) const { return name;};
         std::string getHost( void ) const { return host;};
-        size_t getBodySize( void ) const { return bodySize;};
+        ssize_t getBodySize( void ) const { return bodySize;};
     private:
         std::vector<Location>    loc;
 		std::list<ClientManager *> clients;
@@ -39,6 +39,6 @@ class Server
         std::string port;
         std::string name;
         std::string host;
-        size_t      bodySize;
+        ssize_t      bodySize;
         SOCKET listenSocket;
 };

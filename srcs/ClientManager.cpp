@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:32:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:42:41 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void    ClientManager::setHost( std::string host )
     response->setHost(host);
 }
 
-void    ClientManager::setBodySize( size_t bodySize )
+void    ClientManager::setBodySize( ssize_t bodySize )
 {
     response->setBodySize(bodySize);
 }

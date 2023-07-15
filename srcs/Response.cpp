@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:29:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:43:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	size_t	delimiter;
 	
 	if ( !buffer.is_open() )
-		buffer.open("testFile", std::ios::binary);
+		buffer.open("readingRequestFile", std::ios::binary);
 	bytesRead = read( socket, request, 4096 );
 	if ( bytesRead > 0  )
 	{
@@ -146,7 +146,17 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 			{
 				std::string lenStr = toCheck.substr(lenPos, endPos - lenPos);
 				if ( !lenStr.empty() )
+				{
 					bodySize = std::stoul(lenStr);
+					if ( bodySize > bodyLimit )
+					{
+						err.errorRequestTooLarge(socket);
+						buffer.close();
+						remove("readingRequestFile");
+						reset();
+						return (RESET);
+					}
+				}
 			}
 		}
 		std::string end("\r\n\r\n");
@@ -162,8 +172,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		}
 		if ( bytesReceived >= bodySize )
 		{
-			std::cout << "received bytes: " << bytesReceived << " " << "body size: " << bodySize << std::endl;
-			std::cout << "REQUEST IS WELL RECEIVED\n";
 			buffer.close();
 			resources.checkRequest();
 			return (READY_TO_WRITE);	
@@ -172,7 +180,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	}
 	else if ( bytesRead == 0 )
 	{
-		std::cout << "REQUEST IS WELL RECEIVED\n";
 		buffer.close();
 		resources.checkRequest();
 		return (READY_TO_WRITE);
@@ -181,6 +188,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 	{
 		buffer.close();
 		err.errorBadRequest(socket);
+		remove("readingRequestFile");
 		reset();
 		return (RESET);
 	}
@@ -522,7 +530,7 @@ void	Response::setHost( std::string host )
 	this->host = host;
 }
 
-void	Response::setBodySize( size_t bodyLimit )
+void	Response::setBodySize( ssize_t bodyLimit )
 {
 	this->bodyLimit = bodyLimit;
 }

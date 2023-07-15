@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:33:40 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/15 08:43:08 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void    Server::setLocations( std::vector<Location> loc )
     this->loc = loc;
 }
 
-void    Server::setBodySize( size_t bodySize )
+void    Server::setBodySize( ssize_t bodySize )
 {
     this->bodySize = bodySize;
 }
