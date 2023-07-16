@@ -1,19 +1,17 @@
-html {
-    scroll-behavior: smooth;
+@font-face {
+    font-family: 'spongebob';
+    src: url('/Users/mbaioumy/Documents/WebServ/var/www/html/Assets/SpongeboyRegular-gx2n6.woff') format('WOFF');
+}
+
+.font-spongebob {
+    font-family: 'spongebob' !important;
   }
 
-.btn {
-    transition: all 0.4s;
+@font-face {
+    font-family: 'sponge';
+    src: url('/Users/mbaioumy/Documents/WebServ/var/www/html/Assets/Spongebob-Font/Spongeboy Me Bob.woff') format('WOFF');
 }
 
-.btn:hover {
-    transform: scale(1.1);
-}
-
-.card {
-    transition: all 0.4s;
-}
-
-.card:hover {
-    transform: scale(1.02);
-}
+.font-spongebob {
+    font-family: 'sponge' !important;
+  }
