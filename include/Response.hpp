@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 10:31:20 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:30:27 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ struct ErrorResponse
 	void    	errorInternal( SOCKET ); //500
 	void    	errorUnauthorized( SOCKET ); //401
 	void    	errorMethodNotAllowed( SOCKET ); //405
-	void    	errorUnsupportedMediaType( SOCKET ); //415
-	void    	errorTimeout( SOCKET ); //504
 	void    	errorLengthRequired( SOCKET ); //411
 	void    	errorHTTPVersion( SOCKET ); //505
 	void		errorRequestTooLarge( SOCKET ); //413
