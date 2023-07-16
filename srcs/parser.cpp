@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:21:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:59:09 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,13 +103,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			
 			ss >> directive >> status_code >> path;
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(path)) {
-					ErrorPage	error_page;
-					
-					error_page.setStatusCode(stoi(status_code));
-					error_page.setPath(path.erase(path.size() - 1));
-					server.setErrorPages(error_page);
-				}
+				if (findSemicolon(path))
+					server.setErrorPages(status_code, path.erase(path.size() - 1));
 				else
 					printError(SEMICOLON);
 			}
@@ -318,6 +313,7 @@ void	Parser::parseServer(std::ifstream& confFile) {
 
 	brace.closingBrace = false;
 	brace.openingBrace = false;
+	server.initErrorPages();
 	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
@@ -448,13 +444,20 @@ void	Parser::printData() {
 		std::cout << "body size: " << server.getSize() << std::endl;
 		std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		std::vector<ErrorPage>	epVec = server.getErrorPages();
-		for (size_t i = 0; i < epVec.size(); i++) {
-			
-			std::cout << "error_pages: " << std::endl;
-			std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
-			std::cout << "path: " << epVec[i].getPath() << std::endl;
+		std::map<std::string, std::string> epMap = server.getErrorPages();
+		std::map<std::string, std::string>::iterator itr;
+		for(itr=epMap.begin();itr!=epMap.end();itr++)
+		{
+			std::cout << itr->first <<" " << itr->second << std::endl;
 		}
+		
+		// std::vector<ErrorPage>	epVec = server.getErrorPages();
+		// for (size_t i = 0; i < epVec.size(); i++) {
+			
+		// 	std::cout << "error_pages: " << std::endl;
+		// 	std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
+		// 	std::cout << "path: " << epVec[i].getPath() << std::endl;
+		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 

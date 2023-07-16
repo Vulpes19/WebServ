@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:00:17 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:57:53 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,20 +44,20 @@ typedef struct s_redir {
 	std::string	path;
 } t_redir ;
 
-class ErrorPage {
-	private:
-		int			status_code;
-		std::string	path;
-	public:
-		ErrorPage();
-		ErrorPage(int status_code, std::string path);
-		void		setStatusCode(const int code);
-		void		setPath(const std::string file);
-		int			getStatusCode() const;
-		std::string	getPath() const;
-		~ErrorPage();
+// class ErrorPage {
+// 	private:
+// 		int			status_code;
+// 		std::string	path;
+// 	public:
+// 		ErrorPage();
+// 		ErrorPage(int status_code, std::string path);
+// 		void		setStatusCode(const int code);
+// 		void		setPath(const std::string file);
+// 		int			getStatusCode() const;
+// 		std::string	getPath() const;
+// 		~ErrorPage();
 
-} ;
+// } ;
 
 
 class Location {
@@ -99,19 +99,20 @@ class ServerSettings {
 		std::string				upload;
 		int						body_size;
 		std::vector<Location>    locations; //darori
-		std::vector<ErrorPage>	errorPages; 
+		std::map<std::string, std::string>	errorPages; 
 		bool					missingValue;
 	public:
 		ServerSettings();
 		ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size);
 		ServerSettings&	operator=(const ServerSettings& server);
 		void    setPort(const std::string &p);
+		void	initErrorPages();
 		void	setSize(const int &bytes);
 		void    setName(const std::string &name);
 		void	setMissingValue();
 		void	setUpload(const std::string &Upload);
 		void    setLocations(const Location &location);
-		void	setErrorPages(const ErrorPage &error_page);
+		void	setErrorPages(const std::string& status_code, const std::string& path);
 		void	setHost(const std::string &Host);
 		std::string	getHost() const;
 		std::string getPort() const;
@@ -120,7 +121,7 @@ class ServerSettings {
 		std::string	getUpload() const;
 		bool		getMissingValue() const;
 		std::vector<Location> getLocations();
-		std::vector<ErrorPage>	getErrorPages();
+		std::map<std::string, std::string>	getErrorPages();
 
 		~ServerSettings();
 } ;

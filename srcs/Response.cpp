@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 15:18:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:32:47 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,21 +60,21 @@ void    ErrorResponse::errorMethodNotAllowed( SOCKET socket )
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
-void    ErrorResponse::errorUnsupportedMediaType( SOCKET socket )
-{
-	std::string errorMsg = "HTTP/1.1 415 Unsupported Media Type\r\n";
-	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 22\r\n\r\nUnsupported Media Type";
-	send( socket, errorMsg.data(), errorMsg.size(), 0 );
-}
+// void    ErrorResponse::errorUnsupportedMediaType( SOCKET socket )
+// {
+// 	std::string errorMsg = "HTTP/1.1 415 Unsupported Media Type\r\n";
+// 	errorMsg += "Connection: close\r\n";
+// 	errorMsg += "Content-Length: 22\r\n\r\nUnsupported Media Type";
+// 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+// }
 
-void    ErrorResponse::errorTimeout( SOCKET socket )
-{
-	std::string errorMsg = "HTTP/1.1 504 Request Timeout\r\n";
-	errorMsg += "Connection: close\r\n";
-	errorMsg += "Content-Length: 15\r\n\r\nRequest Timeout";
-	send( socket, errorMsg.data(), errorMsg.size(), 0 );
-}
+// void    ErrorResponse::errorTimeout( SOCKET socket )
+// {
+// 	std::string errorMsg = "HTTP/1.1 504 Request Timeout\r\n";
+// 	errorMsg += "Connection: close\r\n";
+// 	errorMsg += "Content-Length: 15\r\n\r\nRequest Timeout";
+// 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
+// }
 
 void    ErrorResponse::errorLengthRequired( SOCKET socket )
 {
@@ -448,12 +448,12 @@ bool	Response::handleErrors( Resources &resources )
 		case METHOD_NOT_ALLOWED:
 			err.errorMethodNotAllowed(socket);
 			break ;
-		case UNSUPPORTED_MEDIA_TYPE:
-			err.errorUnsupportedMediaType(socket);
-			break ;
-		case REQUEST_TIMEOUT:
-			err.errorTimeout(socket);
-			break ;
+		// case UNSUPPORTED_MEDIA_TYPE:
+		// 	err.errorUnsupportedMediaType(socket);
+		// 	break ;
+		// case REQUEST_TIMEOUT:
+		// 	err.errorTimeout(socket);
+		// 	break ;
 		case LENGTH_REQUIRED:
 			err.errorLengthRequired(socket);
 			break ;
