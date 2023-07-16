@@ -69,15 +69,7 @@ using namespace std;
 
 int main( void )
 {
-    std::ifstream f;
-    f.open("example.txt", std::ios::binary);
-    char buffer[4096];
-    while (f.read(buffer, sizeof(buffer)))
-    {
-        std::streamsize b = f.gcount();
-        std::string bruh(buffer, b);
-        std::cout << bruh << std::endl;
-    }
+    std::string dir = "./videospublic/
 }
 
 // int main( void )

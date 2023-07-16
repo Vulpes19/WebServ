@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 10:31:20 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:39:39 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,6 @@ struct ErrorResponse
 	void    	errorInternal( SOCKET ); //500
 	void    	errorUnauthorized( SOCKET ); //401
 	void    	errorMethodNotAllowed( SOCKET ); //405
-	void    	errorUnsupportedMediaType( SOCKET ); //415
-	void    	errorTimeout( SOCKET ); //504
 	void    	errorLengthRequired( SOCKET ); //411
 	void    	errorHTTPVersion( SOCKET ); //505
 	void		errorRequestTooLarge( SOCKET ); //413
@@ -41,6 +39,7 @@ struct ResponseHelper
 	const std::string	getFileType( std::string, enum TYPES ) const;
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
+	bool				getAutoIndex( std::vector<Location> &, std::string path ) const;
 };
 
 
@@ -51,8 +50,8 @@ class Response
 		~Response( void );
 		void        setSocket( SOCKET );
 		enum ResponseStates	handleReadRequest( Resources & );
-		enum ResponseStates	getResponseFile( void );
-		enum ResponseStates	getResponseDir( void );
+		enum ResponseStates	getResponseFile( std::string );
+		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( Resources & );
 		enum ResponseStates	deleteDir( Resources & );
@@ -79,7 +78,7 @@ class Response
 		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;
-		std::string	    path;
+		// std::string	    path;
 		std::string		serverName;
 		std::string		host;
 		std::string		uploadPath;
