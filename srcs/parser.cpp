@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:13:45 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:21:27 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case AUTOINDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))	
+				if (findSemicolon(value) && value.find("on") != std::string::npos)	
 					location.setAutoIndex();
 				else
 					printError(SEMICOLON);
