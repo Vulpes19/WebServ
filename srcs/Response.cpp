@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 09:32:47 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 10:47:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,22 +60,6 @@ void    ErrorResponse::errorMethodNotAllowed( SOCKET socket )
 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
 }
 
-// void    ErrorResponse::errorUnsupportedMediaType( SOCKET socket )
-// {
-// 	std::string errorMsg = "HTTP/1.1 415 Unsupported Media Type\r\n";
-// 	errorMsg += "Connection: close\r\n";
-// 	errorMsg += "Content-Length: 22\r\n\r\nUnsupported Media Type";
-// 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
-// }
-
-// void    ErrorResponse::errorTimeout( SOCKET socket )
-// {
-// 	std::string errorMsg = "HTTP/1.1 504 Request Timeout\r\n";
-// 	errorMsg += "Connection: close\r\n";
-// 	errorMsg += "Content-Length: 15\r\n\r\nRequest Timeout";
-// 	send( socket, errorMsg.data(), errorMsg.size(), 0 );
-// }
-
 void    ErrorResponse::errorLengthRequired( SOCKET socket )
 {
 	std::string errorMsg = "HTTP/1.1 411 Length Required\r\n";
@@ -102,16 +86,16 @@ void    ErrorResponse::errorRequestTooLarge( SOCKET socket )
 
 Response::Response( void )
 {
-	// memset(request, 0, sizeof(request));
 	autoIndex = false;
 	bytesReceived = 0;
 	bytesSent = 0;
 	fileSize = 0;
 	socket = -1;
-	path = "";
+	// path = "";
 	indexResponse = "";
 	bodySize = 0;
 	isBody = false;
+	uploadPath = "NONE";
 }
 
 Response::~Response( void )
@@ -159,24 +143,24 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 				}
 			}
 		}
-		std::string end("\r\n\r\n");
-		delimiter = toCheck.find(end);
-		if ( isBody )
-			bytesReceived += bytesRead;
-		if ( delimiter != std::string::npos )
-		{
-			isBody = true;
-			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
-			if ( !bodyStart.empty() )
-				bytesReceived += bodyStart.length();
-		}
-		if ( bytesReceived >= bodySize )
-		{
-			buffer.close();
-			resources.checkRequest();
-			return (READY_TO_WRITE);	
-		}
-		return (READING);
+	std::string end("\r\n\r\n");
+	delimiter = toCheck.find(end);
+	if ( isBody )
+		bytesReceived += bytesRead;
+	if ( delimiter != std::string::npos )
+	{
+		isBody = true;
+		std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
+		if ( !bodyStart.empty() )
+			bytesReceived += bodyStart.length();
+	}
+	if ( bytesReceived >= bodySize )
+	{
+		buffer.close();
+		resources.checkRequest();
+		return (READY_TO_WRITE);	
+	}
+	return (READING);
 	}
 	else if ( bytesRead == 0 )
 	{
@@ -203,10 +187,17 @@ bool	ResponseHelper::isDirectory( std::string path ) const
 	return (false);
 }
 
-enum ResponseStates    Response::getResponseDir( void )
+enum ResponseStates    Response::getResponseDir( std::string path )
 {
 	std::ostringstream oss;
 	std::string fullPath = "." + path;
+	std::cout << "fullPath: " << fullPath << "\n";
+	if ( !autoIndex )
+	{
+		err.errorForbidden(socket);
+		reset();
+		return (RESET);
+	}
 	if ( access(fullPath.c_str(), F_OK) == -1 )
 	{
 		err.errorNotFound(socket);
@@ -252,16 +243,17 @@ enum ResponseStates    Response::getResponseDir( void )
 	return (RESET);
 }
 
-enum ResponseStates    Response::getResponseFile( void )
+enum ResponseStates    Response::getResponseFile( std::string path )
 {
 	if ( !file.is_open() )
 	{
+		std::cout << " begining of response: " << path << std::endl;
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		std::string root = getRootPath(path);
-		if ( root != "NONE" )
-			oss << "." << root;
+		// std::string root = getRootPath(path);
+		if ( path != "NONE" )
+			oss << "." << path;
 		else
 		{
 			err.errorForbidden(socket);
@@ -326,13 +318,12 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
-	std::string	ret = getUploadPath(resources.getRequest("URL"));
 
-	if ( ret != "NONE" )
-		help.normalizePath(ret);
-	ret += filePath.substr(1).c_str() + type;
-	ret = "." + ret;
-	if ( rename("requestBody", ret.c_str()) != 0 )
+	if ( uploadPath != "NONE" )
+		help.normalizePath(uploadPath);
+	uploadPath += filePath.substr(1).c_str() + type;
+	uploadPath = "." + uploadPath;
+	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
 		err.errorInternal(socket);
 		reset();
@@ -344,11 +335,16 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	return (RESET);
 }
 
-enum ResponseStates	Response::deleteFile( Resources &resources )
+enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resources )
 {
-	std::string filePath(resources.getRequest("URL"));
+	// std::string filePath(resources.getRequest("URL"));
 
-	filePath = filePath.substr(1);
+	// filePath = filePath.substr(1);
+	std::cout << filePath << std::endl;
+	if ( std::count(filePath.begin(), filePath.end(), '/') > 1 )
+		filePath = "." + filePath;
+	if ( filePath.back() == '/' )
+		filePath = filePath.substr(0, filePath.length() - 1);
 	if ( access(filePath.c_str(), F_OK) == -1 )
 	{
 		err.errorNotFound(socket);
@@ -376,7 +372,9 @@ bool    Response::handleWriteResponse( Resources &resources )
 {
 	// std::string requestString(request);
 	enum ResponseStates ret;
-
+	if ( uploadPath == "NONE" )
+		uploadPath = getUploadPath(resources.getRequest("URL"));
+	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
 	if ( resources.getError() != NO_ERROR )
 	{
 		if ( handleErrors( resources ) )
@@ -385,14 +383,23 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
-	// std::cout << serverName << " " << resources.getRequest("Host") << std::endl;
-	path = resources.getRequest("URL");
+	std::cout << "URL " << resources.getRequest("URL") << std::endl; 
+	std::string path = getRootPath(resources.getRequest("URL"));
+	std::cout << "before " << path << std::endl;
+	help.normalizePath(path);
+	std::cout << "after " << path << std::endl;
+	if ( path.find("..") != std::string::npos )
+	{
+		err.errorForbidden(socket);
+		resources.clear();
+		return (true);
+	}
 	if ( resources.getRequest("Method") == "GET")
 	{
 		if ( help.isDirectory("." + path) && path != "/" )
-			ret = getResponseDir();
+			ret = getResponseDir(path);
 		else
-			ret = getResponseFile();
+			ret = getResponseFile(path);
 	}
 	if ( resources.getRequest("Method") == "POST" )
 	{
@@ -406,7 +413,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 		if ( help.isDirectory("." + path) )
 			err.errorForbidden(socket);
 		else
-			ret = deleteFile(resources);
+			ret = deleteFile(path, resources);
 	}
 	if ( ret == READING )
 		return (false);
@@ -448,12 +455,6 @@ bool	Response::handleErrors( Resources &resources )
 		case METHOD_NOT_ALLOWED:
 			err.errorMethodNotAllowed(socket);
 			break ;
-		// case UNSUPPORTED_MEDIA_TYPE:
-		// 	err.errorUnsupportedMediaType(socket);
-		// 	break ;
-		// case REQUEST_TIMEOUT:
-		// 	err.errorTimeout(socket);
-		// 	break ;
 		case LENGTH_REQUIRED:
 			err.errorLengthRequired(socket);
 			break ;
@@ -533,6 +534,8 @@ std::string	Response::getRootPath( std::string path )
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
 			std::string rootPath = loc[i].getRoot();
+			if ( path.find(rootPath) != std::string::npos )
+				return (path);
 			if ( rootPath.back() != '/' )
 				rootPath += '/';
 			std::string indexFile = loc[i].getIndex();
@@ -550,6 +553,8 @@ std::string	Response::getRootPath( std::string path )
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
 		{
 			std::string rootPath = loc[i].getRoot();
+			if ( path.find(rootPath) != std::string::npos )
+				return (path);
 			if ( rootPath.back() != '/' )
 				rootPath += '/';
 			std::string indexFile = loc[i].getIndex();
@@ -565,7 +570,7 @@ std::string	Response::getRootPath( std::string path )
 			}
 		}
 	}
-	return ("NONE");
+	return (path);
 }
 
 std::string	Response::getUploadPath( std::string path )
@@ -576,7 +581,6 @@ std::string	Response::getUploadPath( std::string path )
 		path += '/';
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
-		std::cout << path << " " << loc[i].getValue() << std::endl;
 		if ( (path == "/" || path.find("/") != std::string::npos) && loc[i].getValue() == "/" )
 			return (loc[i].getUpload());
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
@@ -592,7 +596,7 @@ void	Response::reset( void )
 	bytesSent = 0;
 	fileSize = 0;
 	socket = -1;
-	path.clear();
+	// path.clear();
 	indexResponse.clear();
 }
 
@@ -670,10 +674,39 @@ const std::string	ResponseHelper::getFileLocation( const char *relativePath ) co
 
 void	ResponseHelper::normalizePath( std::string &path )
 {
+	bool prevWasSep = false;
+
+	for ( size_t i = 0; i < path.length(); i++ )
+	{
+		if ( path[i] == '/' )
+		{
+			if ( prevWasSep )
+			{
+				path.erase(i, 1);
+				i--;
+			}
+			else
+				prevWasSep = true;
+		}
+		else
+			prevWasSep = false;		
+	}
 	while ( !path.empty() && path[path.length() - 1] == '/' )
 		path.erase(path.size() - 1);
 	if ( !path.empty() && path[0] != '/' )
 		path = '/' + path;
 	if ( !path.empty() && path[path.length() - 1] != '/' )
 		path += '/';
+}
+
+bool	ResponseHelper::getAutoIndex( std::vector<Location> &loc, std::string path ) const
+{
+	for ( size_t i = 0; i < loc.size(); i++ )
+	{
+		if ( path == "/" && loc[i].getValue() == "/" )
+			return (loc[i].getAutoIndex());
+		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
+			return (loc[i].getAutoIndex());
+	}
+	return (false);
 }

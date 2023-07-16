@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:30:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 10:45:48 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ struct ResponseHelper
 	const std::string	getFileType( std::string, enum TYPES ) const;
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
+	bool				getAutoIndex( std::vector<Location> &, std::string path ) const;
 };
 
 
@@ -49,10 +50,10 @@ class Response
 		~Response( void );
 		void        setSocket( SOCKET );
 		enum ResponseStates	handleReadRequest( Resources & );
-		enum ResponseStates	getResponseFile( void );
-		enum ResponseStates	getResponseDir( void );
+		enum ResponseStates	getResponseFile( std::string );
+		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
-		enum ResponseStates	deleteFile( Resources & );
+		enum ResponseStates	deleteFile( std::string, Resources & );
 		enum ResponseStates	deleteDir( Resources & );
 		std::string	getRootPath( std::string );
 		std::string	getUploadPath( std::string );
@@ -77,7 +78,7 @@ class Response
 		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;
-		std::string	    path;
+		// std::string	    path;
 		std::string		serverName;
 		std::string		host;
 		std::string		uploadPath;

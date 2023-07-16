@@ -69,15 +69,11 @@ using namespace std;
 
 int main( void )
 {
-    std::ifstream f;
-    f.open("example.txt", std::ios::binary);
-    char buffer[4096];
-    while (f.read(buffer, sizeof(buffer)))
-    {
-        std::streamsize b = f.gcount();
-        std::string bruh(buffer, b);
-        std::cout << bruh << std::endl;
-    }
+    std::string dir = "./var/www/videos/folder/text1";
+    if ( access(dir.c_str(), F_OK) == -1 )
+        std::cerr << "nu such file or directory\n";
+	if ( access(dir.c_str(), W_OK) == -1 )
+        std::cerr << "no write permission\n";
 }
 
 // int main( void )

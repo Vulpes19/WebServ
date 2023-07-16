@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 14:54:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:04:06 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,10 +53,7 @@ void    Connection::deleteClient( ClientManager *cl )
         ++it;
     }
     if ( it != clients.end() )
-    {
-        std::cout << "client is deleted :D\n";
         clients.erase(it);
-    }
     else
         std::cerr << "dropped client not found\n";
 }
