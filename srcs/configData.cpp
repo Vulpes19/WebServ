@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 11:50:44 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:12:14 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,11 @@ void	ServerSettings::setMissingValue() {
 	missingValue = false;
 }
 
+void	ServerSettings::setUpload(const std::string &Upload) {
+
+	upload = Upload;
+}
+
 void	ServerSettings::setHost(const std::string &Host) {
 
 	host = Host;
@@ -177,6 +182,11 @@ void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
 
 	errorPages.push_back(error_page);
 };
+
+std::string ServerSettings::getUpload() const {
+
+	return (upload);
+}
 
 std::string ServerSettings::getPort() const {
     return (port);
@@ -219,6 +229,7 @@ ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
 		this->errorPages = server.errorPages;
 		this->body_size = server.body_size;
 		this->host = server.host;
+		this->upload = server.upload;
 	}
 	return (*this);
 }
