@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 09:36:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:50:26 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -383,13 +383,16 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
+	std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
+	std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
+	std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
 		err.errorForbidden(socket);
-		reset();
-		return (RESET);
+		resources.clear();
+		return (true);
 	}
 	if ( resources.getRequest("Method") == "GET")
 	{
@@ -567,7 +570,7 @@ std::string	Response::getRootPath( std::string path )
 			}
 		}
 	}
-	return ("NONE");
+	return (path);
 }
 
 std::string	Response::getUploadPath( std::string path )
