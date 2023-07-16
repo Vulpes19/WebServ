@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 10:47:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 11:29:17 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -247,7 +247,6 @@ enum ResponseStates    Response::getResponseFile( std::string path )
 {
 	if ( !file.is_open() )
 	{
-		std::cout << " begining of response: " << path << std::endl;
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
@@ -314,6 +313,17 @@ enum ResponseStates    Response::getResponseFile( std::string path )
 	}
 }
 
+void	Response::handleRedirection( redir &red )
+{
+	std::ostringstream oss;
+	oss << "HTTP/1.1 " << red.status_code << "\r\n";
+	oss << "Connection: close\r\n";
+	oss << "Date: " << help.getCurrentTime() << "\r\n";
+	oss << "Location: " << red.path << "\r\n";
+	oss << "\r\n";
+	send( socket, oss.str().data(), oss.str().size(), 0 );
+}
+
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
@@ -370,11 +380,18 @@ enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resou
 
 bool    Response::handleWriteResponse( Resources &resources )
 {
-	// std::string requestString(request);
 	enum ResponseStates ret;
-	if ( uploadPath == "NONE" )
-		uploadPath = getUploadPath(resources.getRequest("URL"));
+	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
+
+	if ( red.status_code != "-1" )
+	{
+		handleRedirection(red);
+		resources.checkRequest();
+		return (true);
+	}
 	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
+	if ( uploadPath == "NONE" )
+		uploadPath = getUploadPath(resources.getRequest("URL"));	
 	if ( resources.getError() != NO_ERROR )
 	{
 		if ( handleErrors( resources ) )
@@ -531,6 +548,7 @@ std::string	Response::getRootPath( std::string path )
 		path += '/';
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
+		std::cout << loc[i].getValue() << " root: " << loc[i].getRoot() << std::endl; 
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
 			std::string rootPath = loc[i].getRoot();
@@ -558,6 +576,7 @@ std::string	Response::getRootPath( std::string path )
 			if ( rootPath.back() != '/' )
 				rootPath += '/';
 			std::string indexFile = loc[i].getIndex();
+			std::cout << "root path " << rootPath << std::endl;
 			std::string ret = rootPath + path.substr(loc[i].getValue().length());
 			if ( indexFile.empty() )
 				return (ret);
@@ -591,12 +610,10 @@ std::string	Response::getUploadPath( std::string path )
 
 void	Response::reset( void )
 {
-	// memset(request, 0, sizeof(request));
 	bytesReceived = 0;
 	bytesSent = 0;
 	fileSize = 0;
 	socket = -1;
-	// path.clear();
 	indexResponse.clear();
 }
 
@@ -610,8 +627,7 @@ ssize_t  ResponseHelper::getFileSize( const char *path ) const
 
 const std::string  	ResponseHelper::getFileType( std::string path, enum TYPES type ) const
 {
-    // const char *fileName = strrchr(path, '.');
-	static std::map< std::string, std::string > fileTypes;
+    static std::map< std::string, std::string > fileTypes;
 	if ( fileTypes.empty() )
 	{
 		fileTypes[".css"] = "text/css";
@@ -709,4 +725,17 @@ bool	ResponseHelper::getAutoIndex( std::vector<Location> &loc, std::string path 
 			return (loc[i].getAutoIndex());
 	}
 	return (false);
+}
+
+const redir	ResponseHelper::checkForRedirections( std::vector<Location> &loc, std::string path ) const
+{
+	for ( size_t i = 0; i < loc.size(); i++ )
+	{
+		if ( path == "/" && loc[i].getValue() == "/" )
+			return (loc[i].getRedirection());
+		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
+			return (loc[i].getRedirection());
+	}
+
+	return (redir());
 }

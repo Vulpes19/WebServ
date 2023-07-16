@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 10:45:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 11:08:55 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ struct ResponseHelper
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
 	bool				getAutoIndex( std::vector<Location> &, std::string path ) const;
+	const redir		checkForRedirections( std::vector<Location> &, std::string path ) const;
 };
 
 
@@ -61,13 +62,13 @@ class Response
 		bool		handleWriteResponse( Resources & );
 		bool		handleErrors( Resources & );
 		bool		isRequestReceived( std::string, ssize_t ) const;
+		void		handleRedirection( redir & );
 		void		setLocations( std::vector<Location> );
 		void		setName( std::string );
 		void		setHost( std::string );
         void		setBodySize( ssize_t );
 		void		reset( void );
 	private:
-		// char    request[MAX_REQUEST_SIZE + 1];
 		ssize_t			bytesReceived;
 		ssize_t			bytesSent;
 		int     		fileSize;
@@ -78,7 +79,6 @@ class Response
 		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;
-		// std::string	    path;
 		std::string		serverName;
 		std::string		host;
 		std::string		uploadPath;
