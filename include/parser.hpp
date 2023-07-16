@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:37:04 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 08:00:28 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ class Parser {
 		bool	host_exists;
 		bool    closingBraceExpected;
 		int     status; 
+		bool	uploadExists;
 	public:
 		Parser();
 		~Parser();

@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 14:42:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:59:09 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK), uploadExists(false) {};
 
 Parser::~Parser() {};
 
@@ -85,19 +85,26 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			else
 				printError(EMPTY);
 			break ;
+		case UPLOAD:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon(value)) {   
+					server.setUpload(value.erase(value.size() - 1));
+					uploadExists = true;
+				}
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
 		case ERROR_PAGE:
 			std::stringstream ss(value);
 			std::string directive, status_code, path;
 			
 			ss >> directive >> status_code >> path;
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(path)) {
-					ErrorPage	error_page;
-					
-					error_page.setStatusCode(stoi(status_code));
-					error_page.setPath(path.erase(path.size() - 1));
-					server.setErrorPages(error_page);
-				}
+				if (findSemicolon(path))
+					server.setErrorPages(status_code, path.erase(path.size() - 1));
 				else
 					printError(SEMICOLON);
 			}
@@ -144,7 +151,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case AUTOINDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))	
+				if (findSemicolon(value) && value.find("on") != std::string::npos)	
 					location.setAutoIndex();
 				else
 					printError(SEMICOLON);
@@ -306,6 +313,7 @@ void	Parser::parseServer(std::ifstream& confFile) {
 
 	brace.closingBrace = false;
 	brace.openingBrace = false;
+	server.initErrorPages();
 	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
@@ -324,6 +332,8 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			if (host_exists)
 				setServerContent(server, HOST, optionalVal);
 		}
+		else if (directive == "upload")
+			setServerContent(server, UPLOAD, value);
 		else if (directive == "server_name")
 			setServerContent(server, NAME, value);
 		else if (directive == "body_size")
@@ -408,7 +418,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, INDEX, value);
 		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
-		else if (directive == "upload")
+		else if (directive == "upload" && uploadExists == false)
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
@@ -432,14 +442,22 @@ void	Parser::printData() {
 		std::cout << "host: " << server.getHost() << std::endl;
 		std::cout << "name: " << server.getName() << std::endl;
 		std::cout << "body size: " << server.getSize() << std::endl;
+		std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		std::vector<ErrorPage>	epVec = server.getErrorPages();
-		for (size_t i = 0; i < epVec.size(); i++) {
-			
-			std::cout << "error_pages: " << std::endl;
-			std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
-			std::cout << "path: " << epVec[i].getPath() << std::endl;
+		std::map<std::string, std::string> epMap = server.getErrorPages();
+		std::map<std::string, std::string>::iterator itr;
+		for(itr=epMap.begin();itr!=epMap.end();itr++)
+		{
+			std::cout << itr->first <<" " << itr->second << std::endl;
 		}
+		
+		// std::vector<ErrorPage>	epVec = server.getErrorPages();
+		// for (size_t i = 0; i < epVec.size(); i++) {
+			
+		// 	std::cout << "error_pages: " << std::endl;
+		// 	std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
+		// 	std::cout << "path: " << epVec[i].getPath() << std::endl;
+		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 

@@ -6,37 +6,37 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 11:50:44 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 10:02:18 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "configData.hpp"
 
-ErrorPage::ErrorPage() {} ;
+// ErrorPage::ErrorPage() { } ;
 
-ErrorPage::ErrorPage(int status_code, std::string path): status_code(status_code), path(path) {} ;
+// ErrorPage::ErrorPage(int status_code, std::string path): status_code(status_code), path(path) {} ;
 
-void	ErrorPage::setStatusCode(const int code) {
+// void	ErrorPage::setStatusCode(const int code) {
 
-	status_code = code;
-}
+// 	status_code = code;
+// }
 
-void	ErrorPage::setPath(const std::string file) {
+// void	ErrorPage::setPath(const std::string file) {
 
-	path = file;
-} 
+// 	path = file;
+// } 
 
-int		ErrorPage::getStatusCode() const {
+// int		ErrorPage::getStatusCode() const {
 
-	return (status_code);
-}
+// 	return (status_code);
+// }
 
-std::string	ErrorPage::getPath() const {
+// std::string	ErrorPage::getPath() const {
 
-	return (path);
-}
+// 	return (path);
+// }
 
-ErrorPage::~ErrorPage() {} ;
+// ErrorPage::~ErrorPage() {} ;
 
 
 Location::Location(): upload("default") ,autoindex(OFF), missingValue(true) {
@@ -149,9 +149,27 @@ void    ServerSettings::setPort(const std::string& p) {
     port = p;
 }
 
+void	ServerSettings::initErrorPages() {
+	
+	errorPages["400"] = "assets/error_images/400.html";
+	errorPages["401"] = "assets/error_images/401.html";
+	errorPages["403"] = "assets/error_images/403.html";
+	errorPages["404"] = "assets/error_images/404.html";
+	errorPages["405"] = "assets/error_images/405.html";
+	errorPages["411"] = "assets/error_images/411.html";
+	errorPages["413"] = "assets/error_images/413.html";
+	errorPages["500"] = "assets/error_images/500.html";
+	errorPages["505"] = "assets/error_images/505.html";
+}
+
 void	ServerSettings::setMissingValue() {
 
 	missingValue = false;
+}
+
+void	ServerSettings::setUpload(const std::string &Upload) {
+
+	upload = Upload;
 }
 
 void	ServerSettings::setHost(const std::string &Host) {
@@ -173,10 +191,15 @@ void    ServerSettings::setLocations(const Location &location) {
     locations.push_back(location);
 }
 
-void	ServerSettings::setErrorPages(const ErrorPage& error_page) {
+void	ServerSettings::setErrorPages(const std::string& status_code, const std::string& path) {
 
-	errorPages.push_back(error_page);
+	errorPages[status_code] = path;
 };
+
+std::string ServerSettings::getUpload() const {
+
+	return (upload);
+}
 
 std::string ServerSettings::getPort() const {
     return (port);
@@ -205,7 +228,7 @@ std::vector<Location>   ServerSettings::getLocations() {
     return (locations);
 }
 
-std::vector<ErrorPage>	ServerSettings::getErrorPages() {
+std::map<std::string, std::string>	ServerSettings::getErrorPages() {
 
 	return (errorPages);
 }
@@ -219,6 +242,7 @@ ServerSettings&	ServerSettings::operator=(const ServerSettings& server) {
 		this->errorPages = server.errorPages;
 		this->body_size = server.body_size;
 		this->host = server.host;
+		this->upload = server.upload;
 	}
 	return (*this);
 }
