@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 09:15:22 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:36:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,11 +335,16 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	return (RESET);
 }
 
-enum ResponseStates	Response::deleteFile( Resources &resources )
+enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resources )
 {
-	std::string filePath(resources.getRequest("URL"));
+	// std::string filePath(resources.getRequest("URL"));
 
-	filePath = filePath.substr(1);
+	// filePath = filePath.substr(1);
+	std::cout << filePath << std::endl;
+	if ( std::count(filePath.begin(), filePath.end(), '/') > 1 )
+		filePath = "." + filePath;
+	if ( filePath.back() == '/' )
+		filePath = filePath.substr(0, filePath.length() - 1);
 	if ( access(filePath.c_str(), F_OK) == -1 )
 	{
 		err.errorNotFound(socket);
@@ -366,7 +371,6 @@ enum ResponseStates	Response::deleteFile( Resources &resources )
 bool    Response::handleWriteResponse( Resources &resources )
 {
 	// std::string requestString(request);
-	std::cout << "URL " << resources.getRequest("URL") << std::endl;
 	enum ResponseStates ret;
 	if ( uploadPath == "NONE" )
 		uploadPath = getUploadPath(resources.getRequest("URL"));
@@ -379,21 +383,14 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
-	// std::string path = resources.getRequest("URL");
-	// help.normalizePath(path);
-	// path = "." + path;
-	// // if ( access(path.c_str(), F_OK) == -1 )
-	// // {
-	// // 	path.clear();
-	// // 	path = getRootPath(resources.getRequest("URL"));
-	// // 	std::cout << "before " << path << std::endl;
-	// // 	help.normalizePath(path);
-	// // 	std::cout << "after " << path << std::endl;
-	// // }
 	std::string path = getRootPath(resources.getRequest("URL"));
-	std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
-	std::cout << "after " << path << std::endl;
+	if ( path.find("..") != std::string::npos )
+	{
+		err.errorForbidden(socket);
+		reset();
+		return (RESET);
+	}
 	if ( resources.getRequest("Method") == "GET")
 	{
 		if ( help.isDirectory("." + path) && path != "/" )
@@ -413,7 +410,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 		if ( help.isDirectory("." + path) )
 			err.errorForbidden(socket);
 		else
-			ret = deleteFile(resources);
+			ret = deleteFile(path, resources);
 	}
 	if ( ret == READING )
 		return (false);

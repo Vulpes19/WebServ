@@ -69,7 +69,11 @@ using namespace std;
 
 int main( void )
 {
-    std::string dir = "./videospublic/
+    std::string dir = "./var/www/videos/folder/text1";
+    if ( access(dir.c_str(), F_OK) == -1 )
+        std::cerr << "nu such file or directory\n";
+	if ( access(dir.c_str(), W_OK) == -1 )
+        std::cerr << "no write permission\n";
 }
 
 // int main( void )

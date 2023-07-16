@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:39:39 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 09:21:44 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Response
 		enum ResponseStates	getResponseFile( std::string );
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
-		enum ResponseStates	deleteFile( Resources & );
+		enum ResponseStates	deleteFile( std::string, Resources & );
 		enum ResponseStates	deleteDir( Resources & );
 		std::string	getRootPath( std::string );
 		std::string	getUploadPath( std::string );
