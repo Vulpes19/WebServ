@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 09:59:09 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/17 18:45:39 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ void    Parser::openFile(char *argv) {
 bool    Parser::checkBracesError() {
 
 	if (openingBraceCount == 0)
-		return true;
-	else
 		return false;
+	else
+		return true;
 }
 
 void	Parser::setServerContent(ServerSettings &server, int which, std::string value) {
@@ -212,63 +212,24 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
-	// t_brace	brace;
-
-	// brace.openingBrace = false;
-	// brace.closingBrace = false;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
 		{
 			if (line[0] == '#' || line.empty())
 				continue ;
+			if (line.find("{") != std::string::npos)
+				openingBraceCount++;
 			if (line.find("server") != std::string::npos)
-			{
-				// std::cout << "line: " << line << std::endl;
-				// std::string	nextLine;
-
-				// if (line.find("{") != std::string::npos) {
-				// 	brace.openingBrace = true;
-					parseServer(confFile);
-				// }
-				// else {
-				// 	while (getline(confFile, nextLine)) {
-				// 		if (nextLine.size())
-				// 		{
-				// 			if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
-				// 				brace.openingBrace = true;
-				// 				parseServer(confFile);
-				// 			}
-				// 		}
-				// 	}
-				// }
-			}
-			// }
-			// 	else {
-			// 		while (getline(confFile, nextLine)) {
-			// 			if (nextLine.size())
-			// 			{
-			// 				if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
-			// 					brace.openingBrace = true;
-			// 					parseServer(confFile);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// if (line.find("}") != std::string::npos)
-			// {
-			// 	brace.closingBrace = true;
-			// 	break ;
-			// }
+				parseServer(confFile);
 		}
-		// if (!brace.closingBrace || !brace.openingBrace) {
-		// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
-		// 	exit(1);
-		// }
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
+	if (checkBracesError()) {
+		std::cout << "Syntax Error: braces not opened or closed" << std::endl;
+		exit(1);
+	}
 } ;
 
 void	Parser::serverValuesValidation(ServerSettings server) {
@@ -314,16 +275,14 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	brace.closingBrace = false;
 	brace.openingBrace = false;
 	server.initErrorPages();
-	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
 		if (line[0] == '#' || line.empty())
 			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		// brace.openingBrace = false;
-		// if (line.find("{") != std::string::npos)
-		// 	brace.openingBrace = true;
+		if (line.find("{") != std::string::npos)
+			openingBraceCount++;
 		if (directive.find("listen") != std::string::npos)
 		{
 			if (optionalVal.size())
@@ -340,22 +299,17 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			setServerContent(server, SIZE, value);
 		else if (directive == "error_page")
 			setServerContent(server, ERROR_PAGE, line);
-		else if (directive == "location") {
-			// checkBraces(brace.openingBrace);	
+		else if (directive == "location")
 			parseLocation(confFile, server, value);              
-		}
 		else if (line.find("}") != std::string::npos) {
-			// brace.closingBrace = true;
+			openingBraceCount--;
 			context.setServer(server);
 			parsedData.push_back(context);
 			break ;
 		}
 	}
 	serverValuesValidation(server);
-	// if (!brace.closingBrace || !brace.openingBrace) {
-	// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
-	// 	exit(1);
-	// }
+	checkBracesError();
 }
 
 bool	examinePath(std::string value) {
@@ -409,6 +363,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 		std::stringstream ss(line);
 		ss >> directive >> value;
 		if (directive == "}" && closingBraceExpected) {
+			openingBraceCount--;
 			server.setLocations(location);
 			break ;
 		}
@@ -450,14 +405,6 @@ void	Parser::printData() {
 		{
 			std::cout << itr->first <<" " << itr->second << std::endl;
 		}
-		
-		// std::vector<ErrorPage>	epVec = server.getErrorPages();
-		// for (size_t i = 0; i < epVec.size(); i++) {
-			
-		// 	std::cout << "error_pages: " << std::endl;
-		// 	std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
-		// 	std::cout << "path: " << epVec[i].getPath() << std::endl;
-		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
