@@ -6,14 +6,14 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/17 18:45:39 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/17 19:50:06 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK), uploadExists(false) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK), uploadExists(false) {};
 
 Parser::~Parser() {};
 
@@ -222,14 +222,15 @@ void   Parser::readFile(std::ifstream& confFile) {
 				openingBraceCount++;
 			if (line.find("server") != std::string::npos)
 				parseServer(confFile);
+			// if (line.find("}") != std::string::npos)
+			// 	openingBraceCount--;
 		}
 	}
 	else
 		std::cout << "Error: could not open the configuration file!" << std::endl;
-	if (checkBracesError()) {
-		std::cout << "Syntax Error: braces not opened or closed" << std::endl;
-		exit(1);
-	}
+	std::cout << "brace count" << openingBraceCount << std::endl;
+	if (checkBracesError())
+		printError(CURLYBRACE);
 } ;
 
 void	Parser::serverValuesValidation(ServerSettings server) {
@@ -277,13 +278,13 @@ void	Parser::parseServer(std::ifstream& confFile) {
 	server.initErrorPages();
 	while (getline(confFile, line)) {
 
-		if (line[0] == '#' || line.empty())
-			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		if (line.find("{") != std::string::npos)
+		if (line[0] == '#' || line.empty())
+			continue ;
+		else if (line.find("{") != std::string::npos)
 			openingBraceCount++;
-		if (directive.find("listen") != std::string::npos)
+		if (directive == "listen")
 		{
 			if (optionalVal.size())
 				host_exists = true;
@@ -309,7 +310,6 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		}
 	}
 	serverValuesValidation(server);
-	checkBracesError();
 }
 
 bool	examinePath(std::string value) {
@@ -358,11 +358,13 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 	location.setValue(value);
 	while(getline(confFile, line) && status == OK) {
 
-		if (line[0] == '#' || line.empty())
-			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value;
-		if (directive == "}" && closingBraceExpected) {
+		if (line[0] == '#' || line.empty())
+			continue ;
+		else if (line.find("{") != std::string::npos)
+			openingBraceCount++;
+		else if (line.find("}") != std::string::npos) {
 			openingBraceCount--;
 			server.setLocations(location);
 			break ;
@@ -436,10 +438,10 @@ void    Parser::printError(int which) {
 	switch(which) {
 
 		case SEMICOLON:
-			std::cout << "Error: could not find semicolon" << std::endl;
+			std::cout << "Syntax Error: could not find semicolon" << std::endl;
 			break ;
 		case CURLYBRACE:
-			std::cout << "Error: could not find curly brace" << std::endl;
+			std::cout << "Syntax Error: Could not find curly brace" << std::endl;
 			break ;
 		case UNKNOWN:
 			std::cout << "Error: " << directive << " <- Unknown expression." << std::endl;
