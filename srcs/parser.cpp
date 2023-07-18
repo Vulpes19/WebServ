@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:15:44 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:55:26 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			if (value.size() - 1 > 0) {
 				if (findSemicolon()) {
 					std::stringstream ss(value);
-					int size;
+					ssize_t size;
 					ss >> size;
 					server.setSize(size);
 				}

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:40:37 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:56:05 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,7 +182,7 @@ void    ServerSettings::setName(const std::string& name) {
     server_name = name;
 }
 
-void	ServerSettings::setSize(const int& bytes) {
+void	ServerSettings::setSize(const ssize_t& bytes) {
 
 	if (bytes > 10000000)
 		body_size = bytes;
@@ -215,7 +215,7 @@ bool	ServerSettings::getMissingValue() const {
 	return (missingValue);
 }
 
-int	ServerSettings::getSize() const {
+ssize_t	ServerSettings::getSize() const {
 
 	return (body_size);
 }
