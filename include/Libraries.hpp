@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:04:22 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/10 10:32:29 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:15:40 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,12 @@
 #define SOCKET int
 #define MAX_REQUEST_SIZE 4000
 #define BSIZE 1024
+
+enum    SERVER_SETTINGS_STATUS
+{
+    UPDATE_CLIENT_SETTINGS,
+    KEEP_CLIENT_SETTINGS
+};
 
 enum TYPES
 {

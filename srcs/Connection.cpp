@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:04:06 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:50:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ Connection::Connection( void )
 {
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
+    serverName = "NONE";
 }
 
 Connection::~Connection( void )
@@ -24,8 +25,9 @@ Connection::~Connection( void )
     clients.erase(clients.begin(), clients.end());
 }
 
-ClientManager   *Connection::getClient( SOCKET socket, Server srv )
+ClientManager   *Connection::getClient( SOCKET socket, Server srv, enum SERVER_SETTINGS_STATUS status )
 {
+    status = UPDATE_CLIENT_SETTINGS;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() == socket )
@@ -38,7 +40,9 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->setLocations(srv.getLocations());
     newClient->setName(srv.getName());
     newClient->setHost(srv.getHost());
+    newClient->setPort(srv.getPort());
     newClient->setBodySize(srv.getBodySize());
+    newClient->setErrorPages(srv.getErrorPages());
     clients.push_back(newClient);
     return (newClient);
 }
@@ -64,7 +68,6 @@ void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_
     FD_ZERO(&readfds);
     SOCKET maxSocket;
     maxSocket = servers[0].getListenSocket();
-    // std::map<std::string, Server>::iterator it = servers.begin();
     for ( size_t i = 0; i < servers.size(); i++ )
     {
         SOCKET serverSocket = servers[i].getListenSocket();
@@ -87,7 +90,7 @@ void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_
         throw excp("select() failed");
 }
 
-void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
+void    Connection::multiplexing( fd_set &readfds, fd_set &writefds, std::string &serverName, std::vector<Server> &servers )
 {
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
@@ -97,7 +100,10 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds )
         {
             if ( (*it)->getState() == READ_REQUEST )
             {
-                (*it)->startRead();
+                (*it)->startRead(serverName);
+                if ( serverName != "NONE" )
+                    (*it)->updateClientSettings(servers, serverName);
+                serverName = "NONE";
                 continue ;
             }
         }

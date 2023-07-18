@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:02:06 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:41:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,11 +124,11 @@ void    Resources::checkRequest( void )
 	requestBody.open("requestBody");
 	std::ifstream requestFile("readingRequestFile", std::ios::binary);
 	size_t size = 0;
-	if ( !requestFile.is_open() )
-	{
-		std::cerr << "failed to open the file\n";
-		exit(1);
-	}
+	// if ( !requestFile.is_open() )
+	// {
+	// 	std::cerr << "failed to open the file\n";
+	// 	exit(1);
+	// }
 	bool				requestBodyStart = false;
 
 	while ( std::getline(requestFile, line) )

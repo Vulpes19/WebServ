@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 11:14:45 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 12:13:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,93 +88,12 @@ void    Server::setBodySize( ssize_t bodySize )
     this->bodySize = bodySize;
 }
 
+void    Server::setErrorPages( std::map< std::string, std::string > errorPages )
+{
+    this->errorPages = errorPages;
+}
+
 std::vector<Location>   Server::getLocations( void ) const
 {
     return (loc);
 }
-
-// ClientManager   *Server::getClient( SOCKET socket )
-// {
-//     for ( iterator it = clients.begin(); it != clients.end(); ++it )
-//     {
-//         if ( (*it)->getSocket() == socket )
-//             return (*it);
-//     }
-//     ClientManager *newClient = new ClientManager();
-//     newClient->reset();
-//     newClient->createClient( listenSocket );
-//     newClient->setState( READ_REQUEST);
-//     newClient->setLocations(loc);
-//     clients.push_back(newClient);
-//     return (newClient);
-// }
-
-// void    Server::deleteClient( ClientManager *cl )
-// {
-//     iterator it = clients.begin();
-//     while ( it != clients.end() )
-//     {
-//         if ( (*it)->getSocket() == cl->getSocket() )
-//             break ;
-//         ++it;
-//     }
-//     if ( it != clients.end() )
-//         clients.erase(it);
-//     else
-//         std::cerr << "dropped client not found\n";
-// }
-
-// void  Server::setsManager( fd_set &readfds, fd_set &writefds )
-// {
-// 	struct timeval timeout;
-
-//     SOCKET maxSocket = listenSocket;
-//     timeout.tv_sec = 5;
-//     timeout.tv_usec = 0;
-//     FD_ZERO(&writefds);
-//     FD_ZERO(&readfds);
-//     FD_SET(listenSocket, &readfds);
-//     for ( iterator it = clients.begin(); it != clients.end(); ++it )
-//     {
-//         if ( (*it)->getSocket() > -1 )
-//         {
-//             FD_SET((*it)->getSocket(), &readfds);
-//             if ( (*it)->getState() == WRITE_RESPONSE )
-//                 (*it)->changeSet( readfds, writefds );
-//             if ( (*it)->getSocket() > maxSocket )
-//                 maxSocket = (*it)->getSocket();
-//         }
-//     }
-//     if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
-//     {
-//         std::cerr << "select() failed: " << strerror(errno) << std::endl;
-//         exit(1);
-//     }
-// }
-
-// void    Server::multiplexing( fd_set &readfds, fd_set &writefds )
-// {
-//     std::cout << "entering multiplexing\n";
-//     for ( iterator it = clients.begin(); it != clients.end(); ++it )
-//     {
-//         std::cout << "SOCKET => " << (*it)->getSocket() << std::endl;
-//         if ( (*it)->getSocket() == -1 )
-//             continue ;
-//         if ( FD_ISSET( (*it)->getSocket(), &readfds) && (*it)->getState() == READ_REQUEST )
-//         {
-//             (*it)->startRead();
-//             continue ;
-//         }
-//         if ( FD_ISSET( (*it)->getSocket(), &writefds) && (*it)->getState() == WRITE_RESPONSE )
-//         {
-//             if ( (*it)->startResponse() )
-//             {
-//                 (*it)->unsetSocket(writefds, readfds);
-//                 (*it)->reset();
-//                 (*it)->setState(READ_REQUEST);
-//             }
-//             continue ;
-//         }
-//     }
-//     std::cout << "exiting multiplexing\n";
-// }

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:42:41 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:40:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ void    ClientManager::reset( void )
 	socket = -1;
 }
 
-void    ClientManager::startRead( void )
+void    ClientManager::startRead( std::string &serverName )
 {
     enum ResponseStates ret;
     response->setSocket(socket);
-    ret = response->handleReadRequest(resources);
+    ret = response->handleReadRequest(resources, serverName);
     if ( ret == READY_TO_WRITE )
         state = WRITE_RESPONSE;
     else if ( ret == RESET )
@@ -84,9 +84,31 @@ void    ClientManager::createClient( SOCKET listenSocket )
     }
 }
 
+void		ClientManager::updateClientSettings( std::vector<Server> &srv, std::string serverName )
+{
+    for ( size_t i = 0; i < srv.size(); i++ )
+	{
+		if ( srv[i].getName() == serverName )
+		{
+            setName(srv[i].getName());
+            setHost(srv[i].getHost());
+            setPort(srv[i].getPort());
+            setPort(srv[i].getPort());
+            setLocations(srv[i].getLocations());
+            setBodySize(srv[i].getBodySize());
+            setErrorPages(srv[i].getErrorPages());
+        }
+	}
+}
+
 void    ClientManager::setLocations( std::vector<Location> loc )
 {
     response->setLocations(loc);
+}
+
+void    ClientManager::setErrorPages( std::map< std::string, std::string > errorPages )
+{
+    response->setErrorPages(errorPages);
 }
 
 void    ClientManager::setName( std::string name )
@@ -97,6 +119,11 @@ void    ClientManager::setName( std::string name )
 void    ClientManager::setHost( std::string host )
 {
     response->setHost(host);
+}
+
+void    ClientManager::setPort( std::string port )
+{
+    response->setPort(port);
 }
 
 void    ClientManager::setBodySize( ssize_t bodySize )

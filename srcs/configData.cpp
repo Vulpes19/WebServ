@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 11:51:41 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:40:37 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,7 +118,7 @@ int			Location::getAutoIndex() const {
 	return(autoindex);
 }
 
-t_redir		Location::getRedirection() const {
+redir		Location::getRedirection() const {
 
 	return (redirection);
 }

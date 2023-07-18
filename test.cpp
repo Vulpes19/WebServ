@@ -69,8 +69,15 @@ using namespace std;
 
 int main( void )
 {
-    std::string dir = "./var/www/videos/folder/text1";
-    if ( access(dir.c_str(), F_OK) == -1 )
+    std::string dir = "./Users/abaioumy/Documents/webServ/assets/error_images/imgs/Timeout.gif";
+    std::ifstream f(dir.c_str());
+    if ( f.is_open())
+        std::cout << "cant be opened\n";
+//     char path[PATH_MAX];
+//     char *absolutePath = realpath( dir.c_str(), path );
+//     if ( absolutePath != NULL)
+//         std::cout << absolutePath << std::endl;
+    if ( access("/Users/abaioumy/Documents/webServ/assets/error_images/imgs/Timeout.gif", F_OK) == -1 )
         std::cerr << "nu such file or directory\n";
 	if ( access(dir.c_str(), W_OK) == -1 )
         std::cerr << "no write permission\n";

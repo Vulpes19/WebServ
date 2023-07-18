@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 10:56:27 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:39:56 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,11 @@ enum {
 	OK
 } ;
 
-typedef struct s_redir {
-
+struct redir {
+	redir( void ) : status_code("-1"), path("") {};
 	std::string	status_code;
 	std::string	path;
-} t_redir ;
+};
 
 // class ErrorPage {
 // 	private:
@@ -68,7 +68,7 @@ class Location {
 		std::string root; //darori
 		std::string index; //darori
 		std::string	upload;
-		t_redir		redirection;
+		redir		redirection;
 		int         autoindex ;
 		bool		missingValue;
 	public:
@@ -88,7 +88,7 @@ class Location {
 		std::string getIndex() const;
 		int         getAutoIndex() const;
 		bool		getMissingValue() const;
-		t_redir		getRedirection() const;
+		redir		getRedirection() const;
 		Location&	operator=(const Location& location);
 		~Location();
 } ;
