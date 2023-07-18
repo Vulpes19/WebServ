@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/14 08:34:54 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:35:13 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,14 @@ class Connection
 		typedef std::list<ClientManager *>::iterator iterator; 
 		Connection( void );
 		~Connection( void );
-		ClientManager   *getClient( SOCKET socket, Server srv );
+		ClientManager   *getClient( SOCKET socket, Server srv, enum SERVER_SETTINGS_STATUS );
 		void        	deleteClient( ClientManager *cl );
 		void			setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds );
-		void    		multiplexing( fd_set &readfds, fd_set &writefds );
+		void    		multiplexing( fd_set &readfds, fd_set &writefds, std::string &serverName, std::vector<Server> &servers );
+		// ClientManager	*updateClientSettings( iterator it, Server srv );
+		// Server			&getCorrectServer( std::vector<Server> &servers, std::string serverName )
 	private:
 		std::list<ClientManager *> clients;
+		std::string					serverName;
 		struct timeval timeout;
 };

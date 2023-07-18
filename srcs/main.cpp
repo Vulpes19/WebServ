@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 12:14:18 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:44:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,11 +19,13 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 	std::vector<Context> contexts = parser.getParsedData();
 	for ( size_t i = 0; i < contexts.size(); i++ )
 	{
+		std::cout << i << std::endl;
 		ServerSettings settings;
 		Server server;
 		settings = contexts[i].getServer();
 		server.setName(settings.getName());
 		server.setHost(settings.getHost());
+		server.setPort(settings.getPort());
 		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
 		server.setBodySize(settings.getSize());
@@ -34,6 +36,16 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		servers[i].createListenSocket();
 }
 
+// Server	&getCorrectServer( std::vector<Server> &servers, std::string serverName )
+// {
+// 	for ( size_t i = 0; i < servers.size(); i++ )
+// 	{
+// 		if ( servers[i].getName() == serverName )
+// 			return (servers[i]);
+// 	}
+// 	return (servers[0]);
+// }
+
 int main( int ac, char **av )
 {
 	std::vector<Server> servers;
@@ -41,6 +53,7 @@ int main( int ac, char **av )
 	Parser	parser;
 	fd_set readfds;
 	fd_set writefds;
+	std::string serverName = "NONE";
 
 	try
 	{
@@ -58,12 +71,24 @@ int main( int ac, char **av )
 			{
 				if ( FD_ISSET( servers[i].getListenSocket(), &readfds ) )
 				{
-					ClientManager *client = cl.getClient(-1, servers[i]);
-					if ( client->getSocket() == -1 )
-						cl.deleteClient(client);
+					// if ( serverName != "NONE")
+					// {
+					// 	std::cout << "I'm here\n";
+					// 	ClientManager *client = cl.getClient(-1, getCorrectServer(servers, serverName), UPDATE_CLIENT_SETTINGS);
+					// 	if ( client->getSocket() == -1 )
+					// 		cl.deleteClient(client);
+					// }
+					// else
+					// {
+						ClientManager *client = cl.getClient(-1, servers[i], KEEP_CLIENT_SETTINGS);
+						if ( client->getSocket() == -1 )
+							cl.deleteClient(client);
+					// }
 				}
 			}
-			cl.multiplexing( readfds, writefds );
+			// std::cout << serverName << std::endl;
+			cl.multiplexing( readfds, writefds, serverName, servers );
+			// std::cout << serverName << std::endl;
 		}
 	}
 	catch(const std::exception& e)

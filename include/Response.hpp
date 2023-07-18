@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 14:25:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:56:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,14 @@ class ClientManager;
 
 struct ResponseHelper
 {
-	ssize_t     getFileSize( const char * ) const;
-	bool		isDirectory( std::string ) const;
-	void		normalizePath( std::string & );
+	ssize_t     		getFileSize( const char * ) const;
+	bool				isDirectory( std::string ) const;
+	void				normalizePath( std::string & );
 	const std::string	getFileType( std::string, enum TYPES ) const;
 	const std::string	getCurrentTime( void ) const;
 	const std::string	getFileLocation( const char * ) const;
 	bool				getAutoIndex( std::vector<Location> &, std::string path ) const;
-	const redir		checkForRedirections( std::vector<Location> &, std::string path ) const;
+	const redir			checkForRedirections( std::vector<Location> &, std::string path ) const;
 };
 
 struct ErrorResponse
@@ -52,7 +52,7 @@ class Response
 		Response( void );
 		~Response( void );
 		void        setSocket( SOCKET );
-		enum ResponseStates	handleReadRequest( Resources & );
+		enum ResponseStates	handleReadRequest( Resources &, std::string &serverName );
 		enum ResponseStates	getResponseFile( std::string );
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
@@ -69,6 +69,7 @@ class Response
 		void		setErrorPages( std::map< std::string, std::string > );
 		void		setName( std::string );
 		void		setHost( std::string );
+		void		setPort( std::string );
         void		setBodySize( ssize_t );
 		void		reset( void );
 	private:
@@ -85,6 +86,7 @@ class Response
 		std::ifstream   file;
 		std::ofstream	toUpload;
 		std::string		serverName;
+		std::string		port;
 		std::string		host;
 		std::string		uploadPath;
 		std::ofstream	buffer;

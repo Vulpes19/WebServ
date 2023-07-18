@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 08:42:20 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:45:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,11 +280,12 @@ void    Response::setSocket( SOCKET socket )
 	this->socket = socket;
 }
 
-enum ResponseStates    Response::handleReadRequest( Resources &resources )
+enum ResponseStates    Response::handleReadRequest( Resources &resources, std::string &name )
 {
 	char    request[4096];
 	ssize_t bytesRead;
 	size_t	lenPos;
+	size_t	hostPos;
 	size_t	endPos;
 	size_t	delimiter;
 	
@@ -296,9 +297,27 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources )
 		std::string toCheck(request, bytesRead);
 		buffer.write(request, bytesRead);
 		lenPos = toCheck.find("Content-Length: ");
+		hostPos = toCheck.find("Host: ");
+		if ( hostPos != std::string::npos )
+		{
+			hostPos += 6;
+			endPos = toCheck.find("\r\n", hostPos);
+			if ( endPos != std::string::npos )
+			{
+				std::cout << "FOUND\n";
+				std::string hostStr = toCheck.substr(hostPos, endPos - hostPos );
+				if ( !hostStr.empty() )
+				{
+					if ( hostStr != host + ":" + port )
+					{
+						name = hostStr;
+						std::cout << name << std::endl;
+					}
+				}
+			}
+		}
 		if ( lenPos != std::string::npos )
 		{
-			std::cout << "found\n";
 			lenPos += 16;
 			endPos = toCheck.find("\r\n", lenPos);
 			if ( endPos != std::string::npos )
@@ -421,6 +440,8 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 enum ResponseStates    Response::getResponseFile( std::string path )
 {
 	// std::cout << path << std::endl;
+	std::cout << serverName << std::endl;
+	std::cout << path << std::endl;
 	if ( !file.is_open() )
 	{
 		std::ostringstream oss;
@@ -677,6 +698,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	oss << "Connection: close\r\n";
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
 	//cache-control
+	oss << "Server: " << serverName << "\r\n";
 	//server name
 	if ( method == GET )
 	{
@@ -721,6 +743,11 @@ void	Response::setName( std::string name )
 void	Response::setHost( std::string host )
 {
 	this->host = host;
+}
+
+void	Response::setPort( std::string port )
+{
+	this->port = port;
 }
 
 void	Response::setBodySize( ssize_t bodyLimit )
