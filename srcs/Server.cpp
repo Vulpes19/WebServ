@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 10:51:04 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 12:13:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,11 @@ void    Server::setLocations( std::vector<Location> loc )
 void    Server::setBodySize( ssize_t bodySize )
 {
     this->bodySize = bodySize;
+}
+
+void    Server::setErrorPages( std::map< std::string, std::string > errorPages )
+{
+    this->errorPages = errorPages;
 }
 
 std::vector<Location>   Server::getLocations( void ) const

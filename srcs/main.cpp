@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 11:18:36 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 12:14:18 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
 		server.setBodySize(settings.getSize());
+		server.setErrorPages(settings.getErrorPages());
 		servers.push_back(server);
 	}
 	for ( size_t i = 0; i < servers.size(); i++)

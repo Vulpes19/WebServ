@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 08:42:41 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/16 12:18:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,11 @@ void    ClientManager::createClient( SOCKET listenSocket )
 void    ClientManager::setLocations( std::vector<Location> loc )
 {
     response->setLocations(loc);
+}
+
+void    ClientManager::setErrorPages( std::map< std::string, std::string > errorPages )
+{
+    response->setErrorPages(errorPages);
 }
 
 void    ClientManager::setName( std::string name )
