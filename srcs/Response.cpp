@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 10:47:01 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:15:02 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -383,11 +383,11 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
-	std::cout << "URL " << resources.getRequest("URL") << std::endl; 
+	// std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
-	std::cout << "before " << path << std::endl;
+	// std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
-	std::cout << "after " << path << std::endl;
+	// std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
 		err.errorForbidden(socket);

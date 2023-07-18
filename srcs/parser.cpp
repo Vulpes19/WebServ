@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 11:07:39 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:15:44 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,8 +99,12 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			break ;
 		case SIZE:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon())
-					server.setSize(stoi(value));
+				if (findSemicolon()) {
+					std::stringstream ss(value);
+					int size;
+					ss >> size;
+					server.setSize(size);
+				}
 				else
 					printError(SEMICOLON);
 			}
@@ -250,7 +254,6 @@ void   Parser::readFile(std::ifstream& confFile) {
 	}
 	else
 		printError(NO_CONFIG_FILE);
-	std::cout << "openingBraceCount: " << openingBraceCount << std::endl;
 	if (checkBracesError())
 		printError(CURLYBRACE);
 } ;
@@ -293,7 +296,6 @@ void	Parser::parseServer(std::ifstream& confFile) {
 		ss >> directive >> value >> optionalVal;
 		if (line.find("#") != std::string::npos || line.empty())
 			continue ;
-		std::cout << "line: " << line << std::endl;
 		if (line.find("{") != std::string::npos)
 			openingBraceCount++;
 		if (line.find("listen") != std::string::npos)

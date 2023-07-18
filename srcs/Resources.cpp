@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Resources.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:03:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:02:06 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,12 @@ void	Resources::parseHeader( void )
 		hostExists = true;
 	if (headerValue.size() == 0)
 		setError(BAD_REQUEST);
-	if (headerKey == "Content-Length")
-		requiredLength = std::stoi(headerValue);
+	if (headerKey == "Content-Length") {
+		std::stringstream ss(headerValue);
+		int	value;
+		ss >> value;
+		requiredLength = value;
+	}
 }
 
 bool	Resources::methodValidity(std::string value) {
