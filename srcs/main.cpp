@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 15:44:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:50:06 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,24 +71,12 @@ int main( int ac, char **av )
 			{
 				if ( FD_ISSET( servers[i].getListenSocket(), &readfds ) )
 				{
-					// if ( serverName != "NONE")
-					// {
-					// 	std::cout << "I'm here\n";
-					// 	ClientManager *client = cl.getClient(-1, getCorrectServer(servers, serverName), UPDATE_CLIENT_SETTINGS);
-					// 	if ( client->getSocket() == -1 )
-					// 		cl.deleteClient(client);
-					// }
-					// else
-					// {
-						ClientManager *client = cl.getClient(-1, servers[i], KEEP_CLIENT_SETTINGS);
-						if ( client->getSocket() == -1 )
-							cl.deleteClient(client);
-					// }
+					ClientManager *client = cl.getClient(-1, servers[i], KEEP_CLIENT_SETTINGS);
+					if ( client->getSocket() == -1 )
+						cl.deleteClient(client);
 				}
 			}
-			// std::cout << serverName << std::endl;
 			cl.multiplexing( readfds, writefds, serverName, servers );
-			// std::cout << serverName << std::endl;
 		}
 	}
 	catch(const std::exception& e)

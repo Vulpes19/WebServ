@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 13:52:42 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/15 14:40:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 16:05:57 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,6 @@ enum Error_code
 	FORBIDDEN,
 	METHOD_NOT_ALLOWED,
 	UNSUPPORTED_MEDIA_TYPE,
-	REQUEST_TIMEOUT,
-	FILE_IO_ERROR,
 	LENGTH_REQUIRED,
 	HTTP_VERSION_NOT_SUPPORTED,
 	REQUEST_ENTITY_TOO_LARGE

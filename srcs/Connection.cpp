@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 15:36:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 15:50:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,32 +25,13 @@ Connection::~Connection( void )
     clients.erase(clients.begin(), clients.end());
 }
 
-// ClientManager   *Connection::updateClientSettings( iterator it, Server srv )
-// {
-//     (*it)->reset();
-//     (*it)->createClient( srv.getListenSocket() );
-//     (*it)->setState( READ_REQUEST);
-//     (*it)->setLocations(srv.getLocations());
-//     (*it)->setName(srv.getName());
-//     (*it)->setHost(srv.getHost());
-//     (*it)->setPort(srv.getPort());
-//     (*it)->setBodySize(srv.getBodySize());
-//     (*it)->setErrorPages(srv.getErrorPages());
-//     return (*it); 
-// }
-
 ClientManager   *Connection::getClient( SOCKET socket, Server srv, enum SERVER_SETTINGS_STATUS status )
 {
     status = UPDATE_CLIENT_SETTINGS;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() == socket )
-        {
-            // if ( status == UPDATE_CLIENT_SETTINGS )
-            //     return (updateClientSettings( it, srv ) );
-            // else
-                return (*it);
-        }
+            return (*it);
     }
     ClientManager *newClient = new ClientManager();
     newClient->reset();
@@ -87,7 +68,6 @@ void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_
     FD_ZERO(&readfds);
     SOCKET maxSocket;
     maxSocket = servers[0].getListenSocket();
-    // std::map<std::string, Server>::iterator it = servers.begin();
     for ( size_t i = 0; i < servers.size(); i++ )
     {
         SOCKET serverSocket = servers[i].getListenSocket();
@@ -109,16 +89,6 @@ void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_
     if ( select( maxSocket + 1, &readfds, &writefds, NULL, &timeout) < 0 )
         throw excp("select() failed");
 }
-
-// Server	&Connection::getCorrectServer( std::vector<Server> &servers, std::string serverName )
-// {
-// 	for ( size_t i = 0; i < servers.size(); i++ )
-// 	{
-// 		if ( servers[i].getName() == serverName )
-// 			return (servers[i]);
-// 	}
-// 	return (servers[0]);
-// }
 
 void    Connection::multiplexing( fd_set &readfds, fd_set &writefds, std::string &serverName, std::vector<Server> &servers )
 {
