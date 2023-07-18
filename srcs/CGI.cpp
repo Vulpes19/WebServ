@@ -145,7 +145,7 @@ bool CGI::exec(Resources& resources, std::string path) {
             outFileStr = buff.str();
             oFile = file;
             file.close();
-            
+
             std::cout << "CGI EXECUTED\n";
             return true;
         }
