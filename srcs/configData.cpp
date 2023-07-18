@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 14:45:53 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:40:37 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ Location&	Location::operator=(const Location& location) {
 
 Location::~Location() {};
 
-ServerSettings::ServerSettings(): host("localhost"), body_size(10000), missingValue(true) {};
+ServerSettings::ServerSettings(): host("localhost"), body_size(10000000), missingValue(true) {};
 
 ServerSettings::ServerSettings(std::string port, std::string host, std::string server_name, Location &location, int body_size): port(port), host(host), server_name(server_name), body_size(body_size) {
 
@@ -184,7 +184,8 @@ void    ServerSettings::setName(const std::string& name) {
 
 void	ServerSettings::setSize(const int& bytes) {
 
-	body_size = bytes;
+	if (bytes > 10000000)
+		body_size = bytes;
 }
 
 void    ServerSettings::setLocations(const Location &location) {

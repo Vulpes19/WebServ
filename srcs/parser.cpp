@@ -6,21 +6,32 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 09:59:09 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 12:15:44 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "parser.hpp"
 #include "configData.hpp"
 
-Parser::Parser(): openingBraceCount(0), host_exists(false), closingBraceExpected(true), status(OK), uploadExists(false) {};
+Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK), uploadExists(false) {};
 
 Parser::~Parser() {};
+
+bool	testExtension(char *argv) {
+
+	std::string str(argv);
+
+	if (str.find(".conf") != std::string::npos)
+		return (false);
+	return (true);
+}
 
 void    Parser::openFile(char *argv) {
 
 	if (!argv)
-		std::cout << "ERROR: File doesn't exist or could not be open!" << std::endl;
+		printError(NO_CONFIG_FILE);
+	else if (testExtension(argv))
+		printError(EXTENSION);
 	else
 	{
 		std::ifstream   confFile(argv);
@@ -31,9 +42,20 @@ void    Parser::openFile(char *argv) {
 bool    Parser::checkBracesError() {
 
 	if (openingBraceCount == 0)
-		return true;
-	else
 		return false;
+	else
+		return true;
+}
+
+std::string	Parser::cleanValue(std::string value) {
+
+	size_t	pos = value.find_first_of(';');
+
+	while (pos != std::string::npos) {
+		value.erase(pos, 1);
+		pos = value.find_first_of(';', pos);
+	}
+	return (value);
 }
 
 void	Parser::setServerContent(ServerSettings &server, int which, std::string value) {
@@ -44,8 +66,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			if (host_exists == false)
 			{
 				if (value.size() - 1 > 0) {
-					if (findSemicolon(value))
-						server.setPort(value.erase(value.size() - 1));
+					if (findSemicolon())
+						server.setPort(cleanValue(value));
 					else
 						printError(SEMICOLON);
 				}
@@ -57,8 +79,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			break ;
 		case HOST:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
-					server.setHost(value.erase(value.size() - 1));
+				if (findSemicolon())
+					server.setHost(cleanValue(value));
 				else
 					printError(SEMICOLON);
 			}
@@ -67,8 +89,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			break ;
 		case NAME:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))    
-					server.setName(value.erase(value.size() - 1));
+				if (findSemicolon())    
+					server.setName(cleanValue(value));
 				else
 					printError(SEMICOLON);
 			}
@@ -77,8 +99,12 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			break ;
 		case SIZE:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
-					server.setSize(stoi(value));
+				if (findSemicolon()) {
+					std::stringstream ss(value);
+					int size;
+					ss >> size;
+					server.setSize(size);
+				}
 				else
 					printError(SEMICOLON);
 			}
@@ -87,8 +113,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			break ;
 		case UPLOAD:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value)) {   
-					server.setUpload(value.erase(value.size() - 1));
+				if (findSemicolon()) {   
+					server.setUpload(cleanValue(value));
 					uploadExists = true;
 				}
 				else
@@ -103,8 +129,8 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			
 			ss >> directive >> status_code >> path;
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(path))
-					server.setErrorPages(status_code, path.erase(path.size() - 1));
+				if (findSemicolon())
+					server.setErrorPages(status_code, cleanValue(path));
 				else
 					printError(SEMICOLON);
 			}
@@ -131,8 +157,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 		case ROOT:
 			if (value.size() - 1 > 0) {	
-				if (findSemicolon(value))
-					location.setRoot(value.erase(value.size() - 1));
+				if (findSemicolon())
+					location.setRoot(cleanValue(value));
 				else
 					printError(SEMICOLON);
 			}
@@ -141,8 +167,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case INDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
-					location.setIndex(value.erase(value.size() - 1));
+				if (findSemicolon())
+					location.setIndex(cleanValue(value));
 				else
 					printError(SEMICOLON);
 			}
@@ -151,7 +177,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case AUTOINDEX:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value) && value.find("on") != std::string::npos)	
+				if (findSemicolon() && value.find("on") != std::string::npos)	
 					location.setAutoIndex();
 				else
 					printError(SEMICOLON);
@@ -161,8 +187,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			break ;
 		case UPLOAD:
 			if (value.size() - 1 > 0) {
-				if (findSemicolon(value))
-					location.setUpload(value.erase(value.size() - 1));
+				if (findSemicolon())
+					location.setUpload(cleanValue(value));
 				else
 					printError(SEMICOLON);
 			}
@@ -179,8 +205,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			if (words == 2) {
 				ss >> str >> status_code;
 				if (status_code.size() - 1 > 0) {
-					if (findSemicolon(status_code))
-						location.setRedirection(status_code.erase(status_code.size() - 1), "");
+					if (findSemicolon())
+						location.setRedirection(cleanValue(status_code), "");
 					else
 						printError(SEMICOLON);				
 				}
@@ -190,8 +216,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			else if (words == 3) {	
 				ss >> str >> status_code >> path;
 				if (path.size() - 1 > 0) {
-					if (findSemicolon(path))
-						location.setRedirection(status_code, path.erase(path.size() - 1));
+					if (findSemicolon())
+						location.setRedirection(status_code, cleanValue(path));
 					else
 						printError(SEMICOLON);				
 				}
@@ -212,63 +238,24 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
-	// t_brace	brace;
-
-	// brace.openingBrace = false;
-	// brace.closingBrace = false;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
 		{
-			if (line[0] == '#' || line.empty())
+			if (line.find("#") != std::string::npos || line.empty())
 				continue ;
+			if (line.find("{") != std::string::npos)
+				openingBraceCount++;
+			else if (line.find("}") != std::string::npos)
+				openingBraceCount--;
 			if (line.find("server") != std::string::npos)
-			{
-				// std::cout << "line: " << line << std::endl;
-				// std::string	nextLine;
-
-				// if (line.find("{") != std::string::npos) {
-				// 	brace.openingBrace = true;
-					parseServer(confFile);
-				// }
-				// else {
-				// 	while (getline(confFile, nextLine)) {
-				// 		if (nextLine.size())
-				// 		{
-				// 			if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
-				// 				brace.openingBrace = true;
-				// 				parseServer(confFile);
-				// 			}
-				// 		}
-				// 	}
-				// }
-			}
-			// }
-			// 	else {
-			// 		while (getline(confFile, nextLine)) {
-			// 			if (nextLine.size())
-			// 			{
-			// 				if (nextLine.find("{") != std::string::npos && nextLine.find("location") == std::string::npos) {
-			// 					brace.openingBrace = true;
-			// 					parseServer(confFile);
-			// 				}
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// if (line.find("}") != std::string::npos)
-			// {
-			// 	brace.closingBrace = true;
-			// 	break ;
-			// }
+				parseServer(confFile);
 		}
-		// if (!brace.closingBrace || !brace.openingBrace) {
-		// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
-		// 	exit(1);
-		// }
 	}
 	else
-		std::cout << "Error: could not open the configuration file!" << std::endl;
+		printError(NO_CONFIG_FILE);
+	if (checkBracesError())
+		printError(CURLYBRACE);
 } ;
 
 void	Parser::serverValuesValidation(ServerSettings server) {
@@ -296,35 +283,22 @@ void	Parser::serverValuesValidation(ServerSettings server) {
 	}
 }
 
-void	checkBraces(bool brace) {
-	
-	if (!brace) {
-		std::cerr << "Syntax Error: Braces error!" << std::endl;
-		exit(1);
-	}
-}
-
 void	Parser::parseServer(std::ifstream& confFile) {
 
 	ServerSettings  server;
 	Context context;
 	std::string optionalVal;
-	t_brace		brace;
 
-	brace.closingBrace = false;
-	brace.openingBrace = false;
 	server.initErrorPages();
-	// std::cout << "line: " << line << std::endl;
 	while (getline(confFile, line)) {
 
-		if (line[0] == '#' || line.empty())
-			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		// brace.openingBrace = false;
-		// if (line.find("{") != std::string::npos)
-		// 	brace.openingBrace = true;
-		if (directive.find("listen") != std::string::npos)
+		if (line.find("#") != std::string::npos || line.empty())
+			continue ;
+		if (line.find("{") != std::string::npos)
+			openingBraceCount++;
+		if (line.find("listen") != std::string::npos)
 		{
 			if (optionalVal.size())
 				host_exists = true;
@@ -332,30 +306,24 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			if (host_exists)
 				setServerContent(server, HOST, optionalVal);
 		}
-		else if (directive == "upload")
+		else if (line.find("upload") != std::string::npos)
 			setServerContent(server, UPLOAD, value);
-		else if (directive == "server_name")
+		else if (line.find("server_name") != std::string::npos)
 			setServerContent(server, NAME, value);
-		else if (directive == "body_size")
+		else if (line.find("body_size") != std::string::npos)
 			setServerContent(server, SIZE, value);
-		else if (directive == "error_page")
+		else if (line.find("error_page") != std::string::npos)
 			setServerContent(server, ERROR_PAGE, line);
-		else if (directive == "location") {
-			// checkBraces(brace.openingBrace);	
+		else if (line.find("location") != std::string::npos)
 			parseLocation(confFile, server, value);              
-		}
 		else if (line.find("}") != std::string::npos) {
-			// brace.closingBrace = true;
+			openingBraceCount--;
 			context.setServer(server);
 			parsedData.push_back(context);
 			break ;
 		}
 	}
 	serverValuesValidation(server);
-	// if (!brace.closingBrace || !brace.openingBrace) {
-	// 	std::cerr << "Syntax Error: Braces error!" << std::endl;
-	// 	exit(1);
-	// }
 }
 
 bool	examinePath(std::string value) {
@@ -396,32 +364,36 @@ void	Parser::locationValuesValidation(Location location) {
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
 	Location	location;
-	t_brace		brace;
-
-	brace.openingBrace = false;
-	brace.closingBrace = false;
 	
 	location.setValue(value);
 	while(getline(confFile, line) && status == OK) {
 
-		if (line[0] == '#' || line.empty())
-			continue ;
 		std::stringstream ss(line);
 		ss >> directive >> value;
-		if (directive == "}" && closingBraceExpected) {
+		if (line.find("#") != std::string::npos || line.empty())
+			continue ;
+		if (line.find("{") != std::string::npos)
+			openingBraceCount++;
+		if (line.find("root") != std::string::npos)
+			setLocationContent(location, ROOT, value);
+		else if (line.find("index") != std::string::npos)
+			setLocationContent(location, INDEX, value);
+		else if (line.find("autoindex") != std::string::npos)
+			setLocationContent(location, AUTOINDEX, value);
+		else if (line.find("upload") != std::string::npos && uploadExists == false)
+			setLocationContent(location, UPLOAD, value);
+		else if (line.find("return") != std::string::npos)
+			setLocationContent(location, RETURN, line);
+		if (line[0] == '}') {
+			openingBraceCount--;
 			server.setLocations(location);
 			break ;
 		}
-		if (directive == "root")
-			setLocationContent(location, ROOT, value);
-		else if (directive == "index")
-			setLocationContent(location, INDEX, value);
-		else if (directive == "autoindex")
-			setLocationContent(location, AUTOINDEX, value);
-		else if (directive == "upload" && uploadExists == false)
-			setLocationContent(location, UPLOAD, value);
-		else if (directive == "return")
-			setLocationContent(location, RETURN, line);
+		else if (line.find("}") != std::string::npos) {
+			openingBraceCount--;
+			server.setLocations(location);
+			break ;
+		}
 	}
 	locationValuesValidation(location);
 }
@@ -444,20 +416,13 @@ void	Parser::printData() {
 		std::cout << "body size: " << server.getSize() << std::endl;
 		std::cout << "upload: " << server.getUpload() << std::endl;
 		
+		std::cout << "Errors: " << std::endl;
 		std::map<std::string, std::string> epMap = server.getErrorPages();
 		std::map<std::string, std::string>::iterator itr;
 		for(itr=epMap.begin();itr!=epMap.end();itr++)
 		{
 			std::cout << itr->first <<" " << itr->second << std::endl;
 		}
-		
-		// std::vector<ErrorPage>	epVec = server.getErrorPages();
-		// for (size_t i = 0; i < epVec.size(); i++) {
-			
-		// 	std::cout << "error_pages: " << std::endl;
-		// 	std::cout << "status code: " << epVec[i].getStatusCode() << std::endl;
-		// 	std::cout << "path: " << epVec[i].getPath() << std::endl;
-		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
@@ -474,11 +439,9 @@ void	Parser::printData() {
 	}
 }
 
-bool    Parser::findSemicolon(std::string value) {
+bool    Parser::findSemicolon() {
 
-	size_t  pos = value.find(";") ;
-
-	if (pos  != std::string::npos)
+	if (line.find(";")  != std::string::npos)
 		return (true);
 	return (false);
 }
@@ -489,16 +452,22 @@ void    Parser::printError(int which) {
 	switch(which) {
 
 		case SEMICOLON:
-			std::cout << "Error: could not find semicolon" << std::endl;
+			std::cout << "Syntax Error: could not find semicolon" << std::endl;
 			break ;
 		case CURLYBRACE:
-			std::cout << "Error: could not find curly brace" << std::endl;
+			std::cout << "Syntax Error: Curly brace not found, or misalighned" << std::endl;
 			break ;
 		case UNKNOWN:
 			std::cout << "Error: " << directive << " <- Unknown expression." << std::endl;
 			break ;
 		case EMPTY:
 			std::cout << "Error: " << directive << " <- Directive can't have empty value!" << std::endl;
+			break ;
+		case EXTENSION:
+			std::cout << "Error: Invalid extension!" << std::endl;
+			break ;
+		case NO_CONFIG_FILE:
+			std::cout << "Error: config file not found or invalid!" << std::endl;
 			break ;
 	}
 	exit(1);

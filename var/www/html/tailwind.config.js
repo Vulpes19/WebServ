@@ -1,32 +1,14 @@
 module.exports = {
   daisyui: {
-    themes: [
-      {
-        mytheme: {
-        
-"primary": "#05BFDB",
-        
-"secondary": "#088395",
-        
-"accent": "#0A4D68",
-        
-"neutral": "#191D24",
-        
-"base-100": "#2A303C",
-        
-"info": "#3ABFF8",
-        
-"success": "#36D399",
-        
-"warning": "#FBBD23",
-        
-"error": "#F87272",
+      theme: {
+        extend: {
+          fontFamily: {
+            custom: ['spongebob', 'sans'], // 'sans' is a fallback in case the font doesn't load
+            custom: ['sponge', 'sans'],
+          },
         },
       },
-    ],
-  },
-  plugins: [
-    require('daisyui'),
-  ],
+      // Other Tailwind configurations and plugins go here
+    }
   //...
-}  
+} ;

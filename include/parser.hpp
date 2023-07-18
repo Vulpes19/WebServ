@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 08:00:28 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 08:49:08 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,13 +36,6 @@ enum {
 	HOST
 } ;
 
-typedef struct s_brace {
-
-	bool	openingBrace;
-	bool	closingBrace;
-	
-} t_brace ;
-
 class Parser {
 	private:
 		std::string directive;
@@ -51,7 +44,6 @@ class Parser {
 		std::vector<Context> parsedData;
 		int 	openingBraceCount;
 		bool	host_exists;
-		bool    closingBraceExpected;
 		int     status; 
 		bool	uploadExists;
 	public:
@@ -62,7 +54,7 @@ class Parser {
 		void    parseServer(std::ifstream&   confFile);
 		void    parseLocation(std::ifstream&   confFile, ServerSettings& server, std::string& value);
 		void    printData();
-		bool    findSemicolon(std::string value);
+		bool    findSemicolon( );
 		void    printError(int which);
 		bool    checkBracesError();
 		void	setServerContent(ServerSettings &server, int which, std::string value);
@@ -70,6 +62,7 @@ class Parser {
 		std::vector<Context> getParsedData() const;
 		void	serverValuesValidation(ServerSettings server);
 		void	locationValuesValidation(Location location);
+		std::string	cleanValue(std::string value);
 } ;
 
 #endif

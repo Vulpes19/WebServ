@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/16 11:31:58 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:41:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,8 +53,12 @@ void	Resources::parseHeader( void )
 		hostExists = true;
 	if (headerValue.size() == 0)
 		setError(BAD_REQUEST);
-	if (headerKey == "Content-Length")
-		requiredLength = std::stoi(headerValue);
+	if (headerKey == "Content-Length") {
+		std::stringstream ss(headerValue);
+		int	value;
+		ss >> value;
+		requiredLength = value;
+	}
 }
 
 bool	Resources::methodValidity(std::string value) {
