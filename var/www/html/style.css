@@ -13,7 +13,6 @@
 
   body {
     margin: 0;
-    overflow: hidden;
   }
   #octocat {
     height: 300px;
@@ -24,10 +23,27 @@
     right: -200px;
     top: 50%;
     margin-top: -150px;
-    z-index: 100;
   }
   
-  
+  #myAudio {
+    display: none;
+  }
+
+  body{
+    margin:0;
+    padding: 0;
+  }
+  .full-landing-image {
+    /* position: absolute; */
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom;
+    background: url("/var/www/html/Assets/header.jpeg") ; 
+    background-size: cover;
+  }
+
+
   @keyframes animateSprite {
     0% {
       background-position: -600px;

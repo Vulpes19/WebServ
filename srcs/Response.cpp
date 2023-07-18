@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:15:02 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 13:19:22 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -616,6 +616,7 @@ const std::string  	ResponseHelper::getFileType( std::string path, enum TYPES ty
 	{
 		fileTypes[".css"] = "text/css";
 		fileTypes[".mp4"] = "video/mp4";
+		fileTypes[".mp3"] = "audio/mpeg";
 		fileTypes[".png"] = "image/png";
 		fileTypes[".zip"] = "application/zip";
 		fileTypes[".csv"] = "text/csv";
