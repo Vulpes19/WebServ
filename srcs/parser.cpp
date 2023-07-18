@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 08:55:11 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 11:07:39 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,21 @@ Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK), uploadEx
 
 Parser::~Parser() {};
 
+bool	testExtension(char *argv) {
+
+	std::string str(argv);
+
+	if (str.find(".conf") != std::string::npos)
+		return (false);
+	return (true);
+}
+
 void    Parser::openFile(char *argv) {
 
 	if (!argv)
-		std::cout << "ERROR: File doesn't exist or could not be open!" << std::endl;
+		printError(NO_CONFIG_FILE);
+	else if (testExtension(argv))
+		printError(EXTENSION);
 	else
 	{
 		std::ifstream   confFile(argv);
@@ -227,16 +238,19 @@ void   Parser::readFile(std::ifstream& confFile) {
 	{
 		while (getline(confFile, line))
 		{
-			if (line[0] == '#' || line.empty())
+			if (line.find("#") != std::string::npos || line.empty())
 				continue ;
 			if (line.find("{") != std::string::npos)
 				openingBraceCount++;
-			else if (line.find("server") != std::string::npos)
+			else if (line.find("}") != std::string::npos)
+				openingBraceCount--;
+			if (line.find("server") != std::string::npos)
 				parseServer(confFile);
 		}
 	}
 	else
-		std::cout << "Error: could not open the configuration file!" << std::endl;
+		printError(NO_CONFIG_FILE);
+	std::cout << "openingBraceCount: " << openingBraceCount << std::endl;
 	if (checkBracesError())
 		printError(CURLYBRACE);
 } ;
@@ -277,11 +291,12 @@ void	Parser::parseServer(std::ifstream& confFile) {
 
 		std::stringstream ss(line);
 		ss >> directive >> value >> optionalVal;
-		if (line[0] == '#' || line.empty())
+		if (line.find("#") != std::string::npos || line.empty())
 			continue ;
+		std::cout << "line: " << line << std::endl;
 		if (line.find("{") != std::string::npos)
 			openingBraceCount++;
-		if (directive == "listen")
+		if (line.find("listen") != std::string::npos)
 		{
 			if (optionalVal.size())
 				host_exists = true;
@@ -289,15 +304,15 @@ void	Parser::parseServer(std::ifstream& confFile) {
 			if (host_exists)
 				setServerContent(server, HOST, optionalVal);
 		}
-		else if (directive == "upload")
+		else if (line.find("upload") != std::string::npos)
 			setServerContent(server, UPLOAD, value);
-		else if (directive == "server_name")
+		else if (line.find("server_name") != std::string::npos)
 			setServerContent(server, NAME, value);
-		else if (directive == "body_size")
+		else if (line.find("body_size") != std::string::npos)
 			setServerContent(server, SIZE, value);
-		else if (directive == "error_page")
+		else if (line.find("error_page") != std::string::npos)
 			setServerContent(server, ERROR_PAGE, line);
-		else if (directive == "location")
+		else if (line.find("location") != std::string::npos)
 			parseLocation(confFile, server, value);              
 		else if (line.find("}") != std::string::npos) {
 			openingBraceCount--;
@@ -353,8 +368,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 
 		std::stringstream ss(line);
 		ss >> directive >> value;
-		std::cout << "line: " << line << std::endl;
-		if (line[0] == '#' || line.empty())
+		if (line.find("#") != std::string::npos || line.empty())
 			continue ;
 		if (line.find("{") != std::string::npos)
 			openingBraceCount++;
@@ -446,6 +460,12 @@ void    Parser::printError(int which) {
 			break ;
 		case EMPTY:
 			std::cout << "Error: " << directive << " <- Directive can't have empty value!" << std::endl;
+			break ;
+		case EXTENSION:
+			std::cout << "Error: Invalid extension!" << std::endl;
+			break ;
+		case NO_CONFIG_FILE:
+			std::cout << "Error: config file not found or invalid!" << std::endl;
 			break ;
 	}
 	exit(1);
