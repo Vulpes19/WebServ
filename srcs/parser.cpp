@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 09:03:40 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 09:59:10 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,6 +374,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 
 		std::stringstream ss(line);
 		ss >> directive >> value;
+		std::cout << "value: " << value << std::endl;
 		if (line.find("#") != std::string::npos || line.empty())
 			continue ;
 		if (line.find("{") != std::string::npos)
@@ -384,9 +385,9 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, INDEX, value);
 		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
-		else if (line.find("upload") != std::string::npos && uploadExists == false)
+		else if (directive == "upload" && uploadExists == false)
 			setLocationContent(location, UPLOAD, value);
-		else if (line.find("return") != std::string::npos)
+		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
 		if (line[0] == '}') {
 			openingBraceCount--;

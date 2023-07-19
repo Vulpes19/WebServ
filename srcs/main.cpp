@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 09:04:14 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 10:08:31 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ int main( int ac, char **av )
 		}
 		parser.openFile(av[1]);
 		parser.printData();
-		// exit(1);
+		exit(1);
 		initServers( servers, parser );
 		while ( true )
 		{
