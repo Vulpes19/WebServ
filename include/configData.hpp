@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:52:19 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 21:55:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ enum {
 	UNKNOWN,
 	EMPTY,
 	EXTENSION,
-	NO_CONFIG_FILE
+	NO_CONFIG_FILE,
+	INVALID_STATUS_CODE,
+	INVALID_PATH
 } ;
 
 enum {
@@ -99,7 +101,7 @@ class ServerSettings {
 		std::string				host;
 		std::string             server_name; //darori
 		std::string				upload;
-		ssize_t						body_size;
+		ssize_t					body_size;
 		std::vector<Location>    locations; //darori
 		std::map<std::string, std::string>	errorPages; 
 		bool					missingValue;

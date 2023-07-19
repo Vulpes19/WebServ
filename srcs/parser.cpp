@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:42:05 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 21:56:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,17 @@ Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK), uploadEx
 Parser::~Parser() {
 	parsedData.clear();
 };
+
+int		countWords(std::string str) {
+
+	std::stringstream ss(str);
+	int	words = 0;
+	std::string	word;
+
+	while (ss >> word)
+		words++;
+	return (words);
+}
 
 bool	testExtension(char *argv) {
 
@@ -130,6 +141,12 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			std::string directive, status_code, path;
 			
 			ss >> directive >> status_code >> path;
+			if (countWords(value) != 3)
+				printError(EMPTY);
+			if (status_code.size() != 3)
+				printError(INVALID_STATUS_CODE);
+			if (path.find("/") == std::string::npos)
+				printError(INVALID_PATH);
 			if (value.size() - 1 > 0) {
 				if (findSemicolon())
 					server.setErrorPages(status_code, cleanValue(path));
@@ -142,22 +159,14 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	}
 }
 
-int		countWords(std::string str) {
-
-	std::stringstream ss(str);
-	int	words = 0;
-	std::string	word;
-
-	while (ss >> word)
-		words++;
-	return (words);
-}
 
 void	Parser::setLocationContent(Location& location, int which, std::string value) {
 
 	switch (which) {
 
 		case ROOT:
+			if (value.find("/") == std::string::npos)
+				printError(INVALID_PATH);
 			if (value.size() - 1 > 0) {	
 				if (findSemicolon())
 					location.setRoot(cleanValue(value));
@@ -201,10 +210,9 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			std::stringstream ss(value);
 			std::string path;
 			std::string	str;
-			int			words = countWords(value);
 			std::string	status_code;
 
-			if (words == 2) {
+			if (countWords(value) == 2) {
 				ss >> str >> status_code;
 				if (status_code.size() - 1 > 0) {
 					if (findSemicolon())
@@ -215,8 +223,10 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 				else
 					printError(EMPTY);
 			}
-			else if (words == 3) {	
+			else if (countWords(value) == 3) {	
 				ss >> str >> status_code >> path;
+				if (path.find("/") == std::string::npos)
+					printError(INVALID_PATH);
 				if (path.size() - 1 > 0) {
 					if (findSemicolon())
 						location.setRedirection(status_code, cleanValue(path));
@@ -226,7 +236,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 				else
 					printError(EMPTY);
 			}
-			else if (words > 3) {
+			else if (countWords(value) > 3) {
 				std::cerr << "Syntax Error: Return field is invalid, too many elements!" << std::endl;
 				exit(1);
 			}
@@ -267,6 +277,10 @@ void	Parser::serverValuesValidation(ServerSettings server) {
 	std::stringstream ss(port);
 
 	ss >> portInt;
+	if (port.find(":") != std::string::npos || port.find(".") != std::string::npos) {
+		std::cerr << "Syntax Error: port is invalid!" << std::endl;
+		exit(1);
+	}	
 	if (port.size() == 0) {
 		std::cerr << "Syntax Error: port not found!" << std::endl;
 		exit(1);
@@ -346,7 +360,11 @@ void	Parser::locationValuesValidation(Location location) {
 		exit(1);
 	}
 	if (location.getIndex().size() == 0) {
-		location.setIndex("HOMEPAGE");
+		location.setIndex("homepage.html");
+	}
+	if (location.getIndex().find(".") == std::string::npos) {
+		std::cerr << "Syntax Error: index value is invalid, index value must contain an extension!" << std::endl;
+		exit(1);
 	}
 	if ((location.getRedirection().status_code.size() > 3 || location.getRedirection().status_code.size() < 3) && 
 		location.getRedirection().status_code != "-1") {
@@ -382,9 +400,9 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, INDEX, value);
 		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
-		else if (line.find("upload") != std::string::npos && uploadExists == false)
+		else if (directive == "upload" && uploadExists == false)
 			setLocationContent(location, UPLOAD, value);
-		else if (line.find("return") != std::string::npos)
+		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
 		if (line[0] == '}') {
 			openingBraceCount--;
@@ -423,7 +441,7 @@ void	Parser::printData() {
 		std::map<std::string, std::string>::iterator itr;
 		for(itr=epMap.begin();itr!=epMap.end();itr++)
 		{
-			std::cout << itr->first <<" " << itr->second << std::endl;
+			std::cout << itr->first << " " << itr->second << std::endl;
 		}
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
@@ -470,6 +488,14 @@ void    Parser::printError(int which) {
 			break ;
 		case NO_CONFIG_FILE:
 			std::cout << "Error: config file not found or invalid!" << std::endl;
+			break ;
+		case INVALID_STATUS_CODE:
+			std::cout << "Syntax Error: Invalid status code!" << std::endl;
+			std::cout << "-> " << line << std::endl;
+			break ;
+		case INVALID_PATH:
+			std::cout << "Syntax Error: Invalid path!" << std::endl;
+			std::cout << "-> " << line << std::endl;
 			break ;
 	}
 	exit(1);
