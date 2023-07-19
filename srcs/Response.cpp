@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:42:40 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 08:04:09 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -232,7 +232,6 @@ void    ErrorResponse::errorHTTPVersion( SOCKET socket, std::string path )
 
 void    ErrorResponse::errorRequestTooLarge( SOCKET socket, std::string path )
 {
-	std::cout << "psss\n";
 	std::stringstream errorMsg;
 	errorMsg << "HTTP/1.1 413 Request Entity Too Large\r\n";
 	errorMsg << "Connection: close\r\n";
@@ -304,15 +303,11 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 			endPos = toCheck.find("\r\n", hostPos);
 			if ( endPos != std::string::npos )
 			{
-				std::cout << "FOUND\n";
 				std::string hostStr = toCheck.substr(hostPos, endPos - hostPos );
 				if ( !hostStr.empty() )
 				{
-					if ( hostStr != host + ":" + port )
-					{
+					if ( hostStr != host + ":" + port && hostStr != host )
 						name = hostStr;
-						std::cout << name << std::endl;
-					}
 				}
 			}
 		}
@@ -326,7 +321,6 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 				if ( !lenStr.empty() )
 				{
 					bodySize = std::stoul(lenStr);
-					std::cout << bodySize << " " << bodyLimit << std::endl;
 					if ( bodySize > bodyLimit )
 					{
 						err.errorRequestTooLarge(socket, errorPages["413"]);
@@ -439,15 +433,12 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 
 enum ResponseStates    Response::getResponseFile( std::string path )
 {
-	// std::cout << path << std::endl;
-	std::cout << serverName << std::endl;
 	std::cout << path << std::endl;
 	if ( !file.is_open() )
 	{
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
-		// std::string root = getRootPath(path);
 		if ( path != "NONE" )
 			oss << "." << path;
 		else
@@ -482,7 +473,6 @@ enum ResponseStates    Response::getResponseFile( std::string path )
 			reset();
 			return (RESET);
 		}
-		// std::cout << fullPath << std::endl;
 		file.open(fullPath.c_str());
 		if ( !file.is_open() )
 		{
@@ -586,29 +576,30 @@ bool    Response::handleWriteResponse( Resources &resources )
 {
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
-
-	if ( red.status_code != "-1" )
-	{
-		handleRedirection(red);
-		resources.checkRequest();
-		return (true);
-	}
-	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
-	if ( uploadPath == "NONE" )
-		uploadPath = getUploadPath(resources.getRequest("URL"));	
-	if ( resources.getError() != NO_ERROR )
-	{
-		if ( handleErrors( resources ) )
-		{
-			resources.clear();
-			return (true);
-		}
-	}
-	// std::cout << "URL " << resources.getRequest("URL") << std::endl; 
+	std::cout << red.status_code << std::endl;
+	// if ( red.status_code != "-1" )
+	// {
+	// 	handleRedirection(red);
+	// 	resources.checkRequest();
+	// 	return (true);
+	// }
+	// autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
+	// if ( uploadPath == "NONE" )
+	// 	uploadPath = getUploadPath(resources.getRequest("URL"));	
+	// std::cout << resources.getError() << std::endl;
+	// if ( resources.getError() != NO_ERROR )
+	// {
+	// 	if ( handleErrors( resources ) )
+	// 	{
+	// 		resources.clear();
+	// 		return (true);
+	// 	}
+	// }
+	std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
-	// std::cout << "before " << path << std::endl;
+	std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
-	// std::cout << "after " << path << std::endl;
+	std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
 		err.errorForbidden(socket, errorPages["403"]);
@@ -688,7 +679,7 @@ bool	Response::handleErrors( Resources &resources )
 		default:
 			return (false);
 	}
-	return (true);
+	return (false);
 }
 
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
@@ -761,6 +752,7 @@ std::string	Response::getRootPath( std::string path )
 		path = "/";
 	if ( path.back() != '/' )
 		path += '/';
+	std::cout << "I'm in getRootPath\n";
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
 		if ( path == "/" && loc[i].getValue() == "/" )

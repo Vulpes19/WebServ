@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:41:07 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 07:46:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 	std::vector<Context> contexts = parser.getParsedData();
 	for ( size_t i = 0; i < contexts.size(); i++ )
 	{
-		std::cout << i << std::endl;
 		ServerSettings settings;
 		Server server;
 		settings = contexts[i].getServer();
@@ -63,6 +62,7 @@ int main( int ac, char **av )
 			return (EXIT_FAILURE);
 		}
 		parser.openFile(av[1]);
+		// parser.printData();
 		initServers( servers, parser );
 		while ( true )
 		{

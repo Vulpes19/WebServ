@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:39:56 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/18 17:52:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ class ServerSettings {
 		std::string				host;
 		std::string             server_name; //darori
 		std::string				upload;
-		int						body_size;
+		ssize_t						body_size;
 		std::vector<Location>    locations; //darori
 		std::map<std::string, std::string>	errorPages; 
 		bool					missingValue;
@@ -109,7 +109,7 @@ class ServerSettings {
 		ServerSettings&	operator=(const ServerSettings& server);
 		void    setPort(const std::string &p);
 		void	initErrorPages();
-		void	setSize(const int &bytes);
+		void	setSize(const ssize_t &bytes);
 		void    setName(const std::string &name);
 		void	setMissingValue();
 		void	setUpload(const std::string &Upload);
@@ -118,7 +118,7 @@ class ServerSettings {
 		void	setHost(const std::string &Host);
 		std::string	getHost() const;
 		std::string getPort() const;
-		int			getSize() const;
+		ssize_t			getSize() const;
 		std::string getName() const;
 		std::string	getUpload() const;
 		bool		getMissingValue() const;

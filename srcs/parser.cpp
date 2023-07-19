@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:15:44 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 07:32:49 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 			if (value.size() - 1 > 0) {
 				if (findSemicolon()) {
 					std::stringstream ss(value);
-					int size;
+					ssize_t size;
 					ss >> size;
 					server.setSize(size);
 				}
@@ -376,9 +376,9 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			openingBraceCount++;
 		if (line.find("root") != std::string::npos)
 			setLocationContent(location, ROOT, value);
-		else if (line.find("index") != std::string::npos)
+		else if (directive == "index")
 			setLocationContent(location, INDEX, value);
-		else if (line.find("autoindex") != std::string::npos)
+		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
 		else if (line.find("upload") != std::string::npos && uploadExists == false)
 			setLocationContent(location, UPLOAD, value);

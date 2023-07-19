@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:41:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 07:58:23 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,8 @@ void    Resources::checkRequest( void )
 	}
 	requestFile.close();
 	requestBody.close();
+	if ( getRequest("Method") != "POST" )
+		remove("requestBody");
 	remove("readingRequestFile");
 	errorHandling();
 	printError(getError());
@@ -157,8 +159,8 @@ void    Resources::checkRequest( void )
 
 void	Resources::errorHandling( void ) {
 
-	if (requiredLength < actualLength - 1)
-		setError(REQUEST_ENTITY_TOO_LARGE);
+	// if (requiredLength < actualLength)
+	// 	setError(REQUEST_ENTITY_TOO_LARGE);
 	if (requiredLength == -1 && isPost)
 		setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
