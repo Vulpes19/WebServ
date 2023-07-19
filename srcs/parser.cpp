@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:55:26 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 09:03:40 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -265,6 +265,10 @@ void	Parser::serverValuesValidation(ServerSettings server) {
 	std::stringstream ss(port);
 
 	ss >> portInt;
+	if (port.find(":") != std::string::npos || port.find(".") != std::string::npos) {
+		std::cerr << "Syntax Error: port is invalid!" << std::endl;
+		exit(1);
+	}	
 	if (port.size() == 0) {
 		std::cerr << "Syntax Error: port not found!" << std::endl;
 		exit(1);
@@ -376,9 +380,9 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			openingBraceCount++;
 		if (line.find("root") != std::string::npos)
 			setLocationContent(location, ROOT, value);
-		else if (line.find("index") != std::string::npos)
+		else if (directive == "index")
 			setLocationContent(location, INDEX, value);
-		else if (line.find("autoindex") != std::string::npos)
+		else if (directive == "autoindex")
 			setLocationContent(location, AUTOINDEX, value);
 		else if (line.find("upload") != std::string::npos && uploadExists == false)
 			setLocationContent(location, UPLOAD, value);
@@ -416,13 +420,13 @@ void	Parser::printData() {
 		std::cout << "body size: " << server.getSize() << std::endl;
 		std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		std::cout << "Errors: " << std::endl;
-		std::map<std::string, std::string> epMap = server.getErrorPages();
-		std::map<std::string, std::string>::iterator itr;
-		for(itr=epMap.begin();itr!=epMap.end();itr++)
-		{
-			std::cout << itr->first <<" " << itr->second << std::endl;
-		}
+		// std::cout << "Errors: " << std::endl;
+		// std::map<std::string, std::string> epMap = server.getErrorPages();
+		// std::map<std::string, std::string>::iterator itr;
+		// for(itr=epMap.begin();itr!=epMap.end();itr++)
+		// {
+		// 	std::cout << itr->first <<" " << itr->second << std::endl;
+		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
