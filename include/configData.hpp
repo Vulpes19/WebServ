@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 17:54:51 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 11:27:08 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ enum {
 	UNKNOWN,
 	EMPTY,
 	EXTENSION,
-	NO_CONFIG_FILE
+	NO_CONFIG_FILE,
+	INVALID_STATUS_CODE,
+	INVALID_PATH
 } ;
 
 enum {
