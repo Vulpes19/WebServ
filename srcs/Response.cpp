@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:58:16 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 22:47:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -433,11 +433,19 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	return (RESET);
 }
 
-enum ResponseStates    Response::getResponseFile( std::string path )
+enum ResponseStates    Response::getResponseFile( Resources &resources, std::string path )
 {
 	std::cout << path << std::endl;
 	if ( !file.is_open() )
 	{
+		CGI cgi;
+		if (cgi.checkCGI(path)) {
+			std::cout << "IN CGI BLOCK" << std::endl;
+			cgi.setEnvirement(resources);
+			cgi.exec();
+			
+			// sendResponseHeader( GET, "200 OK", fullPath, NULL );
+		}
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:56:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 22:43:47 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "Libraries.hpp"
 #include "ClientManager.hpp"
 #include "Resources.hpp"
+#include "CGI.hpp"
 
 class ClientManager;
 
@@ -53,7 +54,7 @@ class Response
 		~Response( void );
 		void        setSocket( SOCKET );
 		enum ResponseStates	handleReadRequest( Resources &, std::string &serverName );
-		enum ResponseStates	getResponseFile( std::string );
+		enum ResponseStates	getResponseFile( Resources &, std::string );
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( std::string, Resources & );
