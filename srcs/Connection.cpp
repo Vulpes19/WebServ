@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 07:59:09 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 11:35:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,8 @@ Connection::~Connection( void )
     clients.erase(clients.begin(), clients.end());
 }
 
-ClientManager   *Connection::getClient( SOCKET socket, Server srv, enum SERVER_SETTINGS_STATUS status )
+ClientManager   *Connection::getClient( SOCKET socket, Server srv )
 {
-    status = UPDATE_CLIENT_SETTINGS;
     for ( iterator it = clients.begin(); it != clients.end(); ++it )
     {
         if ( (*it)->getSocket() == socket )

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 07:32:49 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 11:42:05 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,9 @@
 
 Parser::Parser(): openingBraceCount(0), host_exists(false), status(OK), uploadExists(false) {};
 
-Parser::~Parser() {};
+Parser::~Parser() {
+	parsedData.clear();
+};
 
 bool	testExtension(char *argv) {
 

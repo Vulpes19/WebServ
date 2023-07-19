@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 08:04:09 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/19 11:58:16 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -325,31 +325,32 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 					{
 						err.errorRequestTooLarge(socket, errorPages["413"]);
 						buffer.close();
-						remove("readingRequestFile");
+						if ( remove("readingRequestFile") != 0 )
+							err.errorInternal(socket, errorPages["500"]); 
 						reset();
 						return (RESET);
 					}
 				}
 			}
 		}
-	std::string end("\r\n\r\n");
-	delimiter = toCheck.find(end);
-	if ( isBody )
-		bytesReceived += bytesRead;
-	if ( delimiter != std::string::npos )
-	{
-		isBody = true;
-		std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
-		if ( !bodyStart.empty() )
-			bytesReceived += bodyStart.length();
-	}
-	if ( bytesReceived >= bodySize )
-	{
-		buffer.close();
-		resources.checkRequest();
-		return (READY_TO_WRITE);	
-	}
-	return (READING);
+		std::string end("\r\n\r\n");
+		delimiter = toCheck.find(end);
+		if ( isBody )
+			bytesReceived += bytesRead;
+		if ( delimiter != std::string::npos )
+		{
+			isBody = true;
+			std::string bodyStart(toCheck.begin() + delimiter + end.length(), toCheck.end());
+			if ( !bodyStart.empty() )
+				bytesReceived += bodyStart.length();
+		}
+		if ( bytesReceived >= bodySize )
+		{
+			buffer.close();
+			resources.checkRequest();
+			return (READY_TO_WRITE);	
+		}
+		return (READING);
 	}
 	else if ( bytesRead == 0 )
 	{
@@ -361,7 +362,8 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 	{
 		buffer.close();
 		err.errorBadRequest(socket, errorPages["400"]);
-		remove("readingRequestFile");
+		if ( remove("readingRequestFile") != 0 )
+			err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
 	}
@@ -517,8 +519,18 @@ void	Response::handleRedirection( redir &red )
 	oss << "HTTP/1.1 " << red.status_code << "\r\n";
 	oss << "Connection: close\r\n";
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
-	oss << "Location: " << red.path << "\r\n";
-	oss << "\r\n";
+	if ( red.status_code == "301" || red.status_code == "302" )
+	{
+		oss << "Location: " << red.path << "\r\n";
+		oss << "\r\n";
+	}
+	else
+	{
+		oss << "Content-Type: text/html\r\n";
+		oss << "Content-Length: " << red.path.size() << "\r\n";
+		oss << "\r\n";
+		oss << red.path.data() << "\r\n";
+	}
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
 
@@ -577,24 +589,24 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
 	std::cout << red.status_code << std::endl;
-	// if ( red.status_code != "-1" )
-	// {
-	// 	handleRedirection(red);
-	// 	resources.checkRequest();
-	// 	return (true);
-	// }
-	// autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
-	// if ( uploadPath == "NONE" )
-	// 	uploadPath = getUploadPath(resources.getRequest("URL"));	
-	// std::cout << resources.getError() << std::endl;
-	// if ( resources.getError() != NO_ERROR )
-	// {
-	// 	if ( handleErrors( resources ) )
-	// 	{
-	// 		resources.clear();
-	// 		return (true);
-	// 	}
-	// }
+	if ( red.status_code != "-1" )
+	{
+		handleRedirection(red);
+		resources.checkRequest();
+		return (true);
+	}
+	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
+	if ( uploadPath == "NONE" )
+		uploadPath = getUploadPath(resources.getRequest("URL"));	
+	std::cout << resources.getError() << std::endl;
+	if ( resources.getError() != NO_ERROR )
+	{
+		if ( handleErrors( resources ) )
+		{
+			resources.clear();
+			return (true);
+		}
+	}
 	std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
 	std::cout << "before " << path << std::endl;
@@ -688,9 +700,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	oss << "HTTP/1.1 " << statusCode << "\r\n";
 	oss << "Connection: close\r\n";
 	oss << "Date: " << help.getCurrentTime() << "\r\n";
-	//cache-control
 	oss << "Server: " << serverName << "\r\n";
-	//server name
 	if ( method == GET )
 	{
 		oss << "Content-Type: " << help.getFileType(fileName, TYPE_NAME) << "\r\n";
@@ -700,8 +710,8 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 	{
 		std::string ret;
 		ret = help.getFileLocation(fileName.substr(1).c_str());
-		if ( !ret.empty() )
-			oss << "Location: " << ret << "\r\n";
+		// if ( !ret.empty() )
+			// oss << "Location: " << ret << "\r\n";
 		ret = resources->getRequest("Content-Type");
 		if ( ret != "NOT FOUND" )
 			oss << "Content-Type: " << ret << "\n";
