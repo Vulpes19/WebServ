@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 22:43:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/20 15:41:28 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include "CGI.hpp"
 
 class ClientManager;
-
 struct ResponseHelper
 {
 	ssize_t     		getFileSize( const char * ) const;
@@ -94,4 +93,6 @@ class Response
 		ssize_t			bodySize;
 		ssize_t			bodyLimit;
 		bool			isBody;
+		CGI				cgi;
+		bool			isCGI;
 };

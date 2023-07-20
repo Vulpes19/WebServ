@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:35:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/20 12:40:09 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,12 +56,15 @@ void    Connection::deleteClient( ClientManager *cl )
         ++it;
     }
     if ( it != clients.end() )
+    {
+        delete *it;
         clients.erase(it);
+    }
     else
         std::cerr << "dropped client not found\n";
 }
 
-void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( std::vector<Server> &servers, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);

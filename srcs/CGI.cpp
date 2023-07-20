@@ -23,7 +23,7 @@ CGI::~CGI() {
     //     delete[] envArray;
 }
 
-bool CGI::checkCGI(Resources &resources, std::string path) {
+bool CGI::checkCGI(Resources &resources, std::string path, std::string port, std::string serverName) {
     //   /CGI/login.php?val1=val2    /CGI/session/login/login.php?val1=val2
 	std::cout << "CGI\n";
     std::cout << URI << std::endl;
@@ -42,7 +42,7 @@ bool CGI::checkCGI(Resources &resources, std::string path) {
         else fileName = URI.substr(pos + 9, URI.length());
 
         if (!fileName.empty() && checkExtension())
-            setEnv(resources);
+            setEnv(resources, port, serverName);
         else return false;
     }
     std::cout << "NOT CGI\n";
@@ -62,30 +62,31 @@ bool CGI::checkExtension() {
     return true;
 }
 
-void CGI::setEnv(Resources &resources) {
+void CGI::setEnv(Resources &resources, std::string port, std::string serverName) {
     if (fileExtension == ".py")
         env["PROGRAM_NAME"] = "./var/www/cgi-bin/python-cgi";
     else if (fileExtension == ".php")
         env["PROGRAM_NAME"] = "./var/www/cgi-bin/php-cgi";
     env["FILE_NAME"] = fileName;
     env["SCRIPT_NAME"] = fileName;
-    env["SCRIPT_FILENAME"] = "/Users/elias/Desktop/cursus/webserv" + URI.substr(0, URI.length() - 1);
+    // env["SCRIPT_FILENAME"] = "/Users/elias/Desktop/cursus/webserv" + URI.substr(0, URI.length() - 1);
     env["REDIRECT_STATUS"] = "200";
     env["GATEWAY_INTERFACE"] = "CGI/1.1";
     env["QUERY_STRING"] = "";
-    env["SERVER_PORT"] = "80";
+    env["SERVER_PORT"] = port;
     env["SERVER_PROTOCOL"] = "HTTP/1.1";
     env["SERVER_SOFTWARE"] = "webserv";
     env["HTTP_ACCEPT"] = resources.getRequest("Accept");
     env["HTTP_ACCEPT_ENCODING"] = "";
     env["HTTP_ACCEPT_LANGUAGE"] = "";
-    env["HTTP_CONNECTION"] = resources.getRequest("Connection");
+    env["HTTP_CONNECTION"] = "close";
     env["HTTP_HOST"] = resources.getRequest("Host");
     env["HTTP_USER_AGENT"] = "";
     env["REQUEST_METHOD"] = resources.getRequest("Method");
-    env["CONTENT_LENGTH"] = "";
-    env["CONTENT_TYPE"] = "";
-    env["SERVER_NAME"] = resources.getRequest("Host");
+    if ( resources.getRequest("Content-Length") != "NOT FOUND" )
+        env["CONTENT_LENGTH"] = getOutFileSize();
+    env["CONTENT_TYPE"] = "text/html";
+    env["SERVER_NAME"] = serverName;
     env["REMOTE_ADDR"] = "";
 
     std::cout << "\n----------------------------------------------------------------" << std::endl;
@@ -109,16 +110,17 @@ void CGI::getEnvAsArray() {
 bool CGI::exec() {
     std::string infile(URI);
     
-    outFile = "/Users/elias/Desktop/cursus/webserv/var/www/CGI/outFile";
+    outFile = "outFile";
 
     int in_fd = open(URI.c_str() , O_RDONLY);
 	int out_fd = open(outFile.c_str(), O_RDWR | O_CREAT | O_TRUNC, 0755);
-
+    if ( in_fd == -1 || out_fd == -1 )
+        return (false);
     getEnvAsArray();
 
     pid_t pid = fork();
     if (pid == -1)
-        std::cerr << "Failed to fork" << std::endl;
+        return (false);
     else if (pid == 0) {
         std::cout << "This is the child process" << std::endl;
         char *arg[] = {const_cast<char *>((*env.find("PROGRAM_NAME")).second.c_str()),const_cast<char *>((*env.find("FILE_NAME")).second.c_str()), NULL};
@@ -126,12 +128,13 @@ bool CGI::exec() {
         dup2(in_fd, 0);
         dup2(out_fd, 1);
         execve(arg[0], arg, envArray);
-        std::cerr << "Execve failed!" << std::endl;
-        exit(1);
+        // std::cerr << "Execve failed!" << std::endl;
+        // exit(1);
+        return ( false );
     }
 
     std::stringstream buff;
-    std::ifstream file(outFile);
+    std::ifstream file(outFile.c_str());
 
     int start_time = time(NULL);
 	int timeout = 120;
@@ -143,24 +146,30 @@ bool CGI::exec() {
             close(in_fd);
             close(out_fd);
             buff << file.rdbuf();
+            std::cout << "OUTFILE: " << outFileStr << std::endl;
 			outFileStr = buff.str();
 			if (outFileStr.size() == 0)
 				statusCode = "400";
 			if (outFileStr.substr(0, 7) == "Status:")
 				statusCode = outFileStr.substr(outFile.find("Status:") + 9, 3);
-            std::ofstream oFile(outFile);
+            std::ofstream oFile(outFile.c_str());
             if (oFile.is_open())
-                oFile << "HTTP/1.1 200 Ok\r\nContent-Length: " << outFileStr.size() << "\r\n" << outFileStr;
-            std::cout << "content size " << std::to_string((outFileStr.substr(outFileStr.find("\r\n\r\n") + 4, outFileStr.size())).length()) << std::endl;
+                oFile << outFileStr;
+            else
+                return (false);
+            // if (oFile.is_open())
+            //     oFile << "HTTP/1.1 200 Ok\r\nContent-Length: " << outFileStr.size() << "\r\n" << outFileStr;
+            // std::cout << "content size " << (outFileStr.substr(outFileStr.find("\r\n\r\n") + 4, outFileStr.size())).length() << std::endl;
             file.close();
             oFile.close();
+            exit(1);
             std::cout << "CGI EXECUTED\n";
             return true;
         }
     }
     kill(pid, SIGTERM);
     statusCode = "404";
-    return false;
+    return (false);
 }
 
 size_t CGI::getOutFileSize() {

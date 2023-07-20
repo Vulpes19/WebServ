@@ -2,10 +2,11 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include "Libraries.hpp"
 #include "Resources.hpp"
-#include "Response.hpp"
+// #include "Response.hpp"
 
 class Resources;
 
@@ -17,10 +18,10 @@ class CGI {
         ~CGI( void );
         // std::string	getCGI( void );
         bool            checkExtension();
-        void            setEnv(Resources &resources);
+        void            setEnv(Resources &resources, std::string port, std::string serverName);
         void            getEnvAsArray();
         bool            exec();
-        bool            checkCGI(Resources &resources, std::string path);
+        bool            checkCGI(Resources &resources, std::string path, std::string port, std::string serverName);
         std::ifstream   getOutFile();
         size_t          getOutFileSize();
         std::string     getStatusCode();
