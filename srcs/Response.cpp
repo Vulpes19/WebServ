@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: elias <elias@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 22:47:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/20 04:27:18 by elias            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -435,17 +435,11 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 
 enum ResponseStates    Response::getResponseFile( Resources &resources, std::string path )
 {
-	std::cout << path << std::endl;
+	std::cout << "PATHH" << path << std::endl;
+	CGI cgi;
+		
 	if ( !file.is_open() )
 	{
-		CGI cgi;
-		if (cgi.checkCGI(path)) {
-			std::cout << "IN CGI BLOCK" << std::endl;
-			cgi.setEnvirement(resources);
-			cgi.exec();
-			
-			// sendResponseHeader( GET, "200 OK", fullPath, NULL );
-		}
 		std::ostringstream oss;
 		bytesSent = 0;
 		bytesReceived = 0;
@@ -490,7 +484,11 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 			reset();
 			return (RESET);
 		}
-		sendResponseHeader( GET, "200 OK", fullPath, NULL );
+		// CGI
+		if (cgi.checkCGI(resources, path)) {
+			cgi.exec();
+		}
+		else sendResponseHeader( GET, "200 OK", fullPath, NULL );
 	}
 	char buffer[BSIZE + 1];
 	file.read(buffer, BSIZE);
@@ -631,7 +629,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 		if ( help.isDirectory("." + path) && path != "/" )
 			ret = getResponseDir(path);
 		else
-			ret = getResponseFile(path);
+			ret = getResponseFile(resources, path);
 	}
 	if ( resources.getRequest("Method") == "POST" )
 	{

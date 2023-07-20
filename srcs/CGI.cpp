@@ -23,25 +23,27 @@ CGI::~CGI() {
     //     delete[] envArray;
 }
 
-bool CGI::checkCGI(std::string path) {
-    //    /var/www/CGI/     /CGI/login.php?val1=val2
+bool CGI::checkCGI(Resources &resources, std::string path) {
+    //   /CGI/login.php?val1=val2    /CGI/session/login/login.php?val1=val2
 	std::cout << "CGI\n";
-
-    setURI(path);
     std::cout << URI << std::endl;
 
-    size_t pos = URI.find("/CGI/");
-    if (pos != std::string::npos) {
-        fileName = URI.substr(pos + 5, URI.find("?"));
-        if (checkExtension())
-            setEnv();
-        else
-            return false;
-        std::pair<std::string, std::string> p("QUERY_STRING", URI.substr(URI.find("?") + 1));
-        env.insert(p);
+    URI = path;
+    size_t pos = URI.find("/cgi-bin/"); // Compare to config path
 
-        if (!fileName.empty())
-            return true;
+    // check for directory in /cgi-bin/
+
+    if (pos != std::string::npos && pos + 9 != std::string::npos) {
+        if (URI.find("?") != std::string::npos) {
+            fileName = URI.substr(pos + 9, URI.find("?"));
+            std::pair<std::string, std::string> p("QUERY_STRING", URI.substr(URI.find("?") + 1, URI.length()));
+            env.insert(p);
+        }
+        else fileName = URI.substr(pos + 9, URI.length());
+
+        if (!fileName.empty() && checkExtension())
+            setEnv(resources);
+        else return false;
     }
     std::cout << "NOT CGI\n";
     return false;
@@ -60,21 +62,36 @@ bool CGI::checkExtension() {
     return true;
 }
 
-void CGI::setEnv() {
+void CGI::setEnv(Resources &resources) {
     if (fileExtension == ".py")
-        env["PROGRAM_NAME"] = "/Users/elias/Desktop/cursus/webserv/var/www/CGI/python-cgi";
+        env["PROGRAM_NAME"] = "./var/www/cgi-bin/python-cgi";
     else if (fileExtension == ".php")
-        env["PROGRAM_NAME"] = "/Users/elias/Desktop/cursus/webserv/var/www/CGI/php-cgi";
-    env["FILE_NAME"] = URI.substr(0, URI.length() - 1);
-    env["SCRIPT_NAME"] = URI.substr(0, URI.length() - 1);
+        env["PROGRAM_NAME"] = "./var/www/cgi-bin/php-cgi";
+    env["FILE_NAME"] = fileName;
+    env["SCRIPT_NAME"] = fileName;
     env["SCRIPT_FILENAME"] = "/Users/elias/Desktop/cursus/webserv" + URI.substr(0, URI.length() - 1);
     env["REDIRECT_STATUS"] = "200";
     env["GATEWAY_INTERFACE"] = "CGI/1.1";
-    // env["PATH_INFO"] = URI;
     env["QUERY_STRING"] = "";
     env["SERVER_PORT"] = "80";
     env["SERVER_PROTOCOL"] = "HTTP/1.1";
     env["SERVER_SOFTWARE"] = "webserv";
+    env["HTTP_ACCEPT"] = resources.getRequest("Accept");
+    env["HTTP_ACCEPT_ENCODING"] = "";
+    env["HTTP_ACCEPT_LANGUAGE"] = "";
+    env["HTTP_CONNECTION"] = resources.getRequest("Connection");
+    env["HTTP_HOST"] = resources.getRequest("Host");
+    env["HTTP_USER_AGENT"] = "";
+    env["REQUEST_METHOD"] = resources.getRequest("Method");
+    env["CONTENT_LENGTH"] = "";
+    env["CONTENT_TYPE"] = "";
+    env["SERVER_NAME"] = resources.getRequest("Host");
+    env["REMOTE_ADDR"] = "";
+
+    std::cout << "\n----------------------------------------------------------------" << std::endl;
+    for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); ++it)
+        std::cout << it->first << " => " << it->second << '\n';
+    std::cout << "----------------------------------------------------------------" << std::endl;
 }
 
 void CGI::getEnvAsArray() {
@@ -133,7 +150,7 @@ bool CGI::exec() {
 				statusCode = outFileStr.substr(outFile.find("Status:") + 9, 3);
             std::ofstream oFile(outFile);
             if (oFile.is_open())
-                oFile << "HTTP/1.1 200 Ok\r\nContent-Length: " << "108" << "\r\n" << outFileStr;
+                oFile << "HTTP/1.1 200 Ok\r\nContent-Length: " << outFileStr.size() << "\r\n" << outFileStr;
             std::cout << "content size " << std::to_string((outFileStr.substr(outFileStr.find("\r\n\r\n") + 4, outFileStr.size())).length()) << std::endl;
             file.close();
             oFile.close();
@@ -156,23 +173,4 @@ std::string CGI::getStatusCode() {
 
 void CGI::setURI(std::string path) {
     this->URI = path;
-}
-
-void CGI::setEnvirement(Resources &resources) {
-    env["HTTP_ACCEPT"] = resources.getRequest("Accept");
-    env["HTTP_ACCEPT_ENCODING"] = "";
-    env["HTTP_ACCEPT_LANGUAGE"] = "";
-    env["HTTP_CONNECTION"] = resources.getRequest("Connection");
-    env["HTTP_HOST"] = resources.getRequest("Host");
-    env["HTTP_USER_AGENT"] = "";
-    env["REQUEST_METHOD"] = resources.getRequest("Method");
-    env["CONTENT_LENGTH"] = "";
-    env["CONTENT_TYPE"] = "";
-    env["SERVER_NAME"] = resources.getRequest("Host");
-    env["REMOTE_ADDR"] = "";
-
-    std::cout << "\n----------------------------------------------------------------" << std::endl;
-    for (std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); ++it)
-        std::cout << it->first << " => " << it->second << '\n';
-    std::cout << "----------------------------------------------------------------" << std::endl;
 }

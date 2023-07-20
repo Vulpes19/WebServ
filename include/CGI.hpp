@@ -17,15 +17,14 @@ class CGI {
         ~CGI( void );
         // std::string	getCGI( void );
         bool            checkExtension();
-        void            setEnv();
+        void            setEnv(Resources &resources);
         void            getEnvAsArray();
         bool            exec();
-        bool            checkCGI(std::string path);
+        bool            checkCGI(Resources &resources, std::string path);
         std::ifstream   getOutFile();
         size_t          getOutFileSize();
         std::string     getStatusCode();
         void            setURI(std::string path);
-        void            setEnvirement(Resources &resources);
     private:
         char            **envArray;
         std::map<std::string, std::string> env;
@@ -38,4 +37,5 @@ class CGI {
         std::string		outFile;
         std::string		fileName;
         std::string     outFileStr;
+        std::string     location;
 };
