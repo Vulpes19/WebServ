@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <cstring>
+#include <map>
 using namespace std;
 
 // int main( void )
@@ -67,21 +68,6 @@ using namespace std;
 //     return (0);
 // }
 
-int main( void )
-{
-    std::string dir = "./Users/abaioumy/Documents/webServ/assets/error_images/imgs/Timeout.gif";
-    std::ifstream f(dir.c_str());
-    if ( f.is_open())
-        std::cout << "cant be opened\n";
-//     char path[PATH_MAX];
-//     char *absolutePath = realpath( dir.c_str(), path );
-//     if ( absolutePath != NULL)
-//         std::cout << absolutePath << std::endl;
-    if ( access("/Users/abaioumy/Documents/webServ/assets/error_images/imgs/Timeout.gif", F_OK) == -1 )
-        std::cerr << "nu such file or directory\n";
-	if ( access(dir.c_str(), W_OK) == -1 )
-        std::cerr << "no write permission\n";
-}
 
 // int main( void )
 // {
@@ -90,3 +76,12 @@ int main( void )
     
 //     std::cout << p.substr(5) << std::endl;
 // }
+
+int main()
+{
+    std::ifstream f("output");
+	char bruh[100];
+	f.read(bruh, 100);
+	std::string s(bruh, 100);
+	std::cout << s << std::endl;
+}

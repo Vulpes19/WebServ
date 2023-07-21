@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 21:55:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/21 12:37:19 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,13 @@
 // ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("default") ,autoindex(OFF), missingValue(true) {
+Location::Location(): upload("default") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
 
 	redirection.status_code = "-1"; 
 	redirection.path = ""; 
 };
 
-Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
+Location::Location(std::string value, std::string root, std::string index, std::string upload, std::string cgi): value(value), root(root), index(index), upload(upload), cgi(cgi) {
 	autoindex = OFF;
 	redirection.status_code = "-1";
 	redirection.path = "";
@@ -62,6 +62,25 @@ void	Location::setRedirection(std::string status_code, std::string path) {
 	redirection.path = path;
 }
 
+void	Location::setCGIbool() {
+
+	isCGI = true;
+}
+
+bool	Location::getCGIbool() const {
+
+	return (isCGI);
+}
+
+void	Location::setCGI(std::string val) {
+
+	cgi = val;
+}
+
+std::string Location::getCGI() const {
+	
+	return (cgi);
+}
 
 void    Location::setValue(const std::string& val) {
 
@@ -131,6 +150,7 @@ Location&	Location::operator=(const Location& location) {
 		this->root = location.root;
 		this->index = location.index;
 		this->redirection = location.redirection;
+		this->cgi = location.cgi;
 	}
 	return (*this);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 12:45:51 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/20 18:14:55 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ void    ClientManager::changeSet( fd_set &from, fd_set &to )
 
 void    ClientManager::createClient( SOCKET listenSocket )
 {
-    // int optval;
+    int optval;
     addressLen = sizeof(address);
     socket = accept( listenSocket, (struct sockaddr *) &address, &addressLen);
     int flags = fcntl( socket, F_GETFL, 0  );
@@ -78,11 +78,11 @@ void    ClientManager::createClient( SOCKET listenSocket )
         std::cerr << "failed to get flags\n";
         exit(1);
     }
-    // if ( setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) < 0 )
-    // {
-    //     std::cerr << "failed to disable SIGPIPE at the socket level\n";
-    //     exit(1);
-    // }
+    if ( setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) < 0 )
+    {
+        std::cerr << "failed to disable SIGPIPE at the socket level\n";
+        exit(1);
+    }
 }
 
 void		ClientManager::updateClientSettings( std::vector<Server> &srv, std::string serverName )

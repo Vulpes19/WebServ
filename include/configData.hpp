@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 21:55:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/21 12:37:41 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,9 +73,11 @@ class Location {
 		redir		redirection;
 		int         autoindex ;
 		bool		missingValue;
+		std::string	cgi;
+		bool		isCGI;
 	public:
 		Location();
-		Location(std::string value, std::string root, std::string index, std::string upload);
+		Location(std::string value, std::string root, std::string index, std::string upload, std::string cgi);
 		void    setValue(const std::string &val);
 		void    setRoot(const std::string &rt);
 		void    setIndex(const std::string &indx);
@@ -83,11 +85,15 @@ class Location {
 		void	setRedirection(std::string status_code, std::string path);
 		void	setUpload(const std::string &upld);
 		void	setMissingValue();
+		void	setCGIbool();
+		void	setCGI(std::string val);
 		// void	setBraceValue();
 		std::string	getUpload() const;
 		std::string getValue() const;
 		std::string getRoot() const;
 		std::string getIndex() const;
+		bool		getCGIbool() const;
+		std::string	getCGI() const;
 		int         getAutoIndex() const;
 		bool		getMissingValue() const;
 		redir		getRedirection() const;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.hpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 15:41:28 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/21 19:12:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,20 @@
 #include "Libraries.hpp"
 #include "ClientManager.hpp"
 #include "Resources.hpp"
-#include "CGI.hpp"
-
+#include <sys/wait.h>
+ #include <signal.h>
+ 
 class ClientManager;
+
+struct Cgi
+{
+	int statusCode;
+	std::string	contentType;
+	bool isCGI;
+	std::ifstream file;
+	std::string cgiPath;
+};
+
 struct ResponseHelper
 {
 	ssize_t     		getFileSize( const char * ) const;
@@ -57,7 +68,11 @@ class Response
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( std::string, Resources & );
-		enum ResponseStates	deleteDir( Resources & );
+		enum ResponseStates	handleCGI( Resources &, std::string path );
+		bool				checkCGI( std::string path );
+		bool				sendCGI( void );
+		bool				executeCGI( std::string &path, std::map<std::string, std::string> &env );
+		char *const*getEnvArr( std::map<std::string, std::string> &env );
 		std::string	getRootPath( std::string );
 		std::string	getUploadPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
@@ -93,6 +108,5 @@ class Response
 		ssize_t			bodySize;
 		ssize_t			bodyLimit;
 		bool			isBody;
-		CGI				cgi;
-		bool			isCGI;
+		struct Cgi				cgi;
 };

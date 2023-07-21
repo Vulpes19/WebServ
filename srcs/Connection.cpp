@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 12:40:09 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/20 18:32:56 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,6 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds, std::string
         {
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
-                std::cout << "starting write\n";
                 if ( (*it)->startResponse() )
                 {
                     (*it)->unsetSocket(writefds, readfds);

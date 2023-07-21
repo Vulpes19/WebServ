@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 21:56:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/21 12:38:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,18 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			else
 				printError(EMPTY);
 			break ;
+		case CGI:
+			if (value.find("/") == std::string::npos)
+				printError(INVALID_PATH);
+			if (value.size() - 1 > 0) {
+				if (findSemicolon())
+					location.setCGI(cleanValue(value));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
 		case RETURN:
 			std::stringstream ss(value);
 			std::string path;
@@ -386,6 +398,8 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 	Location	location;
 	
 	location.setValue(value);
+	if (value == "/cgi-bin/")
+		location.setCGIbool();
 	while(getline(confFile, line) && status == OK) {
 
 		std::stringstream ss(line);
@@ -404,6 +418,8 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
+		else if (directive == "CGI" && location.getCGIbool())
+			setLocationContent(location, CGI, value);
 		if (line[0] == '}') {
 			openingBraceCount--;
 			server.setLocations(location);
