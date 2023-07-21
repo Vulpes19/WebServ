@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Response.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:58:16 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/20 20:48:53 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,8 @@ void    ErrorResponse::errorBadRequest( SOCKET socket, std::string path )
 void    ErrorResponse::errorNotFound( SOCKET socket, std::string path )
 {
 	std::stringstream errorMsg;
-	size_t pos = path.find("assets");
-	path = path.substr(pos);
+	// size_t pos = path.find("assets");
+	// path = path.substr(pos);
 	errorMsg << "HTTP/1.1 404\r\n";
 	errorMsg << "Connection: close\r\n";
 	errorMsg << "Content-Type: text/html\r\n";
