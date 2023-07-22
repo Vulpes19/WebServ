@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 12:12:42 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 18:19:42 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -151,8 +151,8 @@ Location&	Location::operator=(const Location& location) {
 		this->root = location.root;
 		this->index = location.index;
 		this->redirection = location.redirection;
-		// this->cgi = location.cgi;
-		// this->isCGI = location.isCGI;
+		this->cgi = location.cgi;
+		this->isCGI = location.isCGI;
 	}
 	return (*this);
 }

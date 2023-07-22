@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 12:24:13 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 19:51:38 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,7 +362,7 @@ bool	examinePath(std::string value) {
 void	Parser::locationValuesValidation(Location location) {
 
 	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
-		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
+		std::cerr << "Syntax Error: [" << value << "] location value not found or invalid!" << std::endl;
 		exit(1);
 	}
 	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
@@ -403,13 +403,25 @@ void	Parser::locationValuesValidation(Location location) {
 	}
 }
 
+bool	Parser::examineLocation() {
+
+	if (value == "/")
+		return (true);
+	else if (value[0] == '/' && value[value.size() - 1] == '/')
+		return (true);
+	status = ERROR;
+	return (false);
+}
+
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
 	Location	location;
 	
-	if (value == "/cgi-bin/")
-		location.setCGIbool();
-	location.setValue(value);
+	if (examineLocation()) {
+		if (value == "/cgi-bin/")
+			location.setCGIbool();
+		location.setValue(value);
+	}
 	while(getline(confFile, line) && status == OK) {
 
 		std::stringstream ss(line);
