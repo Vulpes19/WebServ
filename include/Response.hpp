@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 19:12:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:37:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ class Response
 		void		setHost( std::string );
 		void		setPort( std::string );
         void		setBodySize( ssize_t );
+		void		setUpload( std::string );
 		void		reset( void );
 	private:
 		std::vector< Location >				loc;

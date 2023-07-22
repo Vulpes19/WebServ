@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 18:32:56 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:46:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->setPort(srv.getPort());
     newClient->setBodySize(srv.getBodySize());
     newClient->setErrorPages(srv.getErrorPages());
+    newClient->setUpload(srv.getUpload());
     clients.push_back(newClient);
     return (newClient);
 }

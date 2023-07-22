@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 15:15:27 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/22 17:36:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,11 @@ void    Server::setLocations( std::vector<Location> loc )
 void    Server::setBodySize( ssize_t bodySize )
 {
     this->bodySize = bodySize;
+}
+
+void    Server::setUpload( std::string upload )
+{
+    this->upload = upload;
 }
 
 void    Server::setErrorPages( std::map< std::string, std::string > errorPages )

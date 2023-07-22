@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 13:39:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 19:30:55 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 	}
 	errorMsg << "\r\n";
 	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	exit(1);
 }
 
 void    ErrorResponse::errorUnauthorized( SOCKET socket, std::string path )
@@ -332,7 +333,10 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 						err.errorRequestTooLarge(socket, errorPages["413"]);
 						buffer.close();
 						if ( remove("readingRequestFile") != 0 )
+						{
+							std::cout << "1\n";
 							err.errorInternal(socket, errorPages["500"]); 
+						}
 						reset();
 						return (RESET);
 					}
@@ -369,7 +373,10 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 		buffer.close();
 		err.errorBadRequest(socket, errorPages["400"]);
 		if ( remove("readingRequestFile") != 0 )
+		{
+							std::cout << "2\n";
 			err.errorInternal(socket, errorPages["500"]);
+		}
 		reset();
 		return (RESET);
 	}
@@ -409,6 +416,7 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	DIR *dir = opendir(fullPath.c_str());
 	if ( dir == NULL )
 	{
+							std::cout << "3\n";
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
@@ -484,6 +492,7 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 		file.open(fullPath.c_str());
 		if ( !file.is_open() )
 		{
+							std::cout << "4\n";
 			err.errorInternal(socket, errorPages["500"]);
 			reset();
 			return (RESET);
@@ -507,7 +516,6 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	buffer[bytesRead] = '\0';
 	if ( bytesRead == -1 )
 	{
-		err.errorInternal(socket, errorPages["500"]);
 		bytesSent = 0;
 		file.close();
 		reset();
@@ -562,6 +570,7 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	uploadPath = "." + uploadPath;
 	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
+							std::cout << "6\n";
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
@@ -621,7 +630,9 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	env["HTTP_ACCEPT_LANGUAGE"] = resources.getRequest("Accept-Language").substr(0, resources.getRequest("Accept-Language").length() - 1);
 	env["HTTP_ACCEPT_ENCODING"] = resources.getRequest("Accept-Encoding").substr(0, resources.getRequest("Accept-Encoding").length() - 1);
 	env["HTTP_CONNECTION"] = "close";
-	env["HTTP_COOKIE"] = resources.getRequest("Cookie").substr(0, resources.getRequest("Cookie").length() - 1);
+	std::string cookies = resources.getRequest("Cookie");
+	if ( cookies != "NOT FOUND" )
+		env["HTTP_COOKIE"] = cookies.substr(0, cookies.length() - 1);
 	if ( !executeCGI( path, env ) )
 		return (RESET);
 	fileSize = help.getFileSize("output");
@@ -629,7 +640,7 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	if ( !cgi.file.is_open() )
 		return (RESET);
 	cgi.isCGI = true;
-	send(socket, "HTTP/1.1 200 OK\r\n", 17, 0);
+	// send(socket, "HTTP/1.1 200 OK\r\n", 17, 0);
 	return (READING);
 }
 
@@ -643,7 +654,6 @@ char *const*Response::getEnvArr( std::map<std::string, std::string> &env )
 		std::string envStr = it->first + "=" + it->second;
 		envp[i] = new char[envStr.length() + 1];
 		strcpy(envp[i], envStr.c_str());
-		// std::cout << envp[i] << std::endl;
 		++it;
 		i++;
 	}
@@ -670,15 +680,20 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 			setenv(it->first.c_str(), it->second.c_str(), 1);
 		char *const *envp = getEnvArr(env);
 		std::string cgi2 = cgi.cgiPath;
-		cgi.cgiPath = "." + cgi.cgiPath;
+		if ( cgi.cgiPath.find("usr") == std::string::npos)
+		{
+			cgi.cgiPath = "." + cgi.cgiPath;
+		}
+		path = "." + path;
 		if ( path.find("?") != std::string::npos )
 			path = path.substr(0, path.find("?"));
 		if ( path[path.length() - 1] == '/' )
 			path = path.substr(0, path.length() - 1);
-		const char *cgiPtr = cgi.cgiPath.c_str();
-		const char *pathPtr = path.c_str();
-		char *const argv[] = { const_cast<char *>(cgiPtr), const_cast<char *>(pathPtr), NULL};
-		execve(cgi.cgiPath.c_str(), argv, envp);
+		std::vector<const char *> args;
+		args.push_back(cgi.cgiPath.c_str());
+		args.push_back(path.c_str());
+		args.push_back(NULL);
+		execve(cgi.cgiPath.c_str(), const_cast<char *const *>(args.data()), envp);
 		std::cerr << "execve failed\n";
 		exit(127);
 	}
@@ -713,6 +728,15 @@ bool	Response::sendCGI( void )
 	std::string line;
 	if ( std::getline(cgi.file, line) )
 	{
+		if ( line.find("Powered-By") != std::string::npos )
+			return (true);
+		if ( line.find("status") != std::string::npos )
+		{
+			line.erase(line.length() - 1);
+			line.replace(0, line.find("status") + 7, "HTTP/1.1");
+			line += " OK\r";
+			std::cout << line << std::endl;
+		}
 		if ( !cgi.file.eof() )
 			line += '\n';
 		send( socket, line.data(), line.size(), 0 );
@@ -721,8 +745,8 @@ bool	Response::sendCGI( void )
 	else
 	{
 		cgi.file.close();
-		if ( remove("output") != 0 )
-			err.errorInternal(socket, errorPages["500"]);
+		// if ( remove("output") != 0 )
+		// 	err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (false);
 	}
@@ -752,7 +776,10 @@ enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resou
 		send( socket, "File deleted.", 13, 0 );
 	}
 	else
+	{
+							std::cout << "7\n";
 		err.errorInternal(socket, errorPages["500"]);
+	}
 	reset();
 	return (RESET);
 }
@@ -761,10 +788,10 @@ bool    Response::handleWriteResponse( Resources &resources )
 {
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
+	std::string method = resources.getRequest("Method");
 	if ( red.status_code != "-1" )
 	{
 		sendResponseHeader( REDIR, red.status_code, red.path, &resources);
-		// handleRedirection(red);
 		resources.clear();
 		return (true);
 	}
@@ -781,7 +808,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	}
 	// std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
-	if ( checkCGI(path) && cgi.isCGI == false )
+	if ( checkCGI(path) && cgi.isCGI == false && method == "GET" )
 	{
 		ret = handleCGI(resources, path); 
 		if ( ret == RESET)
@@ -802,21 +829,21 @@ bool    Response::handleWriteResponse( Resources &resources )
 		resources.clear();
 		return (true);
 	}
-	if ( resources.getRequest("Method") == "GET")
+	if ( method == "GET")
 	{
 		if ( help.isDirectory("." + path) && path != "/" )
 			ret = getResponseDir(path);
 		else
 			ret = getResponseFile(resources, path);
 	}
-	if ( resources.getRequest("Method") == "POST" )
+	if ( method == "POST" )
 	{
 		if ( help.isDirectory("." + path) )
 			err.errorForbidden(socket, errorPages["403"]);
 		else
 			ret = postUploadFile(resources);
 	}
-	if ( resources.getRequest("Method") == "DELETE" )
+	if ( method == "DELETE" )
 	{
 		if ( help.isDirectory("." + path) )
 			err.errorForbidden(socket, errorPages["403"]);
@@ -830,15 +857,6 @@ bool    Response::handleWriteResponse( Resources &resources )
 		resources.clear();
 		return (true);
 	}
-}
-
-bool	Response::isRequestReceived( std::string requestStr, ssize_t bytesRead ) const
-{
-	std::string end("\r\n\r\n");
-	(void)bytesRead;
-	if ( strcmp( requestStr.c_str() + bytesReceived - end.length(), end.c_str() ) == 0 )
-		return (true);
-	return (false);
 }
 
 bool	Response::handleErrors( Resources &resources )
@@ -855,8 +873,11 @@ bool	Response::handleErrors( Resources &resources )
 			err.errorForbidden(socket, errorPages["403"]);
 			break ;
 		case INTERNAL_SERVER_ERROR:
+		{
+							std::cout << "8\n";
 			err.errorInternal(socket, errorPages["500"]);
 			break ;
+		}
 		case UNAUTHORIZED:
 			err.errorUnauthorized(socket, errorPages["401"]);
 			break ;
@@ -921,12 +942,24 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 			oss << "HTTP/1.1 " << statusCode << "\r\n";
 			oss << "Connection: close\r\n";
 			oss << "Date: " << help.getCurrentTime() << "\r\n";
-			oss << "Server: " << serverName << "\r\n";
-			oss << "Location: " << fileName << "\r\n";
+			oss << "Server: " << serverName << "\r\n";	
+			if ( statusCode == "301" || statusCode == "302" )
+				oss << "Location: " << fileName << "\r\n";
+			else
+			{
+				oss << "Content-Type: text/html\r\n";
+				oss << "Content-Length: " << fileName.size() << "\r\n";
+				oss << "\r\n";
+				oss << fileName.data() << "\r\n";
+				return ;
+			}
 			break ;
 		}
 		default:
+		{
+							std::cout << "9\n";
 			err.errorInternal(socket, errorPages["500"]);
+		}
 	}
 	oss << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0 );
@@ -960,6 +993,11 @@ void	Response::setPort( std::string port )
 void	Response::setBodySize( ssize_t bodyLimit )
 {
 	this->bodyLimit = bodyLimit;
+}
+
+void	Response::setUpload( std::string uploadPath )
+{
+	this->uploadPath = uploadPath;
 }
 
 std::string	Response::getRootPath( std::string path )

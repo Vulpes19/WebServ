@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 12:37:19 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:41:01 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@
 // ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("default") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
+Location::Location(): upload("NONE") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
 
 	redirection.status_code = "-1"; 
 	redirection.path = ""; 

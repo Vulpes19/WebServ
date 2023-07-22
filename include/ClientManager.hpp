@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ClientManager.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/20 15:40:19 by vulpes           ###   ########.fr       */
+/*   Updated: 2023/07/22 17:36:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ class ClientManager
 		void		setHost( std::string );
 		void		setPort( std::string );
 		void		setBodySize( ssize_t );
+		void		setUpload( std::string );
 		void		updateClientSettings( std::vector<Server> &srv, std::string serverName );
 	private:
 		SOCKET		socket;
