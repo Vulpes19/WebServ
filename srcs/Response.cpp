@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 19:23:02 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 12:24:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -495,21 +495,34 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	if ( cgi.isCGI )
 	{
 		std::cout << "**** READING ****\n";
-		cgi.file.read(buffer, BSIZE);
-		bytesRead = file.gcount();
-		std::string toCheck(buffer, bytesRead);
-		std::cout << toCheck << std::endl;
-		size_t pos = toCheck.find("Content-type");
-		if ( pos != std::string::npos )
+		std::string line;
+		if ( std::getline(cgi.file, line) )
 		{
-			pos += 14;
-			size_t pos2 = toCheck.find("\n");
-			if ( pos2 != std::string::npos )
-			{
-				cgi.contentType = toCheck.substr(14, pos2);
-				sendResponseHeader(Cgi, "", path, &resources);
-			}
+			if ( !cgi.file.eof() )
+				line += '\n';
+			send( socket, line.data(), line.size(), 0 );
+			return (READING);
 		}
+		else
+		{
+			cgi.file.close();
+			return (RESET);
+		}
+		// cgi.file.read(buffer, BSIZE);
+		// bytesRead = cgi.file.gcount();
+		// std::string toCheck(buffer, bytesRead);
+		// std::cout << toCheck << std::endl;
+		// size_t pos = toCheck.find("Content-type");
+		// if ( pos != std::string::npos )
+		// {
+		// 	pos += 14;
+		// 	size_t pos2 = toCheck.find("\n");
+		// 	if ( pos2 != std::string::npos )
+		// 	{
+		// 		cgi.contentType = toCheck.substr(14, pos2);
+		// 		sendResponseHeader(Cgi, "200 OK", path, &resources);
+		// 	}
+		// }
 	}
 	else
 	{
@@ -522,6 +535,7 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 		err.errorInternal(socket, errorPages["500"]);
 		bytesSent = 0;
 		file.close();
+		cgi.file.close();
 		reset();
 		return (RESET);
 	}
@@ -598,7 +612,13 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	std::map< std::string, std::string > env;
 	size_t pos = path.find("?");
 	if ( pos != std::string::npos )
+	{
 		queryStr = path.substr(pos + 1);
+		if ( queryStr[queryStr.length() - 1] == '/' )
+			queryStr.erase(queryStr.length() - 1);
+	}
+	std::cout << queryStr << std::endl;
+	// exit(1);
 	if ( resources.getRequest("Content-Length") != "NOT FOUND" )
 		env["CONTENT_LENGTH"] = resources.getRequest("Content-Length");
 	if ( resources.getRequest("Content-Type") != "NOT FOUND" )
@@ -607,16 +627,22 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	if ( !queryStr.empty() )
 		env["QUERY_STRING"] = queryStr;
 	std::cout << path << std::endl;
-	env["SCRIPT_NAME"] = path.substr(1, path.length() - 1);
-	env["SCRIPT_FILENAME"] = path.substr(1, path.length() - 1);
+	if ( !queryStr.empty() )
+	{
+		path = path.substr(1, path.find("?") );
+	}
+	if ( path[path.length() - 1] == '/' )
+		path.erase(path.length() - 1);
+	env["SCRIPT_NAME"] = path.substr(1);
+	env["SCRIPT_FILENAME"] = path.substr(1);
 	env["SERVER_NAME"] = serverName;
 	env["SERVER_PORT"] = port;
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
 	env["SERVER_SOFTWARE"] = "webserv";
 	env["REDIRECT_STATUS"] = "200";
 	env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	env["PATH_INFO"] = path.substr(0, path.length() - 1);
-	env["PATH_TRANSLATED"] = path.substr(0, path.length() - 1);
+	env["PATH_INFO"] = path;
+	env["PATH_TRANSLATED"] = path;
 	env["REMOTE_ADDR"] = host;
 	env["HTTP_HOST"] = host + ":" + port;
 	env["HTTP_USER_AGENT"] = resources.getRequest("User-Agent").substr(0, resources.getRequest("User-Agent").length() - 1);
@@ -627,8 +653,13 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	env["HTTP_COOKIE"] = resources.getRequest("Cookie").substr(0, resources.getRequest("Cookie").length() - 1);
 	if ( !executeCGI( path, env ) )
 		return (RESET);
-	fileSize = help.getFileSize("outFile");
+	fileSize = help.getFileSize("output");
+	std::cout << "size: " << fileSize << std::endl;
+	cgi.file.open("output");
+	if ( !cgi.file.is_open() )
+		return (RESET);
 	cgi.isCGI = true;
+	send(socket, "HTTP/1.1 200 OK\r\n", 17, 0);
 	return (READING);
 }
 
@@ -670,8 +701,10 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 		char *const *envp = getEnvArr(env);
 		std::string cgi2 = cgi.cgiPath;
 		cgi.cgiPath = "." + cgi.cgiPath;
-		path = path.substr(1);
-		path = path.substr(0, path.length() - 1);
+		if ( path.find("?") != std::string::npos )
+			path = path.substr(0, path.find("?"));
+		if ( path[path.length() - 1] == '/' )
+			path = path.substr(0, path.length() - 1);
 		const char *cgiPtr = cgi.cgiPath.c_str();
 		const char *pathPtr = path.c_str();
 		char *const argv[] = { const_cast<char *>(cgiPtr), const_cast<char *>(pathPtr), NULL};
@@ -785,6 +818,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	std::string path = getRootPath(resources.getRequest("URL"));
 	if ( checkCGI(path) && cgi.isCGI == false )
 	{
+		std::cout << "path is cgi\n";
 		ret = handleCGI(resources, path); 
 		if ( ret == RESET)
 		{

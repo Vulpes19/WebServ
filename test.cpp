@@ -77,11 +77,22 @@ using namespace std;
 //     std::cout << p.substr(5) << std::endl;
 // }
 
+ssize_t  getFileSize( const char *path )
+{
+    struct stat fileStat;
+    if ( stat(path, &fileStat) == 0 )
+        return (fileStat.st_size);
+    return (-1);
+}
+
 int main()
 {
-    std::ifstream f("output");
-	char bruh[100];
-	f.read(bruh, 100);
-	std::string s(bruh, 100);
-	std::cout << s << std::endl;
+	std::ifstream f("output");
+	std::string line;
+	while ( std::getline(f, line) )
+	{
+		size_t b = line.size();
+		std::cout << line << std::endl;
+		std::cout << b << std::endl;
+	}
 }
