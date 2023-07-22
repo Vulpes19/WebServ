@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 12:24:38 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 13:39:10 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,35 +494,10 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	ssize_t bytesRead;
 	if ( cgi.isCGI )
 	{
-		std::cout << "**** READING ****\n";
-		std::string line;
-		if ( std::getline(cgi.file, line) )
-		{
-			if ( !cgi.file.eof() )
-				line += '\n';
-			send( socket, line.data(), line.size(), 0 );
+		if ( sendCGI() )
 			return (READING);
-		}
 		else
-		{
-			cgi.file.close();
 			return (RESET);
-		}
-		// cgi.file.read(buffer, BSIZE);
-		// bytesRead = cgi.file.gcount();
-		// std::string toCheck(buffer, bytesRead);
-		// std::cout << toCheck << std::endl;
-		// size_t pos = toCheck.find("Content-type");
-		// if ( pos != std::string::npos )
-		// {
-		// 	pos += 14;
-		// 	size_t pos2 = toCheck.find("\n");
-		// 	if ( pos2 != std::string::npos )
-		// 	{
-		// 		cgi.contentType = toCheck.substr(14, pos2);
-		// 		sendResponseHeader(Cgi, "200 OK", path, &resources);
-		// 	}
-		// }
 	}
 	else
 	{
@@ -535,7 +510,6 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 		err.errorInternal(socket, errorPages["500"]);
 		bytesSent = 0;
 		file.close();
-		cgi.file.close();
 		reset();
 		return (RESET);
 	}
@@ -626,11 +600,8 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	env["REQUEST_METHOD"] = resources.getRequest("Method");
 	if ( !queryStr.empty() )
 		env["QUERY_STRING"] = queryStr;
-	std::cout << path << std::endl;
 	if ( !queryStr.empty() )
-	{
 		path = path.substr(1, path.find("?") );
-	}
 	if ( path[path.length() - 1] == '/' )
 		path.erase(path.length() - 1);
 	env["SCRIPT_NAME"] = path.substr(1);
@@ -654,7 +625,6 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	if ( !executeCGI( path, env ) )
 		return (RESET);
 	fileSize = help.getFileSize("output");
-	std::cout << "size: " << fileSize << std::endl;
 	cgi.file.open("output");
 	if ( !cgi.file.is_open() )
 		return (RESET);
@@ -738,31 +708,25 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 	return (false);
 }
 
-// bool	Response::sendCGI( void )
-// {
-// 	if ( !cgiFile.is_open() )
-// 		cgiFile.open("output");
-// 	char buffer[BSIZE];
-// 	cgiFile.read(buffer, BSIZE);
-// 	ssize_t bytesRead = file.gcount();
-// 	buffer[bytesRead] = '\0';
-// 	if ( bytesRead == -1 )
-// 	{
-// 		err.errorInternal(socket, errorPages["500"]);
-// 		bytesSent = 0;
-// 		cgiFile.close();
-// 		reset();
-// 		return (RESET);
-// 	}
-// 	else if ( bytesRead > 0 )
-// 	{
-// 		send( socket, buffer, bytesRead, 0 );
-// 		if ( bytesRead == help.getFileSize("output") )
-// 			return (RESET);
-// 		return (REA)
-// 	}
-// 	return (false);
-// }
+bool	Response::sendCGI( void )
+{
+	std::string line;
+	if ( std::getline(cgi.file, line) )
+	{
+		if ( !cgi.file.eof() )
+			line += '\n';
+		send( socket, line.data(), line.size(), 0 );
+		return (true);
+	}
+	else
+	{
+		cgi.file.close();
+		if ( remove("output") != 0 )
+			err.errorInternal(socket, errorPages["500"]);
+		reset();
+		return (false);
+	}
+}
 
 enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resources )
 {
@@ -788,7 +752,7 @@ enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resou
 		send( socket, "File deleted.", 13, 0 );
 	}
 	else
-		err.errorInternal(socket, "500");
+		err.errorInternal(socket, errorPages["500"]);
 	reset();
 	return (RESET);
 }
@@ -799,7 +763,8 @@ bool    Response::handleWriteResponse( Resources &resources )
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
 	if ( red.status_code != "-1" )
 	{
-		handleRedirection(red);
+		sendResponseHeader( REDIR, red.status_code, red.path, &resources);
+		// handleRedirection(red);
 		resources.clear();
 		return (true);
 	}
@@ -818,7 +783,6 @@ bool    Response::handleWriteResponse( Resources &resources )
 	std::string path = getRootPath(resources.getRequest("URL"));
 	if ( checkCGI(path) && cgi.isCGI == false )
 	{
-		std::cout << "path is cgi\n";
 		ret = handleCGI(resources, path); 
 		if ( ret == RESET)
 		{
@@ -917,35 +881,52 @@ bool	Response::handleErrors( Resources &resources )
 void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
 	std::ostringstream oss;
-	oss << "HTTP/1.1 " << statusCode << "\r\n";
-	oss << "Connection: close\r\n";
-	oss << "Date: " << help.getCurrentTime() << "\r\n";
-	oss << "Server: " << serverName << "\r\n";
-	if ( method == Cgi )
+	switch (method)
 	{
-		std::cout << cgi.contentType << std::endl;
-		std::cout << fileSize << std::endl;
-		oss << "Content-Type: " << cgi.contentType << "\r\n";
-		oss << "Content-Length: " << fileSize << "\r\n";
-	}
-	if ( method == GET )
-	{
-		oss << "Content-Type: " << help.getFileType(fileName, TYPE_NAME) << "\r\n";
-		oss << "Content-Length: "<< fileSize << "\r\n";
-	}
-	if ( method == POST )
-	{
-		std::string ret;
-		ret = help.getFileLocation(fileName.substr(1).c_str());
-		ret = resources->getRequest("Content-Type");
-		if ( ret != "NOT FOUND" )
-			oss << "Content-Type: " << ret << "\n";
-		oss << "Content-Length: " << "13" << "\r\n";
-	}
-	if ( method == DELETE )
-	{
-		oss << "Content-Type: text/plain\r\n";
-		oss << "Content-Length: 13\r\n";
+		case GET:
+		{
+			oss << "HTTP/1.1 " << statusCode << "\r\n";
+			oss << "Connection: close\r\n";
+			oss << "Date: " << help.getCurrentTime() << "\r\n";
+			oss << "Server: " << serverName << "\r\n";
+			oss << "Content-Type: " << help.getFileType(fileName, TYPE_NAME) << "\r\n";
+			oss << "Content-Length: "<< fileSize << "\r\n";
+			break ;
+		}
+		case POST:
+		{
+			oss << "HTTP/1.1 " << statusCode << "\r\n";
+			oss << "Connection: close\r\n";
+			oss << "Date: " << help.getCurrentTime() << "\r\n";
+			oss << "Server: " << serverName << "\r\n";
+			std::string ret;
+			ret = resources->getRequest("Content-Type");
+			if ( ret != "NOT FOUND" )
+				oss << "Content-Type: " << ret << "\n";
+			oss << "Content-Length: " << "13" << "\r\n";
+			break ;
+		}
+		case DELETE:
+		{
+			oss << "HTTP/1.1 " << statusCode << "\r\n";
+			oss << "Connection: close\r\n";
+			oss << "Date: " << help.getCurrentTime() << "\r\n";
+			oss << "Server: " << serverName << "\r\n";
+			oss << "Content-Type: text/plain\r\n";
+			oss << "Content-Length: 13\r\n";
+			break ;
+		}
+		case REDIR:
+		{
+			oss << "HTTP/1.1 " << statusCode << "\r\n";
+			oss << "Connection: close\r\n";
+			oss << "Date: " << help.getCurrentTime() << "\r\n";
+			oss << "Server: " << serverName << "\r\n";
+			oss << "Location: " << fileName << "\r\n";
+			break ;
+		}
+		default:
+			err.errorInternal(socket, errorPages["500"]);
 	}
 	oss << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0 );
