@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 21:55:47 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 12:12:42 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,12 @@ Location::Location(): upload("default") ,autoindex(OFF), missingValue(true) {
 	redirection.path = ""; 
 };
 
-Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload) {
+Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload){
 	autoindex = OFF;
 	redirection.status_code = "-1";
 	redirection.path = "";
+	cgi = "";
+	isCGI = false;
 };
 
 void	Location::setMissingValue() {
@@ -88,6 +90,24 @@ void	Location::setAutoIndex() {
 	autoindex = ON;
 }
 
+void	Location::setCGIbool() {
+	isCGI = true;
+}
+
+void	Location::setCGI(std::string val) {
+
+	cgi = val;
+} 
+
+bool	Location::getCGIbool() const {
+	
+	return (isCGI);
+}
+
+std::string	Location::getCGI() const {
+
+	return (cgi);
+}
 
 std::string Location::getUpload() const {
 
@@ -131,6 +151,8 @@ Location&	Location::operator=(const Location& location) {
 		this->root = location.root;
 		this->index = location.index;
 		this->redirection = location.redirection;
+		// this->cgi = location.cgi;
+		// this->isCGI = location.isCGI;
 	}
 	return (*this);
 }

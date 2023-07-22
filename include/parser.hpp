@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 08:49:08 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 11:36:27 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ enum {
 	UPLOAD,
 	ERROR_PAGE,
 	RETURN,
-	HOST
+	HOST,
+	CGI
 } ;
 
 class Parser {

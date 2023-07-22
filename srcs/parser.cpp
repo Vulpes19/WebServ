@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 21:56:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 12:16:46 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,6 +206,16 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			else
 				printError(EMPTY);
 			break ;
+		case CGI:
+			if (value.size() - 1 > 0) {
+				if (findSemicolon())
+					location.setCGI(cleanValue(value));
+				else
+					printError(SEMICOLON);
+			}
+			else
+				printError(EMPTY);
+			break ;
 		case RETURN:
 			std::stringstream ss(value);
 			std::string path;
@@ -385,6 +395,8 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 
 	Location	location;
 	
+	if (value == "/cgi-bin/")
+		location.setCGIbool();
 	location.setValue(value);
 	while(getline(confFile, line) && status == OK) {
 
@@ -394,7 +406,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			continue ;
 		if (line.find("{") != std::string::npos)
 			openingBraceCount++;
-		if (line.find("root") != std::string::npos)
+		if (directive == "root")
 			setLocationContent(location, ROOT, value);
 		else if (directive == "index")
 			setLocationContent(location, INDEX, value);
@@ -404,6 +416,8 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
+		else if ((directive == "cgi" || directive == "CGI") && location.getCGIbool())
+			setLocationContent(location, CGI, value);
 		if (line[0] == '}') {
 			openingBraceCount--;
 			server.setLocations(location);
@@ -436,19 +450,21 @@ void	Parser::printData() {
 		std::cout << "body size: " << server.getSize() << std::endl;
 		std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		std::cout << "Errors: " << std::endl;
-		std::map<std::string, std::string> epMap = server.getErrorPages();
-		std::map<std::string, std::string>::iterator itr;
-		for(itr=epMap.begin();itr!=epMap.end();itr++)
-		{
-			std::cout << itr->first << " " << itr->second << std::endl;
-		}
+		// std::cout << "Errors: " << std::endl;
+		// std::map<std::string, std::string> epMap = server.getErrorPages();
+		// std::map<std::string, std::string>::iterator itr;
+		// for(itr=epMap.begin();itr!=epMap.end();itr++)
+		// {
+		// 	std::cout << itr->first << " " << itr->second << std::endl;
+		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
 			std::cout << "locations: " << std::endl;
 			std::cout << "value: " << locationVec[i].getValue() << std::endl;
 			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
+			if (locationVec[i].getCGIbool() == true)
+				std::cout << "CGI: " << locationVec[i].getCGI() << std::endl;
 			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
 			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
 			std::cout << "return: " << locationVec[i].getRedirection().status_code; 
