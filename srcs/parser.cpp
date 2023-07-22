@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 12:16:46 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 12:24:13 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -379,6 +379,18 @@ void	Parser::locationValuesValidation(Location location) {
 	if ((location.getRedirection().status_code.size() > 3 || location.getRedirection().status_code.size() < 3) && 
 		location.getRedirection().status_code != "-1") {
 		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getCGIbool() && location.getCGI().empty()) {
+		std::cerr << "Syntax Error: CGI script not defined or invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getCGIbool() && !examinePath(location.getCGI())) {
+		std::cerr << "Syntax Error: CGI script path is invalid or not defined!" << std::endl;
+		exit(1);
+	}
+	if (location.getCGIbool() && (location.getRoot().empty() || !examinePath(location.getRoot()))) {
+		std::cerr << "Syntax Error: CGI root path is invalid or not defined!" << std::endl;
 		exit(1);
 	}
 	std::stringstream ss(location.getRedirection().status_code);
