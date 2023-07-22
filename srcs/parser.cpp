@@ -6,7 +6,7 @@
 /*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 19:51:38 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 19:54:31 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -362,7 +362,7 @@ bool	examinePath(std::string value) {
 void	Parser::locationValuesValidation(Location location) {
 
 	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
-		std::cerr << "Syntax Error: [" << value << "] location value not found or invalid!" << std::endl;
+		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
 		exit(1);
 	}
 	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
