@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/23 12:25:36 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/23 12:31:14 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -591,27 +591,6 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	}
 }
 
-void	Response::handleRedirection( redir &red )
-{
-	std::ostringstream oss;
-	oss << "HTTP/1.1 " << red.status_code << "\r\n";
-	oss << "Connection: close\r\n";
-	oss << "Date: " << help.getCurrentTime() << "\r\n";
-	if ( red.status_code == "301" || red.status_code == "302" )
-	{
-		oss << "Location: " << red.path << "\r\n";
-		oss << "\r\n";
-	}
-	else
-	{
-		oss << "Content-Type: text/html\r\n";
-		oss << "Content-Length: " << red.path.size() << "\r\n";
-		oss << "\r\n";
-		oss << red.path.data() << "\r\n";
-	}
-	send( socket, oss.str().data(), oss.str().size(), 0 );
-}
-
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
@@ -623,7 +602,6 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	uploadPath = "." + uploadPath;
 	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
-							std::cout << "6\n";
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
@@ -677,15 +655,24 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	env["PATH_INFO"] = path;
 	env["PATH_TRANSLATED"] = path;
 	env["REMOTE_ADDR"] = host;
-	env["HTTP_HOST"] = host + ":" + port;
-	env["HTTP_USER_AGENT"] = resources.getRequest("User-Agent").substr(0, resources.getRequest("User-Agent").length() - 1);
-	env["HTTP_ACCEPT"] = resources.getRequest("Accept");
-	env["HTTP_ACCEPT_LANGUAGE"] = resources.getRequest("Accept-Language").substr(0, resources.getRequest("Accept-Language").length() - 1);
-	env["HTTP_ACCEPT_ENCODING"] = resources.getRequest("Accept-Encoding").substr(0, resources.getRequest("Accept-Encoding").length() - 1);
-	env["HTTP_CONNECTION"] = "close";
-	std::string cookies = resources.getRequest("Cookie");
-	if ( cookies != "NOT FOUND" )
-		env["HTTP_COOKIE"] = cookies.substr(0, cookies.length() - 1);
+	std::map<std::string, std::string> header = resources.getHeader();
+	std::map<std::string, std::string>::iterator it = header.begin();
+	for ( ; it != header.end(); ++it )
+	{
+		std::string key = it->first;
+		std::transform(key.begin(), key.end(), key.begin(), ::toupper);
+		std::replace(key.begin(), key.end(), '-', '_');
+		env["HTTP_" + key] = it->second;
+	}
+	// env["HTTP_HOST"] = host + ":" + port;
+	// env["HTTP_USER_AGENT"] = resources.getRequest("User-Agent").substr(0, resources.getRequest("User-Agent").length() - 1);
+	// env["HTTP_ACCEPT"] = resources.getRequest("Accept");
+	// env["HTTP_ACCEPT_LANGUAGE"] = resources.getRequest("Accept-Language").substr(0, resources.getRequest("Accept-Language").length() - 1);
+	// env["HTTP_ACCEPT_ENCODING"] = resources.getRequest("Accept-Encoding").substr(0, resources.getRequest("Accept-Encoding").length() - 1);
+	// env["HTTP_CONNECTION"] = "close";
+	// std::string cookies = resources.getRequest("Cookie");
+	// if ( cookies != "NOT FOUND" )
+	// 	env["HTTP_COOKIE"] = cookies.substr(0, cookies.length() - 1);
 	if ( !executeCGI( path, env ) )
 		return (RESET);
 	fileSize = help.getFileSize("output");
@@ -693,7 +680,6 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	if ( !cgi.file.is_open() )
 		return (RESET);
 	cgi.isCGI = true;
-	// send(socket, "HTTP/1.1 200 OK\r\n", 17, 0);
 	return (READING);
 }
 

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 20:00:12 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/23 12:28:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -193,6 +193,10 @@ void	Resources::clear( void )
 	header.clear();
 }
 
+std::map< std::string, std::string >	Resources::getHeader( void ) const
+{
+	return ( header );
+}
 // void	Resources::printError(enum Error_code code) {
 
 // 	//this is only for debugging purposes
