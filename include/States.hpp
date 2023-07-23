@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:31:39 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 12:54:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/23 12:17:06 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,4 +36,10 @@ enum METHODS
     POST,
     DELETE,
     REDIR
+};
+
+enum ERR
+{
+    ACCESS,
+    EXEC
 };

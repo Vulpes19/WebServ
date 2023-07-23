@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 07:58:23 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 20:00:12 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void    Resources::checkRequest( void )
 		remove("requestBody");
 	remove("readingRequestFile");
 	errorHandling();
-	printError(getError());
+	// printError(getError());
 }
 
 void	Resources::errorHandling( void ) {
@@ -193,25 +193,25 @@ void	Resources::clear( void )
 	header.clear();
 }
 
-void	Resources::printError(enum Error_code code) {
+// void	Resources::printError(enum Error_code code) {
 
-	//this is only for debugging purposes
-	switch (code) {
+// 	//this is only for debugging purposes
+// 	switch (code) {
 
-		case BAD_REQUEST:
-			std::cout << "BAD REQUEST!" << std::endl;
-			break ;
-		case LENGTH_REQUIRED:
-			std::cout << "LENGTH REQUIRED!" << std::endl;
-			break ;
-		case METHOD_NOT_ALLOWED:
-			std::cout << "METHOD NOT ALLOWED" << std::endl;
-			break ;
-		case HTTP_VERSION_NOT_SUPPORTED:
-			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
-			break ;
-		default:
-			std::cout << "all good" << std::endl;
-			break ;
-	}
-}
+// 		case BAD_REQUEST:
+// 			std::cout << "BAD REQUEST!" << std::endl;
+// 			break ;
+// 		case LENGTH_REQUIRED:
+// 			std::cout << "LENGTH REQUIRED!" << std::endl;
+// 			break ;
+// 		case METHOD_NOT_ALLOWED:
+// 			std::cout << "METHOD NOT ALLOWED" << std::endl;
+// 			break ;
+// 		case HTTP_VERSION_NOT_SUPPORTED:
+// 			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
+// 			break ;
+// 		default:
+// 			std::cout << "all good" << std::endl;
+// 			break ;
+// 	}
+// }
