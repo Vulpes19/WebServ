@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/23 12:31:42 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/24 11:11:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ class Response
 		void		handleRedirection( redir & );
 		void		setLocations( std::vector<Location> );
 		void		setErrorPages( std::map< std::string, std::string > );
+		std::string trim(const std::string& str);
 		void		setName( std::string );
 		void		setHost( std::string );
 		void		setPort( std::string );

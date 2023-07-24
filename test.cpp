@@ -87,12 +87,9 @@ ssize_t  getFileSize( const char *path )
 
 int main()
 {
-	std::ifstream f("output");
-	std::string line;
-	while ( std::getline(f, line) )
-	{
-		size_t b = line.size();
-		std::cout << line << std::endl;
-		std::cout << b << std::endl;
-	}
+	std::string s1 = "POST";
+	if ( s1.compare("POST") == 0 )
+		std::cout << "yes\n";
+	else
+		std::cout << "no\n";
 }
