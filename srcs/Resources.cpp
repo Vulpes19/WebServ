@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/23 12:28:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/24 20:42:10 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,7 +95,6 @@ void	Resources::parseRequestLine( void )
 		header["URL"] = str;
 	else
 	{
-		std::cout << "here" << std::endl;
 		setError(BAD_REQUEST);
 	}
 	ss2 >> str;
@@ -107,7 +106,6 @@ void	Resources::parseRequestLine( void )
 	}
 	else
 	{
-		std::cout << "here 1" << std::endl;
 		setError(BAD_REQUEST);
 	}
 }

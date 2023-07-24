@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/24 12:23:06 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/24 20:47:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,6 @@ void    ErrorResponse::errorBadRequest( SOCKET socket, std::string path )
 void    ErrorResponse::errorNotFound( SOCKET socket, std::string path )
 {
 	std::stringstream errorMsg;
-	std::cout << path << std::endl;
 	errorMsg << "HTTP/1.1 404\r\n";
 	errorMsg << "Connection: close\r\n";
 	errorMsg << "Content-Type: text/html\r\n";
@@ -353,6 +352,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 	if ( bytesRead > 0  )
 	{
 		std::string toCheck(request, bytesRead); 
+		// std::cout << toCheck << std::endl;
 		buffer.write(request, bytesRead);
 		lenPos = toCheck.find("Content-Length: ");
 		hostPos = toCheck.find("Host: ");
@@ -385,10 +385,7 @@ enum ResponseStates    Response::handleReadRequest( Resources &resources, std::s
 						err.errorRequestTooLarge(socket, errorPages["413"]);
 						buffer.close();
 						if ( remove("readingRequestFile") != 0 )
-						{
-							std::cout << "1\n";
 							err.errorInternal(socket, errorPages["500"]); 
-						}
 						reset();
 						return (RESET);
 					}
@@ -465,7 +462,6 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	DIR *dir = opendir(fullPath.c_str());
 	if ( dir == NULL )
 	{
-							std::cout << "3\n";
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
@@ -549,18 +545,8 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	}
 	char buffer[BSIZE + 1];
 	ssize_t bytesRead;
-	// if ( cgi.isCGI )
-	// {
-	// 	if ( sendCGI() )
-	// 		return (READING);
-	// 	else
-	// 		return (RESET);
-	// }
-	// else
-	// {
-		file.read(buffer, BSIZE);
-		bytesRead = file.gcount();
-	// }
+	file.read(buffer, BSIZE);
+	bytesRead = file.gcount();
 	buffer[bytesRead] = '\0';
 	if ( bytesRead == -1 )
 	{
@@ -590,13 +576,13 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
-
 	if ( uploadPath != "NONE" )
 		help.normalizePath(uploadPath);
 	uploadPath += filePath.substr(1).c_str() + type;
 	uploadPath = "." + uploadPath;
 	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
+		exit(1);
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
@@ -658,12 +644,11 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 		std::replace(key.begin(), key.end(), '-', '_');
 		env["HTTP_" + key] = it->second;
 	}
-	// std::cout << "***********\n";
-	// for ( std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); ++it )
-	// 	std::cout << it->first << " : " << it->second << std::endl;
-	// std::cout << "***********\n";
 	if ( !executeCGI( path, env ) )
+	{
+		remove("output");
 		return (RESET);
+	}
 	fileSize = help.getFileSize("output");
 	cgi.file.open("output");
 	if ( !cgi.file.is_open() )
@@ -718,8 +703,16 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 		if ( path[path.length() - 1] == '/' )
 			path = path.substr(0, path.length() - 1);
 		std::vector<const char *> args;
-		args.push_back(cgi.cgiPath.c_str());
-		args.push_back(path.c_str());
+		if ( path.find(".cgi") != std::string::npos )
+		{
+			cgi.cgiPath = path;
+			args.push_back(path.c_str());
+		}
+		else
+		{
+			args.push_back(cgi.cgiPath.c_str());
+			args.push_back(path.c_str());
+		}
 		args.push_back(NULL);
 		execve(cgi.cgiPath.c_str(), const_cast<char *const *>(args.data()), envp);
 		std::cerr << "execve failed\n";
@@ -736,7 +729,12 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 			if ( res == pid )
 			{
 				if ( WIFEXITED(status) )
-					return (true);
+				{
+					if ( WEXITSTATUS(status) == 127 )
+						return (false);
+					else
+						return (true);
+				}
 				break ;
 			}
 			sleep(1);
@@ -757,6 +755,15 @@ bool	Response::sendCGI( void )
 	std::string line;
 	if ( std::getline(cgi.file, line) )
 	{
+		if ( line.find("error") != std::string::npos )
+		{
+			exit(1);
+			err.errorInternal(socket, errorPages["500"]);
+			if ( remove("output") != 0 )
+				err.errorInternal(socket, errorPages["500"]);
+			reset();
+			return (false);
+		}
 		if ( line.find("Powered-By") != std::string::npos )
 			return (true);
 		if ( line.find("status") != std::string::npos )
@@ -764,7 +771,6 @@ bool	Response::sendCGI( void )
 			line.erase(line.length() - 1);
 			line.replace(0, line.find("status") + 7, "HTTP/1.1");
 			line += " OK\r";
-			std::cout << line << std::endl;
 		}
 		if ( !cgi.file.eof() )
 			line += '\n';
@@ -774,8 +780,8 @@ bool	Response::sendCGI( void )
 	else
 	{
 		cgi.file.close();
-		// if ( remove("output") != 0 )
-		// 	err.errorInternal(socket, errorPages["500"]);
+		if ( remove("output") != 0 )
+			err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (false);
 	}
@@ -820,7 +826,6 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
 	std::string method = resources.getRequest("Method");
-	std::cout << method << std::endl;
 	if ( red.status_code != "-1" )
 	{
 		sendResponseHeader( REDIR, red.status_code, red.path, &resources);
@@ -829,7 +834,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	}
 	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
 	if ( uploadPath == "NONE" )
-		uploadPath = getUploadPath(resources.getRequest("URL"));	
+		uploadPath = getUploadPath(resources.getRequest("URL"));
 	if ( resources.getError() != NO_ERROR )
 	{
 		if ( handleErrors( resources ) )
@@ -843,12 +848,6 @@ bool    Response::handleWriteResponse( Resources &resources )
 	if ( checkCGI(path) && cgi.isCGI == false )
 	{
 		ret = handleCGI(resources, path);
-		// if (  method == "POST" )
-		// {
-		// 	sendResponseHeader( POST, "201 Created", path, &resources );
-		// 	reset();
-		// 	return (true);
-		// }
 		if ( ret == RESET)
 		{
 			err.errorBadRequest(socket, errorPages["500"]);
@@ -873,9 +872,9 @@ bool    Response::handleWriteResponse( Resources &resources )
 			return (true);
 		}
 	}
-	std::cout << "before " << path << std::endl;
+	// std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
-	std::cout << "after " << path << std::endl;
+	// std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
 		err.errorForbidden(socket, errorPages["403"]);
@@ -889,7 +888,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 		else
 			ret = getResponseFile(resources, path);
 	}
-	if ( method == "POST" && cgi.isCGI == false )
+	if ( method == "POST"  )
 	{
 		if ( help.isDirectory("." + path) )
 			err.errorForbidden(socket, errorPages["403"]);
@@ -927,7 +926,6 @@ bool	Response::handleErrors( Resources &resources )
 			break ;
 		case INTERNAL_SERVER_ERROR:
 		{
-							std::cout << "8\n";
 			err.errorInternal(socket, errorPages["500"]);
 			break ;
 		}
@@ -1011,6 +1009,9 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 		default:
 			err.errorInternal(socket, errorPages["500"]);
 	}
+	// std::cout << "********************\n";
+	// std::cout << oss.str() << std::endl;
+	// std::cout << "********************\n";
 	oss << "\r\n";
 	send( socket, oss.str().data(), oss.str().size(), 0 );
 }
