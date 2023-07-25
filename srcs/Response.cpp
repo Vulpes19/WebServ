@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 18:28:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 20:57:48 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -885,9 +885,9 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
 	std::string method = resources.getRequest("Method");
+	std::cout << resources.getRequest("URL") << std::endl;
 	if ( method == "NOT FOUND" )
 	{
-		// std::cout << method << std::endl;
 		err.errorMethodNotAllowed(socket, errorPages["405"]);
 		resources.clear();
 		return (true);
@@ -917,11 +917,8 @@ bool    Response::handleWriteResponse( Resources &resources )
 	// std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
 	bool isAllowed = false;
-	// std::cout << allowedMethods.size() << std::endl;
-	for ( size_t i = 0; i < allowedMethods.size(); i++ )
-	{
-		std::cout << "allowed " << allowedMethods[i] << std::endl;
-	}
+	if ( allowedMethods.empty() )
+		isAllowed = true;
 	for ( size_t i = 0; i < allowedMethods.size(); i++ )
 	{
 		if ( method == allowedMethods[i] )
@@ -965,7 +962,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	}
 	// std::cout << "before " << path << std::endl;
 	help.normalizePath(path);
-	// std::cout << "after " << path << std::endl;
+	std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
 		err.errorUnauthorized(socket, errorPages["401"]);
@@ -1158,9 +1155,15 @@ std::string	Response::getRootPath( std::string path )
 		path += '/';
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
+		if ( path != "/" && loc[i].getRoot().find("path") != std::string::npos )
+		{
+			allowedMethods = loc[i].getAllowedMethods();
+			return (path);
+		}
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
-			if (allowedMethods.empty())
+			std::cout << "Im here: " << loc[i].getValue() << std::endl;
+			// if (allowedMethods.empty())
 				allowedMethods = loc[i].getAllowedMethods();
 			std::cout << "Im here " << loc[i].getValue() << std::endl;
 			std::string rootPath = loc[i].getRoot();

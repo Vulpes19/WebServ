@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 14:39:54 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 20:56:07 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,7 @@ Location&	Location::operator=(const Location& location) {
 
 	if (this != &location)
 	{
+		this->index = location.index;
 		this->value = location.value;
 		this->root = location.root;
 		this->index = location.index;
