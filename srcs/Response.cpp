@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 11:49:33 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 18:25:11 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,22 +14,31 @@
 
 void	ErrorResponse::normalizePath( std::string &path, enum ERR err)
 {
-	if ( err == ACCESS )
+	try
 	{
-		if (path[0] == '/')
-			path.erase(0);
-		if ( path[path.length() - 1] == '/' )
-			path.erase(path.size() - 1);
+		if ( err == ACCESS )
+		{
+			if (path[0] == '/')
+				path.erase(0);
+			if ( path[path.length() - 1] == '/' )
+				path.erase(path.size() - 1);
+		}
+		else
+		{
+			if ( path[0] != '/' )
+				path = "./" + path;
+			if ( path[0] == '/' )
+				path = "." + path;
+			if ( path[path.length() - 1] == '/' )
+				path.erase(path.size() - 1);
+		}
+		
 	}
-	else
+	catch(const std::exception& e)
 	{
-		if ( path[0] != '/' )
-			path = "./" + path;
-		if ( path[0] == '/' )
-			path = "." + path;
-		if ( path[path.length() - 1] == '/' )
-			path.erase(path.size() - 1);
+		std::cerr << "ERRROOOOOOR" << '\n';
 	}
+	
 }
 
 void    ErrorResponse::errorBadRequest( SOCKET socket, std::string path )
@@ -132,11 +141,14 @@ void    ErrorResponse::errorForbidden( SOCKET socket, std::string path )
 
 void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 {
+	std::cout << path << std::endl;
 	std::stringstream errorMsg;
 	errorMsg << "HTTP/1.1 500 Internal Server Error\r\n";
 	errorMsg << "Connection: close\r\n";
 	errorMsg << "Content-Type: text/html\r\n";
-	normalizePath(path, ACCESS);
+	if ( !path.empty() )
+		normalizePath(path, ACCESS);
+	std::cout << "PATH: " << path << std::endl;
 	if ( access(path.c_str(), F_OK | R_OK) == -1 )
 	{
 		errorMsg << "Content-Length: " << 21 << "\r\n\r\n";
@@ -157,6 +169,7 @@ void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 			errorMsg << line;
 		}
 	}
+	std::cout << errorMsg.str() << std::endl;
 	errorMsg << "\r\n";
 	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
 		errorInternal(socket, "/assets/error_images/500.html");
@@ -454,7 +467,7 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	std::string fullPath = "." + path;
 	if ( !autoIndex )
 	{
-		err.errorUnauthorized(socket, errorPages["401"]);
+		err.errorForbidden(socket, errorPages["403"]);
 		reset();
 		return (RESET);
 	}
@@ -576,14 +589,8 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	else if ( bytesRead > 0 )
 	{
 		bytesSent = send( socket, buffer, bytesRead, 0 );
-		if ( bytesSent == 0 )
+		if ( bytesSent == 0 || bytesSent == -1 )
 		{
-			reset();
-			return (RESET);
-		}
-		if ( bytesSent == -1 )
-		{
-			err.errorInternal(socket, errorPages["500"]);
 			reset();
 			return (RESET);
 		}
@@ -604,11 +611,16 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 enum ResponseStates	Response::postUploadFile( Resources &resources )
 {
 	std::string filePath(resources.getRequest("URL"));
+	if ( filePath[filePath.length() - 1] == '/' )
+		filePath = filePath.substr(0, filePath.length() - 1);
+	if ( filePath.find_last_of("/") != std::string::npos )
+		filePath = filePath.substr(filePath.find_last_of("/"));
 	std::string type = help.getFileType(resources.getRequest("Content-Type"), TYPE_SUFFIX);
 	if ( uploadPath != "NONE" )
 		help.normalizePath(uploadPath);
 	uploadPath += filePath.substr(1).c_str() + type;
 	uploadPath = "." + uploadPath;
+	std::cout << uploadPath << std::endl;
 	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
 		err.errorInternal(socket, errorPages["500"]);
@@ -790,7 +802,6 @@ bool	Response::sendCGI( void )
 	{
 		if ( line.find("error") != std::string::npos )
 		{
-			exit(1);
 			err.errorInternal(socket, errorPages["500"]);
 			if ( remove("output") != 0 )
 				err.errorInternal(socket, errorPages["500"]);
@@ -874,6 +885,13 @@ bool    Response::handleWriteResponse( Resources &resources )
 	enum ResponseStates ret;
 	redir red = help.checkForRedirections(loc, resources.getRequest("URL"));
 	std::string method = resources.getRequest("Method");
+	if ( method == "NOT FOUND" )
+	{
+		// std::cout << method << std::endl;
+		err.errorMethodNotAllowed(socket, errorPages["405"]);
+		resources.clear();
+		return (true);
+	}
 	if ( red.status_code != "-1" )
 	{
 		if ( sendResponseHeader( REDIR, red.status_code, red.path, &resources) == false )
@@ -887,6 +905,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	autoIndex = help.getAutoIndex(loc, resources.getRequest("URL"));
 	if ( uploadPath == "NONE" )
 		uploadPath = getUploadPath(resources.getRequest("URL"));
+	// std::cout << uploadPath << std::endl;
 	if ( resources.getError() != NO_ERROR )
 	{
 		if ( handleErrors( resources ) )
@@ -897,6 +916,26 @@ bool    Response::handleWriteResponse( Resources &resources )
 	}
 	// std::cout << "URL " << resources.getRequest("URL") << std::endl; 
 	std::string path = getRootPath(resources.getRequest("URL"));
+	bool isAllowed = false;
+	// std::cout << allowedMethods.size() << std::endl;
+	for ( size_t i = 0; i < allowedMethods.size(); i++ )
+	{
+		std::cout << "allowed " << allowedMethods[i] << std::endl;
+	}
+	for ( size_t i = 0; i < allowedMethods.size(); i++ )
+	{
+		if ( method == allowedMethods[i] )
+		{
+			isAllowed = true;
+			break ;
+		}
+	}
+	if ( isAllowed == false && path.find("error") == std::string::npos )
+	{
+		err.errorMethodNotAllowed(socket, errorPages["405"]);
+		resources.clear();
+		return (true);
+	}
 	if ( checkCGI(path) && cgi.isCGI == false )
 	{
 		ret = handleCGI(resources, path);
@@ -929,7 +968,7 @@ bool    Response::handleWriteResponse( Resources &resources )
 	// std::cout << "after " << path << std::endl;
 	if ( path.find("..") != std::string::npos )
 	{
-		err.errorForbidden(socket, errorPages["403"]);
+		err.errorUnauthorized(socket, errorPages["401"]);
 		resources.clear();
 		return (true);
 	}
@@ -985,8 +1024,11 @@ bool	Response::handleErrors( Resources &resources )
 			err.errorUnauthorized(socket, errorPages["401"]);
 			break ;
 		case METHOD_NOT_ALLOWED:
+		{
+			exit(1);
 			err.errorMethodNotAllowed(socket, errorPages["405"]);
 			break ;
+		}
 		case LENGTH_REQUIRED:
 			err.errorLengthRequired(socket, errorPages["411"]);
 			break ;
@@ -1118,6 +1160,9 @@ std::string	Response::getRootPath( std::string path )
 	{
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
+			if (allowedMethods.empty())
+				allowedMethods = loc[i].getAllowedMethods();
+			std::cout << "Im here " << loc[i].getValue() << std::endl;
 			std::string rootPath = loc[i].getRoot();
 			if ( path.find(rootPath) != std::string::npos )
 				return (path);
@@ -1139,6 +1184,9 @@ std::string	Response::getRootPath( std::string path )
 			cgi.cgiPath = loc[i].getCGI();
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
 		{
+			std::cout << "Im here: " << loc[i].getValue() << std::endl;
+			if (allowedMethods.empty())
+				allowedMethods = loc[i].getAllowedMethods();
 			std::string rootPath = loc[i].getRoot();
 			if ( path.find(rootPath) != std::string::npos )
 				return (path);

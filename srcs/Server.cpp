@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 17:36:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 18:23:05 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ void  Server::createListenSocket( void )
         }     
     }
     freeaddrinfo(bindAddress);
-    if ( listen(listenSocket, 10) < 0 )
+    if ( listen(listenSocket, 200) < 0 )
     {
         std::string msg(strerror(errno));
         throw excp("listen() failed: " + msg);     

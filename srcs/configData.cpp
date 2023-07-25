@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 14:23:25 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:39:54 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,8 @@
 
 Location::Location() {
 	upload = "NONE";
-	autoindex = OFF;
 	cgi = "";
+	autoindex = OFF;
 	missingValue = true;
 	isCGI = false;
 	redirection.status_code = "-1"; 
@@ -51,9 +51,9 @@ Location::Location() {
 
 Location::Location(std::string value, std::string root, std::string index, std::string upload, std::string cgi): value(value), root(root), index(index), upload(upload), cgi(cgi) {
 	autoindex = OFF;
+	cgi = "";
 	redirection.status_code = "-1";
 	redirection.path = "";
-	cgi = "";
 	isCGI = false;
 };
 
@@ -76,6 +76,11 @@ void	Location::setRedirection(std::string status_code, std::string path) {
 void	Location::setCGIbool() {
 
 	isCGI = true;
+}
+
+std::string	Location::getCGI() const {
+
+	return (cgi);
 }
 
 bool	Location::getCGIbool() const {

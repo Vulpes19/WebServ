@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 14:22:45 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:38:22 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ class Location {
 		redir		redirection;
 		int         autoindex ;
 		bool		missingValue;
+		std::string	cgi;
 		bool		isCGI;
 	public:
 		Location();
@@ -83,11 +84,13 @@ class Location {
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
 		void	setCGIbool();
-		void	setCGI(std::string cgiScript);
 		void	setRedirection(std::string status_code, std::string path);
+		void	setAllowedMethods(std::string method);
+		std::vector<std::string>	getAllowedMethods() const;
 		void	setUpload(const std::string &upld);
 		void	setMissingValue();
 		void	setCGI(std::string val);
+		
 		// void	setBraceValue();
 		std::string	getUpload() const;
 		std::string getValue() const;

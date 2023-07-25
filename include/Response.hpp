@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 11:17:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:41:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ class Response
 		void		reset( void );
 	private:
 		std::vector< Location >				loc;
+		std::vector<std::string>			allowedMethods;
 		std::map< std::string, std::string > errorPages;
 		ssize_t			bytesReceived;
 		ssize_t			bytesSent;
