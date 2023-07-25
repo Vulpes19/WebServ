@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 12:38:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:57:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -383,6 +383,18 @@ void	Parser::locationValuesValidation(Location location) {
 		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
 		exit(1);
 	}
+	if (location.getCGIbool() && location.getCGI().empty()) {
+		std::cerr << "Syntax Error: CGI script not defined or invalid!" << std::endl;
+		exit(1);
+	}
+	if (location.getCGIbool() && !examinePath(location.getCGI())) {
+		std::cerr << "Syntax Error: CGI script path is invalid or not defined!" << std::endl;
+		exit(1);
+	}
+	if (location.getCGIbool() && (location.getRoot().empty() || !examinePath(location.getRoot()))) {
+		std::cerr << "Syntax Error: CGI root path is invalid or not defined!" << std::endl;
+		exit(1);
+	}
 	std::stringstream ss(location.getRedirection().status_code);
 	int				  code;
 	
@@ -393,13 +405,24 @@ void	Parser::locationValuesValidation(Location location) {
 	}
 }
 
+bool	Parser::examineLocation() {
+
+	if (value == "/")
+		return (true);
+	else if (value[0] == '/' && value[value.size() - 1] == '/')
+		return (true);
+	status = ERROR;
+	return (false);
+}
+
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
 	Location	location;
-	
-	location.setValue(value);
-	if (value == "/cgi-bin/")
-		location.setCGIbool();
+	if (examineLocation()) {
+		if (value == "/cgi-bin/")
+			location.setCGIbool();
+		location.setValue(value);
+	}
 	while(getline(confFile, line) && status == OK) {
 
 		std::stringstream ss(line);
@@ -408,7 +431,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			continue ;
 		if (line.find("{") != std::string::npos)
 			openingBraceCount++;
-		if (line.find("root") != std::string::npos)
+		if (directive == "root")
 			setLocationContent(location, ROOT, value);
 		else if (directive == "index")
 			setLocationContent(location, INDEX, value);
@@ -418,7 +441,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
-		else if (directive == "CGI" && location.getCGIbool())
+		else if ((directive == "cgi" || directive == "CGI") && location.getCGIbool())
 			setLocationContent(location, CGI, value);
 		if (line[0] == '}') {
 			openingBraceCount--;
@@ -452,19 +475,21 @@ void	Parser::printData() {
 		std::cout << "body size: " << server.getSize() << std::endl;
 		std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		std::cout << "Errors: " << std::endl;
-		std::map<std::string, std::string> epMap = server.getErrorPages();
-		std::map<std::string, std::string>::iterator itr;
-		for(itr=epMap.begin();itr!=epMap.end();itr++)
-		{
-			std::cout << itr->first << " " << itr->second << std::endl;
-		}
+		// std::cout << "Errors: " << std::endl;
+		// std::map<std::string, std::string> epMap = server.getErrorPages();
+		// std::map<std::string, std::string>::iterator itr;
+		// for(itr=epMap.begin();itr!=epMap.end();itr++)
+		// {
+		// 	std::cout << itr->first << " " << itr->second << std::endl;
+		// }
 		std::vector<Location>   locationVec = server.getLocations();
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
 			std::cout << "locations: " << std::endl;
 			std::cout << "value: " << locationVec[i].getValue() << std::endl;
 			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
+			if (locationVec[i].getCGIbool() == true)
+				std::cout << "CGI: " << locationVec[i].getCGI() << std::endl;
 			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
 			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
 			std::cout << "return: " << locationVec[i].getRedirection().status_code; 

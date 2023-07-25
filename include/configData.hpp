@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 12:37:41 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:54:26 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ class Location {
 		std::string root; //darori
 		std::string index; //darori
 		std::string	upload;
+		std::string	cgi;
 		redir		redirection;
 		int         autoindex ;
 		bool		missingValue;
@@ -82,6 +83,8 @@ class Location {
 		void    setRoot(const std::string &rt);
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
+		void	setCGIbool();
+		void	setCGI(std::string cgiScript);
 		void	setRedirection(std::string status_code, std::string path);
 		void	setUpload(const std::string &upld);
 		void	setMissingValue();
@@ -89,6 +92,8 @@ class Location {
 		void	setCGI(std::string val);
 		// void	setBraceValue();
 		std::string	getUpload() const;
+		std::string	getCGI() const;
+		bool		getCGIbool() const;
 		std::string getValue() const;
 		std::string getRoot() const;
 		std::string getIndex() const;

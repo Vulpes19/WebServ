@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:43:59 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/21 12:27:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:54:49 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,7 @@ class Parser {
 		void	setServerContent(ServerSettings &server, int which, std::string value);
 		void	setLocationContent(Location &location, int which, std::string value);
 		std::vector<Context> getParsedData() const;
+		bool	examineLocation();
 		void	serverValuesValidation(ServerSettings server);
 		void	locationValuesValidation(Location location);
 		std::string	cleanValue(std::string value);

@@ -38,19 +38,19 @@
       <div id="team" class="flex flex-col justify-center items-center p-10" style="background-image: url('/var/www/html/Assets/header.jpeg');">
         <h1 class="font-spongebob text-4xl text-orange-500 shadow-xl">Team</h1>
         <div class="flex justify-center items-center mt-4  gap-5 flex-wrap	">
-          <div class="card w-96 bg-base-100 shadow-xl mt-3">
-            <figure><img src="/var/www/html/Assets/abaioumy.jpeg"/></figure>
+          <div class="card w-96 bg-base-100 shadow-xl mt-3" style="background-image: url('var/www/html/Assets/spongebob-bg.jpg');">
+            <figure><img src="/var/www/html/Assets/ayman_transparent.png"/></figure>
             <div class="card-body">
-              <h2 class="card-title font-spongebob">abaioumy</h2>
+              <h2 class="card-title font-spongebob" style="color: orangered;" >abaioumy</h2>
               <div class="card-actions justify-end">
                 <a href="https://github.com/Vulpes19"  target="_blank" class="btn bg-orange-600 border-orange-600 hover:blur-[1px] font-spongebob" style="transition: 1s;">Open on Github</a>
               </div>
             </div>
           </div> 
-          <div class="card w-96 bg-base-100 shadow-xl mt-3">
-            <figure class="w-[384px] h-[214px]"><img src="/var/www/html/Assets/mbaioumy.jpeg"/></figure>
+          <div class="card w-96 bg-base-100 shadow-xl mt-3" style="background-image: url('var/www/html/Assets/spongebob-bg.jpg');">
+            <figure><img src="/var/www/html/Assets/asdasdasdasd.png"/></figure>
             <div class="card-body">
-              <h2 class="card-title font-spongebob">mbaioumy</h2>
+              <h2 class="card-title font-spongebob" style="color: orangered;">mbaioumy</h2>
               <div class="card-actions justify-end">
                 <a href="https://github.com/0xDopamine/" target="_blank"class="btn bg-orange-600 border-orange-600 hover:blur-[1px] font-spongebob" style="transition: 1s;">Open on Github</a>
               </div>
@@ -96,8 +96,6 @@
       function playAudioOnInteraction() {
     const audio = document.getElementById('myAudio');
     audio.play();
-    
-    // Remove the event listener to avoid playing the audio multiple times
     document.removeEventListener('click', playAudioOnInteraction);
     document.removeEventListener('keydown', playAudioOnInteraction);
   }
@@ -106,4 +104,9 @@
     </script>
   </div>
   </body>
+  <footer>
+    <div style="background-color: aqua;">
+
+    </div>
+  </footer>
   </html>
