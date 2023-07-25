@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 10:58:20 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 11:49:33 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,8 @@ void    ErrorResponse::errorBadRequest( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorNotFound( SOCKET socket, std::string path )
@@ -93,7 +94,8 @@ void    ErrorResponse::errorNotFound( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorForbidden( SOCKET socket, std::string path )
@@ -124,7 +126,8 @@ void    ErrorResponse::errorForbidden( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
@@ -155,7 +158,8 @@ void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorUnauthorized( SOCKET socket, std::string path )
@@ -186,7 +190,8 @@ void    ErrorResponse::errorUnauthorized( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorMethodNotAllowed( SOCKET socket, std::string path )
@@ -217,7 +222,8 @@ void    ErrorResponse::errorMethodNotAllowed( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorLengthRequired( SOCKET socket, std::string path )
@@ -248,7 +254,8 @@ void    ErrorResponse::errorLengthRequired( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorHTTPVersion( SOCKET socket, std::string path )
@@ -279,7 +286,8 @@ void    ErrorResponse::errorHTTPVersion( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 void    ErrorResponse::errorRequestTooLarge( SOCKET socket, std::string path )
@@ -310,7 +318,8 @@ void    ErrorResponse::errorRequestTooLarge( SOCKET socket, std::string path )
 		}
 	}
 	errorMsg << "\r\n";
-	send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 );
+	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
+		errorInternal(socket, "/assets/error_images/500.html");
 }
 
 Response::Response( void )
@@ -445,7 +454,7 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	std::string fullPath = "." + path;
 	if ( !autoIndex )
 	{
-		err.errorForbidden(socket, errorPages["403"]);
+		err.errorUnauthorized(socket, errorPages["401"]);
 		reset();
 		return (RESET);
 	}
@@ -487,9 +496,12 @@ enum ResponseStates    Response::getResponseDir( std::string path )
 	oss << "Content-Length: " << indexResponse.size() << "\r\n";
 	oss << "Content-Type: " << "text/html" << "\r\n";
 	oss << "\r\n";
-	send(socket, oss.str().data(), oss.str().size(), 0);
-	send(socket, indexResponse.data(), indexResponse.size(), 0);
-	closedir(dir);
+	if ( send(socket, oss.str().data(), oss.str().size(), 0) == -1 )
+		err.errorInternal(socket, errorPages["500"]);
+	if ( send(socket, indexResponse.data(), indexResponse.size(), 0) == -1 )
+		err.errorInternal(socket, errorPages["500"]);
+	if ( closedir(dir) == -1 )
+		err.errorInternal(socket, errorPages["500"]);
 	reset();
 	return (RESET);
 }
@@ -543,7 +555,11 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 			reset();
 			return (RESET);
 		}
-		sendResponseHeader( GET, "200 OK", fullPath, NULL );
+		if ( sendResponseHeader( GET, "200 OK", fullPath, NULL ) == false )
+		{
+			reset();
+			return (RESET);
+		}
 	}
 	char buffer[BSIZE + 1];
 	ssize_t bytesRead;
@@ -559,8 +575,19 @@ enum ResponseStates    Response::getResponseFile( Resources &resources, std::str
 	}
 	else if ( bytesRead > 0 )
 	{
+		bytesSent = send( socket, buffer, bytesRead, 0 );
+		if ( bytesSent == 0 )
+		{
+			reset();
+			return (RESET);
+		}
+		if ( bytesSent == -1 )
+		{
+			err.errorInternal(socket, errorPages["500"]);
+			reset();
+			return (RESET);
+		}
 		bytesSent += bytesRead;
-		send( socket, buffer, bytesRead, 0 );
 		if ( bytesSent == fileSize )
 			return (RESET);
 		return (READING);
@@ -584,13 +611,17 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 	uploadPath = "." + uploadPath;
 	if ( rename("requestBody", uploadPath.c_str()) != 0 )
 	{
-		exit(1);
 		err.errorInternal(socket, errorPages["500"]);
 		reset();
 		return (RESET);
 	}
-	sendResponseHeader( POST, "201 Created", filePath, &resources );
-	send( socket, "File created.", 13, 0 );
+	if ( sendResponseHeader( POST, "201 Created", filePath, &resources ) == false )
+	{
+		reset();
+		return (RESET);
+	}
+	if ( send( socket, "File created.", 13, 0 ) )
+		err.errorInternal(socket, errorPages["500"]);
 	reset();
 	return (RESET);
 }
@@ -776,7 +807,19 @@ bool	Response::sendCGI( void )
 		}
 		if ( !cgi.file.eof() )
 			line += '\n';
-		send( socket, line.data(), line.size(), 0 );
+		ssize_t bytesSent = send( socket, line.data(), line.size(), 0 );
+		if ( bytesSent == -1 )
+		{
+			err.errorInternal(socket, errorPages["500"]);
+			remove("output");
+			reset();
+			return (false);
+		}
+		if ( bytesSent == 0 )
+		{
+			reset();
+			return (false);
+		}
 		return (true);
 	}
 	else
@@ -809,8 +852,11 @@ enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resou
 	}
 	if ( remove(filePath.c_str()) == 0 )
 	{
-		sendResponseHeader( DELETE, "200 OK", "", &resources );
-		send( socket, "File deleted.", 13, 0 );
+		if ( sendResponseHeader( DELETE, "200 OK", "", &resources ) == false )
+		{
+			reset();
+			return (RESET);
+		}
 	}
 	else
 		err.errorInternal(socket, errorPages["500"]);
@@ -830,7 +876,11 @@ bool    Response::handleWriteResponse( Resources &resources )
 	std::string method = resources.getRequest("Method");
 	if ( red.status_code != "-1" )
 	{
-		sendResponseHeader( REDIR, red.status_code, red.path, &resources);
+		if ( sendResponseHeader( REDIR, red.status_code, red.path, &resources) == false )
+		{
+			resources.clear();
+			return (true);
+		}
 		resources.clear();
 		return (true);
 	}
@@ -952,7 +1002,7 @@ bool	Response::handleErrors( Resources &resources )
 	return (false);
 }
 
-void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
+bool	Response::sendResponseHeader( enum METHODS method, std::string statusCode, std::string fileName, Resources *resources )
 {
 	std::ostringstream oss;
 	switch (method)
@@ -988,6 +1038,7 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 			oss << "Server: " << serverName << "\r\n";
 			oss << "Content-Type: text/plain\r\n";
 			oss << "Content-Length: 13\r\n";
+			oss << "File deleted.\r\n";
 			break ;
 		}
 		case REDIR:
@@ -1004,18 +1055,22 @@ void	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 				oss << "Content-Length: " << fileName.size() << "\r\n";
 				oss << "\r\n";
 				oss << fileName.data() << "\r\n";
-				return ;
 			}
 			break ;
 		}
 		default:
 			err.errorInternal(socket, errorPages["500"]);
 	}
-	// std::cout << "********************\n";
-	// std::cout << oss.str() << std::endl;
-	// std::cout << "********************\n";
 	oss << "\r\n";
-	send( socket, oss.str().data(), oss.str().size(), 0 );
+	ssize_t ret = send( socket, oss.str().data(), oss.str().size(), 0 );
+	if ( ret == -1 )
+	{
+		err.errorInternal(socket, errorPages["500"]);
+		return (false);
+	}
+	if ( ret == 0 )
+		return (false);
+	return (true);
 }
 
 void    Response::setLocations( std::vector<Location> loc )

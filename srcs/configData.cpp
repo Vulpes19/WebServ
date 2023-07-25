@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 10:56:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 11:32:56 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,12 @@
 // ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("NONE") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
-
+Location::Location() {
+	upload = "NONE";
+	autoindex = OFF;
+	cgi = "";
+	missingValue = true;
+	isCGI = false;
 	redirection.status_code = "-1"; 
 	redirection.path = ""; 
 };
@@ -62,21 +66,6 @@ void	Location::setRedirection(std::string status_code, std::string path) {
 
 	redirection.status_code = status_code;
 	redirection.path = path;
-}
-
-void	Location::setCGIbool() {
-
-	isCGI = true;
-}
-
-bool	Location::getCGIbool() const {
-
-	return (isCGI);
-}
-
-void	Location::setCGI(std::string val) {
-
-	cgi = val;
 }
 
 std::string Location::getCGI() const {
@@ -121,11 +110,6 @@ void	Location::setCGI(std::string val) {
 bool	Location::getCGIbool() const {
 	
 	return (isCGI);
-}
-
-std::string	Location::getCGI() const {
-
-	return (cgi);
 }
 
 std::string Location::getUpload() const {
