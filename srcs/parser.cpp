@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 11:48:24 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:23:53 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,18 @@ int		countWords(std::string str) {
 	while (ss >> word)
 		words++;
 	return (words);
+}
+
+bool	findMethod(std::string value) {
+
+	std::string	methods[] = {"GET", "POST", "DELETE"};
+
+	for (int i = 0; i < 3; i++) {
+
+		if (value.find(methods[i]) != std::string::npos)
+			return (true);
+	}
+	return (false);
 }
 
 bool	testExtension(char *argv) {
@@ -159,7 +171,6 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	}
 }
 
-
 void	Parser::setLocationContent(Location& location, int which, std::string value) {
 
 	switch (which) {
@@ -219,6 +230,19 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			}
 			else
 				printError(EMPTY);
+			break ;
+		case METHOD:
+			if (findSemicolon()) {
+				std::stringstream ss(value);
+				std::string method;
+				
+				while (ss >> method) {
+					if (findMethod(cleanValue(method)))
+						location.setAllowedMethods(cleanValue(method));
+				}
+			}
+			else
+				printError(SEMICOLON);
 			break ;
 		case RETURN:
 			std::stringstream ss(value);
@@ -420,6 +444,7 @@ bool	Parser::examineLocation() {
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
 	Location	location;
+	
 	if (examineLocation()) {
 		if (value == "/cgi-bin/")
 			location.setCGIbool();
@@ -445,6 +470,8 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, RETURN, line);
 		else if ((directive == "cgi" || directive == "CGI") && location.getCGIbool())
 			setLocationContent(location, CGI, value);
+		else if (findMethod(directive))
+			setLocationContent(location, METHOD, line);
 		if (line[0] == '}') {
 			openingBraceCount--;
 			server.setLocations(location);
@@ -488,6 +515,13 @@ void	Parser::printData() {
 		for (size_t i = 0; i < locationVec.size(); i++) {
 
 			std::cout << "locations: " << std::endl;
+			
+			std::vector<std::string>	allowedMethods = locationVec[i].getAllowedMethods();
+			std::cout << "allowed methods: " << std::endl;
+			std::cout << "*******" << std::endl;
+			for (size_t i = 0; i < allowedMethods.size(); i++)
+				std::cout << allowedMethods[i] << " ";
+			std::cout << "*******" << std::endl;
 			std::cout << "value: " << locationVec[i].getValue() << std::endl;
 			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
 			if (locationVec[i].getCGIbool() == true)
