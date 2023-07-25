@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 18:25:11 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 18:28:51 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1079,7 +1079,7 @@ bool	Response::sendResponseHeader( enum METHODS method, std::string statusCode, 
 			oss << "Date: " << help.getCurrentTime() << "\r\n";
 			oss << "Server: " << serverName << "\r\n";
 			oss << "Content-Type: text/plain\r\n";
-			oss << "Content-Length: 13\r\n";
+			oss << "Content-Length: 13\r\n\r\n";
 			oss << "File deleted.\r\n";
 			break ;
 		}
