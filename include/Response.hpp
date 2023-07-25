@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/24 11:11:38 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 11:17:08 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ class Response
 		char *const*getEnvArr( std::map<std::string, std::string> &env );
 		std::string	getRootPath( std::string );
 		std::string	getUploadPath( std::string );
-		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
+		bool		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
 		bool		handleWriteResponse( Resources & );
 		bool		handleErrors( Resources & );
 		bool		isRequestReceived( std::string, ssize_t ) const;

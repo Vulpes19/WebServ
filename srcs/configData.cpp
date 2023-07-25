@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 12:52:37 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:23:25 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,12 @@
 // ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("NONE") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
-
+Location::Location() {
+	upload = "NONE";
+	autoindex = OFF;
+	cgi = "";
+	missingValue = true;
+	isCGI = false;
 	redirection.status_code = "-1"; 
 	redirection.path = ""; 
 };
@@ -112,11 +116,6 @@ void	Location::setAutoIndex() {
 std::vector<std::string>	Location::getAllowedMethods() const {
 
 	return (allowedMethods);
-}
-
-std::string	Location::getCGI() const {
-
-	return (cgi);
 }
 
 std::string Location::getUpload() const {

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 19:42:37 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 12:46:00 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 14:22:45 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,6 @@ class Location {
 		redir		redirection;
 		int         autoindex ;
 		bool		missingValue;
-		std::string	cgi;
 		bool		isCGI;
 	public:
 		Location();
@@ -83,8 +82,8 @@ class Location {
 		void    setRoot(const std::string &rt);
 		void    setIndex(const std::string &indx);
 		void    setAutoIndex();
-		void	setAllowedMethods(std::string method);
 		void	setCGIbool();
+		void	setCGI(std::string cgiScript);
 		void	setRedirection(std::string status_code, std::string path);
 		void	setUpload(const std::string &upld);
 		void	setMissingValue();
@@ -94,7 +93,6 @@ class Location {
 		std::string getValue() const;
 		std::string getRoot() const;
 		std::string getIndex() const;
-		std::vector<std::string>	getAllowedMethods() const;
 		bool		getCGIbool() const;
 		std::string	getCGI() const;
 		int         getAutoIndex() const;
