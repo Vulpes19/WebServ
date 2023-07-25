@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 10:56:27 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 12:52:37 by mbaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,11 @@ void	Location::setMissingValue() {
 	missingValue = false;
 }
 
+void	Location::setAllowedMethods(std::string method) {
+
+	allowedMethods.push_back(method);
+}
+
 void	Location::setRedirection(std::string status_code, std::string path) {
 
 	redirection.status_code = status_code;
@@ -77,11 +82,6 @@ bool	Location::getCGIbool() const {
 void	Location::setCGI(std::string val) {
 
 	cgi = val;
-}
-
-std::string Location::getCGI() const {
-	
-	return (cgi);
 }
 
 void    Location::setValue(const std::string& val) {
@@ -109,18 +109,9 @@ void	Location::setAutoIndex() {
 	autoindex = ON;
 }
 
-void	Location::setCGIbool() {
-	isCGI = true;
-}
+std::vector<std::string>	Location::getAllowedMethods() const {
 
-void	Location::setCGI(std::string val) {
-
-	cgi = val;
-} 
-
-bool	Location::getCGIbool() const {
-	
-	return (isCGI);
+	return (allowedMethods);
 }
 
 std::string	Location::getCGI() const {
@@ -172,6 +163,7 @@ Location&	Location::operator=(const Location& location) {
 		this->redirection = location.redirection;
 		this->cgi = location.cgi;
 		this->isCGI = location.isCGI;
+		this->allowedMethods = location.allowedMethods;
 	}
 	return (*this);
 }
