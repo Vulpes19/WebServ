@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 12:56:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/24 11:11:38 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,19 @@
 #include "Libraries.hpp"
 #include "ClientManager.hpp"
 #include "Resources.hpp"
-
+#include <sys/wait.h>
+ #include <signal.h>
+ 
 class ClientManager;
+
+struct Cgi
+{
+	int statusCode;
+	std::string	contentType;
+	bool isCGI;
+	std::ifstream file;
+	std::string cgiPath;
+};
 
 struct ResponseHelper
 {
@@ -33,6 +44,7 @@ struct ResponseHelper
 struct ErrorResponse
 {
 	ResponseHelper help;
+	void		normalizePath( std::string &, enum ERR );
 	void        errorBadRequest( SOCKET, std::string ); //400
 	void        errorNotFound( SOCKET, std::string ); //404
 	void    	errorForbidden( SOCKET, std::string ); //403
@@ -53,11 +65,15 @@ class Response
 		~Response( void );
 		void        setSocket( SOCKET );
 		enum ResponseStates	handleReadRequest( Resources &, std::string &serverName );
-		enum ResponseStates	getResponseFile( std::string );
+		enum ResponseStates	getResponseFile( Resources &, std::string );
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( std::string, Resources & );
-		enum ResponseStates	deleteDir( Resources & );
+		enum ResponseStates	handleCGI( Resources &, std::string path );
+		bool				checkCGI( std::string path );
+		bool				sendCGI( void );
+		bool				executeCGI( std::string &path, std::map<std::string, std::string> &env );
+		char *const*getEnvArr( std::map<std::string, std::string> &env );
 		std::string	getRootPath( std::string );
 		std::string	getUploadPath( std::string );
 		void		sendResponseHeader( enum METHODS, std::string, std::string, Resources * );
@@ -67,10 +83,12 @@ class Response
 		void		handleRedirection( redir & );
 		void		setLocations( std::vector<Location> );
 		void		setErrorPages( std::map< std::string, std::string > );
+		std::string trim(const std::string& str);
 		void		setName( std::string );
 		void		setHost( std::string );
 		void		setPort( std::string );
         void		setBodySize( ssize_t );
+		void		setUpload( std::string );
 		void		reset( void );
 	private:
 		std::vector< Location >				loc;
@@ -93,4 +111,5 @@ class Response
 		ssize_t			bodySize;
 		ssize_t			bodyLimit;
 		bool			isBody;
+		struct Cgi				cgi;
 };

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 08:55:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:36:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void  Server::createListenSocket( void )
     hints.ai_flags = AI_PASSIVE;
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    std::cout << host << std::endl;
+    // std::cout << host << std::endl;
     if ( getaddrinfo( host.c_str(), port.c_str(), &hints, &bindAddress) != 0 )
     {
         std::string msg(strerror(errno));
@@ -87,6 +87,11 @@ void    Server::setLocations( std::vector<Location> loc )
 void    Server::setBodySize( ssize_t bodySize )
 {
     this->bodySize = bodySize;
+}
+
+void    Server::setUpload( std::string upload )
+{
+    this->upload = upload;
 }
 
 void    Server::setErrorPages( std::map< std::string, std::string > errorPages )

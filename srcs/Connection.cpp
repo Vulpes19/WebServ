@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 11:27:52 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:35:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:46:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ ClientManager   *Connection::getClient( SOCKET socket, Server srv )
     newClient->setPort(srv.getPort());
     newClient->setBodySize(srv.getBodySize());
     newClient->setErrorPages(srv.getErrorPages());
+    newClient->setUpload(srv.getUpload());
     clients.push_back(newClient);
     return (newClient);
 }
@@ -56,12 +57,15 @@ void    Connection::deleteClient( ClientManager *cl )
         ++it;
     }
     if ( it != clients.end() )
+    {
+        delete *it;
         clients.erase(it);
+    }
     else
         std::cerr << "dropped client not found\n";
 }
 
-void  Connection::setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds )
+void  Connection::setsManager( std::vector<Server> &servers, fd_set &readfds, fd_set &writefds )
 {
     FD_ZERO(&writefds);
     FD_ZERO(&readfds);
@@ -110,7 +114,6 @@ void    Connection::multiplexing( fd_set &readfds, fd_set &writefds, std::string
         {
             if ( (*it)->getState() == WRITE_RESPONSE )
             {
-                std::cout << "starting write\n";
                 if ( (*it)->startResponse() )
                 {
                     (*it)->unsetSocket(writefds, readfds);

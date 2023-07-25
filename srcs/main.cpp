@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 09:50:28 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 13:37:08 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:59:29 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,10 @@ void	initServers( std::vector<Server> &servers, Parser &parser )
 		server.setName(settings.getName());
 		server.setHost(settings.getHost());
 		server.setPort(settings.getPort());
-		server.setPort(settings.getPort());
 		server.setLocations(settings.getLocations());
 		server.setBodySize(settings.getSize());
 		server.setErrorPages(settings.getErrorPages());
+		server.setUpload(settings.getUpload());
 		servers.push_back(server);
 	}
 	for ( size_t i = 0; i < servers.size(); i++)

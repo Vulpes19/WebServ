@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:55 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 15:34:00 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:36:58 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 
 class Server;
 class Response;
+struct ResponseHelper;
 class ClientManager
 {
 	public:
@@ -40,6 +41,7 @@ class ClientManager
 		void		setHost( std::string );
 		void		setPort( std::string );
 		void		setBodySize( ssize_t );
+		void		setUpload( std::string );
 		void		updateClientSettings( std::vector<Server> &srv, std::string serverName );
 	private:
 		SOCKET		socket;

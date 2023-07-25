@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 19:54:31 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:57:52 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,8 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 				printError(EMPTY);
 			break ;
 		case CGI:
+			if (value.find("/") == std::string::npos)
+				printError(INVALID_PATH);
 			if (value.size() - 1 > 0) {
 				if (findSemicolon())
 					location.setCGI(cleanValue(value));
@@ -416,7 +418,6 @@ bool	Parser::examineLocation() {
 void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std::string& value) {
 
 	Location	location;
-	
 	if (examineLocation()) {
 		if (value == "/cgi-bin/")
 			location.setCGIbool();

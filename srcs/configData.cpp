@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configData.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mbaioumy <mbaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 18:19:42 by mbaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 10:56:27 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,13 @@
 // ErrorPage::~ErrorPage() {} ;
 
 
-Location::Location(): upload("default") ,autoindex(OFF), missingValue(true) {
+Location::Location(): upload("NONE") ,autoindex(OFF), missingValue(true), cgi(""), isCGI(false) {
 
 	redirection.status_code = "-1"; 
 	redirection.path = ""; 
 };
 
-Location::Location(std::string value, std::string root, std::string index, std::string upload): value(value), root(root), index(index), upload(upload){
+Location::Location(std::string value, std::string root, std::string index, std::string upload, std::string cgi): value(value), root(root), index(index), upload(upload), cgi(cgi) {
 	autoindex = OFF;
 	redirection.status_code = "-1";
 	redirection.path = "";
@@ -64,6 +64,25 @@ void	Location::setRedirection(std::string status_code, std::string path) {
 	redirection.path = path;
 }
 
+void	Location::setCGIbool() {
+
+	isCGI = true;
+}
+
+bool	Location::getCGIbool() const {
+
+	return (isCGI);
+}
+
+void	Location::setCGI(std::string val) {
+
+	cgi = val;
+}
+
+std::string Location::getCGI() const {
+	
+	return (cgi);
+}
 
 void    Location::setValue(const std::string& val) {
 

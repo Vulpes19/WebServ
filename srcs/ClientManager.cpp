@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/18 15:40:51 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/22 17:38:32 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ ClientManager::ClientManager( void )
 ClientManager::~ClientManager( void )
 {
     delete response;
+    resources.clear();
 	close(socket);
 }
 
@@ -129,4 +130,9 @@ void    ClientManager::setPort( std::string port )
 void    ClientManager::setBodySize( ssize_t bodySize )
 {
     response->setBodySize(bodySize);
+}
+
+void    ClientManager::setUpload( std::string upload )
+{
+    response->setUpload(upload);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
+/*   By: vulpes <vulpes@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:44:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/19 11:48:44 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/20 12:40:23 by vulpes           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ class Connection
 		~Connection( void );
 		ClientManager   *getClient( SOCKET socket, Server srv );
 		void        	deleteClient( ClientManager *cl );
-		void			setsManager( std::vector<Server> servers, fd_set &readfds, fd_set &writefds );
+		void			setsManager( std::vector<Server> &servers, fd_set &readfds, fd_set &writefds );
 		void    		multiplexing( fd_set &readfds, fd_set &writefds, std::string &serverName, std::vector<Server> &servers );
 		// ClientManager	*updateClientSettings( iterator it, Server srv );
 		// Server			&getCorrectServer( std::vector<Server> &servers, std::string serverName )
