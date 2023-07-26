@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/24 20:42:10 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 20:56:13 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,9 @@ Resources::Resources( void )
 }
 
 Resources::~Resources( void )
-{}
+{
+	header.clear();
+}
 
 Resources::Resources( const Resources &src )
 {
@@ -46,6 +48,11 @@ void	Resources::parseHeader( void )
 {
 	size_t colon = line.find(":");
 
+	if ( colon == std::string::npos )
+	{
+		setError(BAD_REQUEST);
+		return ;
+	}
 	std::string headerKey = line.substr(0, colon);
 	std::string headerValue = line.substr( colon + 2 );
 	header[headerKey] = headerValue;
@@ -121,6 +128,11 @@ void    Resources::checkRequest( void )
 {
 	requestBody.open("requestBody");
 	std::ifstream requestFile("readingRequestFile", std::ios::binary);
+	if ( !requestFile.is_open() )
+	{
+		std::cerr << "failed to open the file\n";
+		exit(1);
+	}
 	size_t size = 0;
 	// if ( !requestFile.is_open() )
 	// {
@@ -163,7 +175,7 @@ void	Resources::errorHandling( void ) {
 		setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
 	{
-		std::cout << "here 2" << std::endl;
+		// std::cout << "here 2" << std::endl;
 		setError(BAD_REQUEST);
 	}
 }
@@ -180,10 +192,16 @@ enum Error_code	Resources::getError() const {
 
 std::string	Resources::getRequest( std::string Key )
 {
+	std::cout << "pskch\n";
 	if ( header.find(Key) != header.end() )
 		return ( header[Key] );
 	else
 		return ( "NOT FOUND" );
+}
+
+bool	Resources::isEmpty( void ) const
+{
+	return ( header.empty() );
 }
 
 void	Resources::clear( void )

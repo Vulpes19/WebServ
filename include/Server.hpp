@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:21:33 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 17:36:35 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 19:57:05 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ class Server
         std::vector< Location >    loc;
 		std::list< ClientManager * > clients;
         std::map< std::string, std::string > errorPages;
-        struct addrinfo *bindAddress;
         std::string port;
         std::string name;
         std::string host;

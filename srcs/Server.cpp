@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/25 10:24:56 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 18:23:05 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 20:36:30 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,9 @@ Server::~Server( void )
 void  Server::createListenSocket( void )
 {
     struct addrinfo hints;
+    struct addrinfo *bindAddress;
     memset(&hints, 0, sizeof(hints));
+    memset(&bindAddress, 0, sizeof(bindAddress));
     hints.ai_flags = AI_PASSIVE;
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
@@ -52,7 +54,7 @@ void  Server::createListenSocket( void )
         }     
     }
     freeaddrinfo(bindAddress);
-    if ( listen(listenSocket, 200) < 0 )
+    if ( listen(listenSocket, 128) < 0 )
     {
         std::string msg(strerror(errno));
         throw excp("listen() failed: " + msg);     

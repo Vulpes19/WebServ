@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 14:40:09 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 20:59:45 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ ClientManager::ClientManager( void )
 ClientManager::~ClientManager( void )
 {
     delete response;
-    resources.clear();
+    // resources.clear();
 	close(socket);
 }
 
