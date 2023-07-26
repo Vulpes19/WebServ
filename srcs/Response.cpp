@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 20:57:48 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 11:04:28 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,31 +14,22 @@
 
 void	ErrorResponse::normalizePath( std::string &path, enum ERR err)
 {
-	try
+	if ( err == ACCESS )
 	{
-		if ( err == ACCESS )
-		{
-			if (path[0] == '/')
-				path.erase(0);
-			if ( path[path.length() - 1] == '/' )
-				path.erase(path.size() - 1);
-		}
-		else
-		{
-			if ( path[0] != '/' )
-				path = "./" + path;
-			if ( path[0] == '/' )
-				path = "." + path;
-			if ( path[path.length() - 1] == '/' )
-				path.erase(path.size() - 1);
-		}
-		
+		if (path[0] == '/')
+			path.erase(0);
+		if ( path[path.length() - 1] == '/' )
+			path.erase(path.size() - 1);
 	}
-	catch(const std::exception& e)
+	else
 	{
-		std::cerr << "ERRROOOOOOR" << '\n';
+		if ( path[0] != '/' )
+			path = "./" + path;
+		if ( path[0] == '/' )
+			path = "." + path;
+		if ( path[path.length() - 1] == '/' )
+			path.erase(path.size() - 1);
 	}
-	
 }
 
 void    ErrorResponse::errorBadRequest( SOCKET socket, std::string path )
@@ -141,14 +132,12 @@ void    ErrorResponse::errorForbidden( SOCKET socket, std::string path )
 
 void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 {
-	std::cout << path << std::endl;
 	std::stringstream errorMsg;
 	errorMsg << "HTTP/1.1 500 Internal Server Error\r\n";
 	errorMsg << "Connection: close\r\n";
 	errorMsg << "Content-Type: text/html\r\n";
 	if ( !path.empty() )
 		normalizePath(path, ACCESS);
-	std::cout << "PATH: " << path << std::endl;
 	if ( access(path.c_str(), F_OK | R_OK) == -1 )
 	{
 		errorMsg << "Content-Length: " << 21 << "\r\n\r\n";
@@ -169,7 +158,6 @@ void    ErrorResponse::errorInternal( SOCKET socket, std::string path )
 			errorMsg << line;
 		}
 	}
-	std::cout << errorMsg.str() << std::endl;
 	errorMsg << "\r\n";
 	if ( send( socket, errorMsg.str().data(), errorMsg.str().size(), 0 ) == -1 )
 		errorInternal(socket, "/assets/error_images/500.html");
@@ -640,7 +628,7 @@ enum ResponseStates	Response::postUploadFile( Resources &resources )
 
 bool	Response::checkCGI( std::string path )
 {
-	if ( path.find(".") != std::string::npos && path.find("cgi-bin") != std::string::npos )
+	if ( path.find(".php") != std::string::npos || path.find(".py") != std::string::npos )
 		return (true);
 	else
 		return (false);
@@ -651,13 +639,14 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	std::string queryStr = "";
 	std::map< std::string, std::string > env;
 	size_t pos = path.find("?");
+	if ( path[0] == '/' )
+		path = path.substr(1);
 	if ( pos != std::string::npos )
 	{
-		queryStr = path.substr(pos + 1);
+		queryStr = path.substr(pos);
 		if ( queryStr[queryStr.length() - 1] == '/' )
 			queryStr.erase(queryStr.length() - 1);
 	}
-	// exit(1);
 	if ( resources.getRequest("Content-Length") != "NOT FOUND" )
 		env["CONTENT_LENGTH"] = resources.getRequest("Content-Length");
 	if ( resources.getRequest("Content-Type") != "NOT FOUND" )
@@ -666,11 +655,11 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	if ( !queryStr.empty() )
 		env["QUERY_STRING"] = queryStr;
 	if ( !queryStr.empty() )
-		path = path.substr(1, path.find("?") );
+		path = path.substr(0, path.find("?") );
 	if ( path[path.length() - 1] == '/' )
 		path.erase(path.length() - 1);
-	env["SCRIPT_NAME"] = path.substr(1);
-	env["SCRIPT_FILENAME"] = path.substr(1);
+	env["SCRIPT_NAME"] = path;
+	env["SCRIPT_FILENAME"] = path;
 	env["SERVER_NAME"] = serverName;
 	env["SERVER_PORT"] = port;
 	env["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -689,6 +678,8 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 		std::replace(key.begin(), key.end(), '-', '_');
 		env["HTTP_" + key] = it->second;
 	}
+	for ( std::map<std::string, std::string>::iterator it = env.begin(); it != env.end(); ++it )
+		std::cout << it->first << " = " << it->second << std::endl;
 	if ( !executeCGI( path, env ) )
 	{
 		remove("output");
@@ -698,6 +689,14 @@ enum ResponseStates	Response::handleCGI( Resources &resources, std::string path 
 	cgi.file.open("output");
 	if ( !cgi.file.is_open() )
 		return (RESET);
+	ssize_t bytesSent = send( socket, "HTTP/1.1 200 OK\r\n", 17, 0 );
+	if ( bytesSent == -1 || bytesSent == 0 )
+	{
+		err.errorInternal(socket, errorPages["500"]);
+		remove("output");
+		reset();
+		return (RESET);
+	}
 	cgi.isCGI = true;
 	return (READING);
 }
@@ -725,14 +724,19 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 	if ( !outputFile )
 		return (false);
 	int fd = fileno(outputFile);
+	// int fd2;
 	int status;
 	pid_t pid = fork();
 	if ( pid == -1 )
 		return (false);
 	if ( pid == 0 )
 	{
-		dup2(fd, 1);
-		close(fd);
+		// FILE *inputFile = fopen("requestBody", "r");
+		// if ( inputFile )
+		// {
+		// 	fd2 = fileno(inputFile);
+		// 	dup2(fd2, 0);
+		// }
 		std::map<std::string, std::string>::iterator it = env.begin();
 		for ( ; it != env.end(); ++it )
 			setenv(it->first.c_str(), it->second.c_str(), 1);
@@ -748,17 +752,12 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 		if ( path[path.length() - 1] == '/' )
 			path = path.substr(0, path.length() - 1);
 		std::vector<const char *> args;
-		if ( path.find(".cgi") != std::string::npos )
-		{
-			cgi.cgiPath = path;
-			args.push_back(path.c_str());
-		}
-		else
-		{
-			args.push_back(cgi.cgiPath.c_str());
-			args.push_back(path.c_str());
-		}
+		args.push_back(cgi.cgiPath.c_str());
+		args.push_back(path.c_str());
 		args.push_back(NULL);
+		std::cout << "path " << cgi.cgiPath << std::endl;
+		std::cout << "path " << path << std::endl;
+		dup2(fd, 1);
 		execve(cgi.cgiPath.c_str(), const_cast<char *const *>(args.data()), envp);
 		std::cerr << "execve failed\n";
 		exit(127);
@@ -776,7 +775,10 @@ bool	Response::executeCGI( std::string &path, std::map<std::string, std::string>
 				if ( WIFEXITED(status) )
 				{
 					if ( WEXITSTATUS(status) == 127 )
+					{
+						exit(1);
 						return (false);
+					}
 					else
 						return (true);
 				}
@@ -810,12 +812,12 @@ bool	Response::sendCGI( void )
 		}
 		if ( line.find("Powered-By") != std::string::npos )
 			return (true);
-		if ( line.find("status") != std::string::npos )
-		{
-			line.erase(line.length() - 1);
-			line.replace(0, line.find("status") + 7, "HTTP/1.1");
-			line += " OK\r";
-		}
+		// if ( line.find("status") != std::string::npos )
+		// {
+		// 	line.erase(line.length() - 1);
+		// 	line.replace(0, line.find("status") + 7, "HTTP/1.1");
+		// 	line += " OK\r";
+		// }
 		if ( !cgi.file.eof() )
 			line += '\n';
 		ssize_t bytesSent = send( socket, line.data(), line.size(), 0 );
@@ -874,12 +876,7 @@ enum ResponseStates	Response::deleteFile( std::string filePath, Resources &resou
 	reset();
 	return (RESET);
 }
-std::string Response::trim(const std::string& str)
-{
-    size_t first = str.find_first_not_of(' ');
-    size_t last = str.find_last_not_of(' ');
-    return str.substr(first, last - first + 1);
-}
+
 bool    Response::handleWriteResponse( Resources &resources )
 {
 	enum ResponseStates ret;
@@ -954,8 +951,8 @@ bool    Response::handleWriteResponse( Resources &resources )
 		{
 			cgi.isCGI = false;
 			cgi.file.close();
-			if ( remove("output") != 0 )
-				err.errorInternal(socket, errorPages["500"]);
+			remove("output");
+				// err.errorInternal(socket, errorPages["500"]);
 			reset();
 			return (true);
 		}
@@ -1022,7 +1019,6 @@ bool	Response::handleErrors( Resources &resources )
 			break ;
 		case METHOD_NOT_ALLOWED:
 		{
-			exit(1);
 			err.errorMethodNotAllowed(socket, errorPages["405"]);
 			break ;
 		}
@@ -1155,17 +1151,14 @@ std::string	Response::getRootPath( std::string path )
 		path += '/';
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
-		if ( path != "/" && loc[i].getRoot().find("path") != std::string::npos )
-		{
-			allowedMethods = loc[i].getAllowedMethods();
-			return (path);
-		}
 		if ( path == "/" && loc[i].getValue() == "/" )
 		{
-			std::cout << "Im here: " << loc[i].getValue() << std::endl;
-			// if (allowedMethods.empty())
-				allowedMethods = loc[i].getAllowedMethods();
-			std::cout << "Im here " << loc[i].getValue() << std::endl;
+			if ( loc[i].getCGIbool() )
+			{
+				cgi.cgiPath = loc[i].getCGI();
+				// cgi.isCGI = true;
+			}
+			allowedMethods = loc[i].getAllowedMethods();
 			std::string rootPath = loc[i].getRoot();
 			if ( path.find(rootPath) != std::string::npos )
 				return (path);
@@ -1183,11 +1176,13 @@ std::string	Response::getRootPath( std::string path )
 					return ( ret + indexFile );
 			}
 		}
-		if ( loc[i].getValue().find("cgi-bin") != std::string::npos )
-			cgi.cgiPath = loc[i].getCGI();
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
 		{
-			std::cout << "Im here: " << loc[i].getValue() << std::endl;
+			if ( loc[i].getCGIbool() == true )
+			{
+				cgi.cgiPath = loc[i].getCGI();
+				// cgi.isCGI = true;
+			}
 			if (allowedMethods.empty())
 				allowedMethods = loc[i].getAllowedMethods();
 			std::string rootPath = loc[i].getRoot();

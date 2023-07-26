@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 20:54:58 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/25 21:23:50 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,8 +223,10 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 			if (value.find("/") == std::string::npos)
 				printError(INVALID_PATH);
 			if (value.size() - 1 > 0) {
-				if (findSemicolon())
+				if (findSemicolon()) {
+					location.setCGIbool();
 					location.setCGI(cleanValue(value));
+				}
 				else
 					printError(SEMICOLON);
 			}
@@ -468,7 +470,7 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 			setLocationContent(location, UPLOAD, value);
 		else if (directive == "return")
 			setLocationContent(location, RETURN, line);
-		else if ((directive == "cgi" || directive == "CGI") && location.getCGIbool())
+		else if ((directive == "cgi" || directive == "CGI"))
 			setLocationContent(location, CGI, value);
 		else if (findMethod(directive))
 			setLocationContent(location, METHOD, line);
