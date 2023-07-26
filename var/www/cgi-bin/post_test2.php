@@ -1,7 +1,9 @@
 <?php
 // while(1);
+echo $_SERVER['COOKIE'];
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   // Check if file was uploaded
+  echo $_FILES['upload'];
   if (isset($_FILES['upload'])) {
     // Check for file upload error
     if ($_FILES['upload']['error'] != UPLOAD_ERR_OK) {
@@ -12,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $filename = $_FILES['upload']['name'];
     $tmpname = $_FILES['upload']['tmp_name'];
     $destination = './' . $filename;
+    echo "dest = " . $destination;
     if (move_uploaded_file ($tmpname ,$destination )) {
       echo 'File uploaded successfully!';
     } else {
@@ -20,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   } else {
     // Output message if no file was uploaded
-    // var_dump($_FILES);
+    var_dump($_FILES);
     echo 'No file uploaded.';
   }
 }

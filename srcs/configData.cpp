@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 20:56:07 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 14:49:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,9 @@ Location&	Location::operator=(const Location& location) {
 	return (*this);
 }
 
-Location::~Location() {};
+Location::~Location() {
+	allowedMethods.clear();
+};
 
 ServerSettings::ServerSettings(): host("localhost"), body_size(10000000), missingValue(true) {};
 

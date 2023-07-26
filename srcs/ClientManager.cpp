@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/22 17:38:32 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 14:40:09 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,15 +74,9 @@ void    ClientManager::createClient( SOCKET listenSocket )
     socket = accept( listenSocket, (struct sockaddr *) &address, &addressLen);
     int flags = fcntl( socket, F_GETFL, 0  );
     if ( flags == -1 )
-    {
-        std::cerr << "failed to get flags\n";
-        exit(1);
-    }
+        throw excp("failed to get flags");
     if ( setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) < 0 )
-    {
-        std::cerr << "failed to disable SIGPIPE at the socket level\n";
-        exit(1);
-    }
+        throw excp("failed to disable SIGPIPE at the socket level");
 }
 
 void		ClientManager::updateClientSettings( std::vector<Server> &srv, std::string serverName )

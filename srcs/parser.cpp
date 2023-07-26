@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 21:23:50 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 15:37:43 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ void	Parser::setServerContent(ServerSettings &server, int which, std::string val
 	}
 }
 
+
 void	Parser::setLocationContent(Location& location, int which, std::string value) {
 
 	switch (which) {
@@ -277,8 +278,9 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 					printError(EMPTY);
 			}
 			else if (countWords(value) > 3) {
-				std::cerr << "Syntax Error: Return field is invalid, too many elements!" << std::endl;
-				exit(1);
+				throw excp("Syntax Error: Return field is invalid, too many elements!");
+				// std::cerr << "Syntax Error: Return field is invalid, too many elements!" << std::endl;
+				// exit(1);
 			}
 			else {
 				printError(EMPTY);
@@ -290,6 +292,7 @@ void	Parser::setLocationContent(Location& location, int which, std::string value
 
 void   Parser::readFile(std::ifstream& confFile) {
 
+	bool	isEmpty = true;
 	if (confFile.is_open())
 	{
 		while (getline(confFile, line))
@@ -300,14 +303,18 @@ void   Parser::readFile(std::ifstream& confFile) {
 				openingBraceCount++;
 			else if (line.find("}") != std::string::npos)
 				openingBraceCount--;
-			if (line.find("server") != std::string::npos)
+			if (line.find("server") != std::string::npos){
+				isEmpty = false;
 				parseServer(confFile);
+			}
 		}
 	}
 	else
 		printError(NO_CONFIG_FILE);
 	if (checkBracesError())
 		printError(CURLYBRACE);
+	if (isEmpty)
+		printError(FILE_EMPTY);
 } ;
 
 void	Parser::serverValuesValidation(ServerSettings server) {
@@ -318,24 +325,19 @@ void	Parser::serverValuesValidation(ServerSettings server) {
 
 	ss >> portInt;
 	if (port.find(":") != std::string::npos || port.find(".") != std::string::npos) {
-		std::cerr << "Syntax Error: port is invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: port is invalid!");
 	}	
 	if (port.size() == 0) {
-		std::cerr << "Syntax Error: port not found!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: port not found!");
 	}
 	if (server.getName().size() == 0) {	
-		std::cerr << "Syntax Error: server name not found!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: server name not found!");
 	}
 	if (portInt == 0) {	
-		std::cerr << "Syntax Error: port is invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: port is invalid!");
 	}
 	if (server.getLocations().size() == 0) {
-		std::cerr << "Syntax Error: Location is undefined!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: Location is undefined!");
 	}
 }
 
@@ -392,44 +394,36 @@ bool	examinePath(std::string value) {
 void	Parser::locationValuesValidation(Location location) {
 
 	if (location.getValue().size() == 0 || !examinePath(location.getValue())) {
-		std::cerr << "Syntax Error: location value not found or invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: location value not found or invalid!");
 	}
 	if (location.getRoot().size() == 0 || !examinePath(location.getRoot())) {
-		std::cerr << "Syntax Error: location root value not found or invalid!" << std::endl; 
-		exit(1);
+		throw excp("Syntax Error: location root value not found or invalid!"); 
 	}
 	if (location.getIndex().size() == 0) {
 		location.setIndex("homepage.html");
 	}
 	if (location.getIndex().find(".") == std::string::npos) {
-		std::cerr << "Syntax Error: index value is invalid, index value must contain an extension!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: index value is invalid, index value must contain an extension!");
 	}
 	if ((location.getRedirection().status_code.size() > 3 || location.getRedirection().status_code.size() < 3) && 
 		location.getRedirection().status_code != "-1") {
-		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: return status code is invalid!");
 	}
 	if (location.getCGIbool() && location.getCGI().empty()) {
-		std::cerr << "Syntax Error: CGI script not defined or invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: CGI script not defined or invalid!");
 	}
 	if (location.getCGIbool() && !examinePath(location.getCGI())) {
-		std::cerr << "Syntax Error: CGI script path is invalid or not defined!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: CGI script path is invalid or not defined!");
 	}
 	if (location.getCGIbool() && (location.getRoot().empty() || !examinePath(location.getRoot()))) {
-		std::cerr << "Syntax Error: CGI root path is invalid or not defined!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: CGI root path is invalid or not defined!");
 	}
 	std::stringstream ss(location.getRedirection().status_code);
 	int				  code;
 	
 	ss >> code;
 	if (code == 0) {
-		std::cerr << "Syntax Error: return status code is invalid!" << std::endl;
-		exit(1);
+		throw excp("Syntax Error: return status code is invalid!");
 	}
 }
 
@@ -551,33 +545,41 @@ void    Parser::printError(int which) {
 	switch(which) {
 
 		case SEMICOLON:
-			std::cout << "Syntax Error: could not find semicolon" << std::endl;
+			throw excp("Syntax Error: could not find semicolon");
 			break ;
 		case CURLYBRACE:
-			std::cout << "Syntax Error: Curly brace not found, or misalighned" << std::endl;
+			throw excp("Syntax Error: Curly brace not found, or misalighned");
 			break ;
-		case UNKNOWN:
-			std::cout << "Error: " << directive << " <- Unknown expression." << std::endl;
+		case UNKNOWN:{
+			std::string msg = "Error: " + directive + " <- Unknown expression.";
+			throw excp(msg);
 			break ;
-		case EMPTY:
-			std::cout << "Error: " << directive << " <- Directive can't have empty value!" << std::endl;
+		}
+		case EMPTY:{
+			std::string msg = "Error: " + directive + " <- Directive can't have empty value!";
+			throw excp(msg);
 			break ;
+		}
 		case EXTENSION:
-			std::cout << "Error: Invalid extension!" << std::endl;
+			throw excp("Error: Invalid extension!");
 			break ;
 		case NO_CONFIG_FILE:
-			std::cout << "Error: config file not found or invalid!" << std::endl;
+			throw excp("Error: config file not found or invalid!");
 			break ;
-		case INVALID_STATUS_CODE:
-			std::cout << "Syntax Error: Invalid status code!" << std::endl;
-			std::cout << "-> " << line << std::endl;
+		case INVALID_STATUS_CODE:{
+			std::string msg = "Syntax Error: Invalid status code!\n-> " + line;
+			throw excp(msg);
 			break ;
-		case INVALID_PATH:
-			std::cout << "Syntax Error: Invalid path!" << std::endl;
-			std::cout << "-> " << line << std::endl;
+		}
+		case INVALID_PATH:{
+			std::string msg = "Syntax Error: Invalid path!\n-> " + line;
+			throw excp(msg);
+			break ;
+		}
+		case FILE_EMPTY:
+			throw excp("Error: config file is empty!");
 			break ;
 	}
-	exit(1);
 }
 
 std::vector<Context> Parser::getParsedData( void ) const

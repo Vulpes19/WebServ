@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/25 14:41:52 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/26 15:13:59 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ struct ResponseHelper
 struct ErrorResponse
 {
 	ResponseHelper help;
-	void		normalizePath( std::string &, enum ERR );
+	std::string		normalizePath( std::string , enum ERR );
 	void        errorBadRequest( SOCKET, std::string ); //400
 	void        errorNotFound( SOCKET, std::string ); //404
 	void    	errorForbidden( SOCKET, std::string ); //403
