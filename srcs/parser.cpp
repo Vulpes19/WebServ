@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/12 18:42:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 16:11:24 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 14:01:34 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -484,52 +484,55 @@ void	Parser::parseLocation(std::ifstream& confFile, ServerSettings& server, std:
 
 void	Parser::printData() {
 
-	for (size_t i = 0; i < parsedData.size(); i++) {
+	
+	// for (size_t i = 0; i < parsedData.size(); i++) {
 
 		Context context;
-		context = parsedData[i];
+		context = parsedData[0];
 
 		ServerSettings  server;
 		server = context.getServer();
 
-		std::cout << std::endl;
-		std::cout << "ServerSettings: " << std::endl;
-		std::cout << "listen: " << server.getPort() << std::endl;
-		std::cout << "host: " << server.getHost() << std::endl;
-		std::cout << "name: " << server.getName() << std::endl;
-		std::cout << "body size: " << server.getSize() << std::endl;
-		std::cout << "upload: " << server.getUpload() << std::endl;
+	// 	std::cout << std::endl;
+	// 	std::cout << "ServerSettings: " << std::endl;
+	// 	std::cout << "listen: " << server.getPort() << std::endl;
+	// 	std::cout << "host: " << server.getHost() << std::endl;
+	// 	std::cout << "name: " << server.getName() << std::endl;
+	// 	std::cout << "body size: " << server.getSize() << std::endl;
+	// 	std::cout << "upload: " << server.getUpload() << std::endl;
 		
-		// std::cout << "Errors: " << std::endl;
-		// std::map<std::string, std::string> epMap = server.getErrorPages();
-		// std::map<std::string, std::string>::iterator itr;
-		// for(itr=epMap.begin();itr!=epMap.end();itr++)
-		// {
-		// 	std::cout << itr->first << " " << itr->second << std::endl;
-		// }
+	// 	// std::cout << "Errors: " << std::endl;
+	// 	// std::map<std::string, std::string> epMap = server.getErrorPages();
+	// 	// std::map<std::string, std::string>::iterator itr;
+	// 	// for(itr=epMap.begin();itr!=epMap.end();itr++)
+	// 	// {
+	// 	// 	std::cout << itr->first << " " << itr->second << std::endl;
+	// 	// }
 		std::vector<Location>   locationVec = server.getLocations();
-		for (size_t i = 0; i < locationVec.size(); i++) {
+	
+	std::cout << locationVec.size() << std::endl;
+	// 	for (size_t i = 0; i < locationVec.size(); i++) {
 
-			std::cout << "locations: " << std::endl;
+	// 		std::cout << "locations: " << std::endl;
 			
-			std::vector<std::string>	allowedMethods = locationVec[i].getAllowedMethods();
-			std::cout << "allowed methods: " << std::endl;
-			std::cout << "*******" << std::endl;
-			for (size_t i = 0; i < allowedMethods.size(); i++)
-				std::cout << allowedMethods[i] << " ";
-			std::cout << "*******" << std::endl;
-			std::cout << "value: " << locationVec[i].getValue() << std::endl;
-			std::cout << "root: " << locationVec[i].getRoot() << std::endl;
-			if (locationVec[i].getCGIbool() == true)
-				std::cout << "CGI: " << locationVec[i].getCGI() << std::endl;
-			std::cout << "index: " << locationVec[i].getIndex() << std::endl;
-			std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
-			std::cout << "return: " << locationVec[i].getRedirection().status_code; 
-			std::cout << " " << locationVec[i].getRedirection().path << std::endl;
-			if (locationVec[i].getAutoIndex() == ON)
-				std::cout << "autoindex: on" << std::endl;
-		}
-	}
+	// 		std::vector<std::string>	allowedMethods = locationVec[i].getAllowedMethods();
+	// 		std::cout << "allowed methods: " << std::endl;
+	// 		std::cout << "*******" << std::endl;
+	// 		for (size_t i = 0; i < allowedMethods.size(); i++)
+	// 			std::cout << allowedMethods[i] << " ";
+	// 		std::cout << "*******" << std::endl;
+	// 		std::cout << "value: " << locationVec[i].getValue() << std::endl;
+	// 		std::cout << "root: " << locationVec[i].getRoot() << std::endl;
+	// 		if (locationVec[i].getCGIbool() == true)
+	// 			std::cout << "CGI: " << locationVec[i].getCGI() << std::endl;
+	// 		std::cout << "index: " << locationVec[i].getIndex() << std::endl;
+	// 		std::cout << "upload: " << locationVec[i].getUpload() << std::endl;
+	// 		std::cout << "return: " << locationVec[i].getRedirection().status_code; 
+	// 		std::cout << " " << locationVec[i].getRedirection().path << std::endl;
+	// 		if (locationVec[i].getAutoIndex() == ON)
+	// 			std::cout << "autoindex: on" << std::endl;
+	// 	}
+	// }
 }
 
 bool    Parser::findSemicolon() {

@@ -3,7 +3,7 @@
 // Set cookies
 header("status: 200");
 header("Content-Type: text/html");
-setcookie('username', 'john', time() + 3600); // Cookie expires in 1 hour
+setcookie('username', 'Ayman', time() + 3600); // Cookie expires in 1 hour
 setcookie('session_id', '123456789', time() + 3600);
 ?>
 

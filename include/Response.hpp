@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/27 12:32:21 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 14:06:54 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ class Response
 		void		setName( std::string );
 		void		setHost( std::string );
 		void		setPort( std::string );
+		std::string	getPort( void ) { return (port); };
         void		setBodySize( ssize_t );
 		void		setUpload( std::string );
 		void		reset( void );

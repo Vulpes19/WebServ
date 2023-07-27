@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 20:59:45 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 14:07:04 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ void		ClientManager::updateClientSettings( std::vector<Server> &srv, std::string
 	{
 		if ( srv[i].getName() == serverName )
 		{
+            if ( srv[i].getPort() != response->getPort() )
+                return ;
             setName(srv[i].getName());
             setHost(srv[i].getHost());
             setPort(srv[i].getPort());

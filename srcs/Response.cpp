@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:08 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/27 12:37:14 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 13:58:17 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1165,6 +1165,7 @@ std::string	Response::getRootPath( std::string path )
 	if ( path[path.length() - 1] != '/' )
 		path += '/';
 	Location locIns;
+	std::cout << loc.size() << std::endl;
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
 		if ( loc[i].getValue() == "/" )
@@ -1224,14 +1225,20 @@ std::string	Response::getUploadPath( std::string path )
 		path = "/";
 	if ( path[path.length() - 1] != '/' )
 		path += '/';
+	Location locIns;
+	std::cout << path << std::endl;
+	std::cout << loc.size() << std::endl;
 	for ( size_t i = 0; i < loc.size(); i++ )
 	{
-		if ( path == "/" && loc[i].getValue() == "/" )
-			return (loc[i].getUpload());
+		std::cout << loc[i].getValue() << " " << loc[i].getUpload() << std::endl;
+		if ( loc[i].getValue() == "/" )
+			locIns = loc[i];
 		if ( path.find(loc[i].getValue()) != std::string::npos && loc[i].getValue() != "/" )
 			return (loc[i].getUpload());
 	}
-	return ("NONE");
+	if ( std::count(path.begin(), path.end(), '/') > 2 )
+		return ("NONE");
+	return (locIns.getUpload());
 }
 
 void	Response::reset( void )

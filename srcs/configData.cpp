@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/15 20:17:15 by mbaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 14:49:42 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 13:57:26 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,6 +169,7 @@ Location&	Location::operator=(const Location& location) {
 		this->cgi = location.cgi;
 		this->isCGI = location.isCGI;
 		this->allowedMethods = location.allowedMethods;
+		this->upload = location.upload;
 	}
 	return (*this);
 }
