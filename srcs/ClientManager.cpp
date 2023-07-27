@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/09 12:03:47 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/27 14:07:04 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 16:46:23 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,13 @@ void    ClientManager::createClient( SOCKET listenSocket )
     int flags = fcntl( socket, F_GETFL, 0  );
     if ( flags == -1 )
         throw excp("failed to get flags");
+    else
+    {
+        flags |= O_NONBLOCK; // Set the O_NONBLOCK flag
+        int result = fcntl(socket, F_SETFL, flags);
+        if (result == -1)
+            throw excp("Failed to set socket to non-blocking");
+    }
     if ( setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &optval, sizeof(optval)) < 0 )
         throw excp("failed to disable SIGPIPE at the socket level");
 }

@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/27 14:06:54 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 16:46:42 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ class Response
 		~Response( void );
 		void        setSocket( SOCKET );
 		enum ResponseStates	handleReadRequest( Resources &, std::string &serverName );
-		enum ResponseStates	getResponseFile( Resources &, std::string );
+		enum ResponseStates	getResponseFile( std::string );
 		enum ResponseStates	getResponseDir( std::string );
 		enum ResponseStates	postUploadFile( Resources & );
 		enum ResponseStates	deleteFile( std::string, Resources & );

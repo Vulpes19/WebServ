@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/27 11:32:08 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 15:24:16 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,14 +131,9 @@ void    Resources::checkRequest( void )
 	if ( !requestFile.is_open() )
 	{
 		std::cerr << "failed to open the file\n";
-		exit(1);
+		return ;
 	}
 	size_t size = 0;
-	// if ( !requestFile.is_open() )
-	// {
-	// 	std::cerr << "failed to open the file\n";
-	// 	exit(1);
-	// }
 	bool				requestBodyStart = false;
 
 	while ( std::getline(requestFile, line) )
@@ -174,10 +169,7 @@ void	Resources::errorHandling( void ) {
 	if (requiredLength == -1 && isPost)
 		setError(LENGTH_REQUIRED);
 	if (hostExists == false || requestLineExists == false)
-	{
-		// std::cout << "here 2" << std::endl;
 		setError(BAD_REQUEST);
-	}
 }
 
 void    Resources::setError( enum Error_code error )
@@ -212,25 +204,4 @@ std::map< std::string, std::string >	Resources::getHeader( void ) const
 {
 	return ( header );
 }
-// void	Resources::printError(enum Error_code code) {
 
-// 	//this is only for debugging purposes
-// 	switch (code) {
-
-// 		case BAD_REQUEST:
-// 			std::cout << "BAD REQUEST!" << std::endl;
-// 			break ;
-// 		case LENGTH_REQUIRED:
-// 			std::cout << "LENGTH REQUIRED!" << std::endl;
-// 			break ;
-// 		case METHOD_NOT_ALLOWED:
-// 			std::cout << "METHOD NOT ALLOWED" << std::endl;
-// 			break ;
-// 		case HTTP_VERSION_NOT_SUPPORTED:
-// 			std::cout << "HTTP VERSION NOT SUPPORTED" << std::endl;
-// 			break ;
-// 		default:
-// 			std::cout << "all good" << std::endl;
-// 			break ;
-// 	}
-// }
