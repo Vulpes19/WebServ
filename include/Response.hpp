@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/13 10:16:59 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 15:13:59 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 12:32:21 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ class Response
 		SOCKET  		socket;
 		ErrorResponse   err;
 		ResponseHelper	help;
+		bool			isError;
 		std::string		indexResponse;
 		std::ifstream   file;
 		std::ofstream	toUpload;

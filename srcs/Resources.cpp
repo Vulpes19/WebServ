@@ -6,7 +6,7 @@
 /*   By: abaioumy <abaioumy@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/02 14:37:35 by abaioumy          #+#    #+#             */
-/*   Updated: 2023/07/26 20:56:13 by abaioumy         ###   ########.fr       */
+/*   Updated: 2023/07/27 11:32:08 by abaioumy         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,7 +192,6 @@ enum Error_code	Resources::getError() const {
 
 std::string	Resources::getRequest( std::string Key )
 {
-	std::cout << "pskch\n";
 	if ( header.find(Key) != header.end() )
 		return ( header[Key] );
 	else

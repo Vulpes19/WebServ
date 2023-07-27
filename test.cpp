@@ -6,10 +6,8 @@
 
 int	main()
 {
-	std::map
-	std::string s("ana hmar");
-	if ( s[s.size() - 1] == 'r' )
-		std::cout << "yes\n";
+	if ( access("/Users/abaioumy/Documents/WebServ/assets/error_images/imgs/Internal_Server_Error.gif", F_OK) == -1 )
+		std::cout << "File does not exist" << std::endl;
 	else
-		std::cout << "no\n";
+		std::cout << "File exists" << std::endl;
 }
